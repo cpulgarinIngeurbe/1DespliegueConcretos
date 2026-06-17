@@ -55,8 +55,10 @@ jobs:
                   password = os.getenv(f'SGS_{proyecto}_PASS')
 
                   if not email or not password:
-                      print(f'[!] Credenciales faltantes')
+                      print(f'[!] Credenciales faltantes para {proyecto}')
                       continue
+
+                  print(f'[+] Credenciales encontradas')
 
                   context = browser.new_context(accept_downloads=True)
                   page = context.new_page()
