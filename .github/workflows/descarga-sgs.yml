@@ -1,4 +1,4 @@
-name: 📊 Descarga Diaria SGS - Resistencia Concretos
+name: 📊 Descarga Diaria SGS
 
 on:
   workflow_dispatch:
