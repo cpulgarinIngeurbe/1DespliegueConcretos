@@ -13,7 +13,7 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: 🐍 Configurar Python 3.11
+      - name: 🐍 Configurar Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
@@ -27,15 +27,182 @@ jobs:
         run: |
           mkdir -p datos/
           rm -f datos/reporte_sgs_*.xlsx
-          echo "[*] Archivos SGS limpios"
 
-      - name: ⬇️ Ejecutar descarga SGS (NATIVA y VIALE)
+      - name: ⬇️ Descargar SGS (NATIVA y VIALE)
         env:
           SGS_NATIVA_USER: ${{ secrets.SGS_NATIVA_USER }}
           SGS_NATIVA_PASS: ${{ secrets.SGS_NATIVA_PASS }}
           SGS_VIALE_USER: ${{ secrets.SGS_VIALE_USER }}
           SGS_VIALE_PASS: ${{ secrets.SGS_VIALE_PASS }}
-        run: python bot_sgs.py
+        run: |
+          python << 'EOF'
+          from playwright.sync_api import sync_playwright
+          import os
+          from pathlib import Path
+
+          proyectos = ['NATIVA', 'VIALE']
+          url_login = "https://qclient.sgs.com/authentication?redirectURL=%2Fhome"
+          Path('datos').mkdir(exist_ok=True)
+
+          print('[*] Descargando SGS: ' + ', '.join(proyectos))
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+
+              for proyecto in proyectos:
+                  print(f'\n[*] {proyecto}...')
+                  email = os.getenv(f'SGS_{proyecto}_USER')
+                  password = os.getenv(f'SGS_{proyecto}_PASS')
+
+                  if not email or not password:
+                      print(f'[!] Credenciales faltantes')
+                      continue
+
+                  context = browser.new_context(accept_downloads=True)
+                  page = context.new_page()
+
+                  try:
+                      page.goto(url_login, timeout=60000)
+                      page.fill("input[id='user']", email)
+                      page.fill("input[id='password']", password)
+                      page.get_by_role("button", name="Ingresar").click()
+                      page.wait_for_selector("text=Reportes", timeout=60000)
+                      print(f'[+] Login OK')
+
+                      page.click("text=Reportes", force=True)
+                      page.wait_for_timeout(2000)
+                      page.click("text=Generación de reportes", force=True)
+                      page.wait_for_timeout(2000)
+
+                      page.click("a.btn.btn-primary.icon-format-list-checks")
+                      page.wait_for_timeout(2000)
+                      page.keyboard.press("Escape")
+                      page.wait_for_timeout(1000)
+
+                      page.wait_for_selector("mat-form-field:has-text('Tip de Reporte')", timeout=20000)
+                      page.click("mat-form-field:has-text('Tip de Reporte') div.mat-mdc-select-trigger")
+                      page.wait_for_timeout(800)
+                      for _ in range(3):
+                          page.keyboard.press("ArrowDown")
+                      page.keyboard.press("Enter")
+                      page.wait_for_timeout(1500)
+
+                      page.click("mat-form-field:has-text('Código de Obra') div.mat-mdc-select-trigger")
+                      page.wait_for_timeout(1000)
+                      page.keyboard.press("ArrowDown")
+                      page.keyboard.press("Enter")
+                      page.wait_for_timeout(1500)
+
+                      page.click("mat-form-field:has-text('Tipo Material') div.mat-mdc-select-trigger")
+                      page.wait_for_timeout(1000)
+                      page.keyboard.press("ArrowDown")
+                      page.keyboard.press("ArrowUp")
+                      page.keyboard.press("Enter")
+                      page.wait_for_timeout(1500)
+
+                      page.keyboard.press("Escape")
+                      page.keyboard.press("Escape")
+                      page.wait_for_timeout(1000)
+
+                      try:
+                          page.click("i.icon-filter-outline", force=True)
+                          page.wait_for_timeout(1000)
+                      except:
+                          pass
+
+                      try:
+                          page.check("#mat-mdc-checkbox-1-input")
+                          page.wait_for_timeout(500)
+                      except:
+                          pass
+
+                      page.wait_for_selector("button:has(i.icon-file-excel)", timeout=20000)
+                      with page.expect_download(timeout=45000) as download_info:
+                          page.click("button:has(i.icon-file-excel)", force=True)
+
+                      download = download_info.value
+                      filepath = f'datos/reporte_sgs_{proyecto}.xlsx'
+                      download.save_as(filepath)
+                      print(f'[+] Descargado: {filepath}')
+
+                  except Exception as e:
+                      print(f'[!] Error: {str(e)[:80]}')
+                  finally:
+                      context.close()
+
+              browser.close()
+              print('\n[+] Descarga completada')
+
+          EOF
+
+      - name: 📈 Transformar datos SGS
+        run: |
+          python << 'EOF'
+          import pandas as pd
+          import os
+          from openpyxl import load_workbook
+          from openpyxl.styles import PatternFill, Font
+
+          ruta_datos = "datos"
+          archivos_sgs = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_sgs_') and f.endswith('.xlsx')]
+          print(f'[*] Transformando {len(archivos_sgs)} archivo(s) SGS')
+
+          for archivo in archivos_sgs:
+              ruta = os.path.join(ruta_datos, archivo)
+              print(f'\n[*] Procesando: {archivo}')
+
+              df = pd.read_excel(ruta)
+
+              mapeo = {
+                  'codigoObra': 'Proyecto',
+                  'asentamiento': 'Cilindro Nº',
+                  'codigoMezcla': 'Código de mezcla',
+                  'localizacion': 'Localización',
+                  'fechaMuestreo': 'Toma',
+                  'fechaRotura': 'Rotura',
+                  'edad': 'Edad (días)',
+                  'Resistencia Nominal Mpa': 'Resistencia nominal (MPa)',
+                  'Resistencia Mpa': 'Resistencia (MPa)',
+                  'porcentaje': 'Resistencia (%)'
+              }
+              df = df.rename(columns=mapeo)
+
+              cols = ['Proyecto', 'Cilindro Nº', 'Código de mezcla', 'Localización', 'Toma', 'Rotura', 'Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)']
+              df = df[[c for c in cols if c in df.columns]]
+
+              def obtener_tipo(loc):
+                  if pd.isna(loc): return None
+                  loc_upper = str(loc).upper()
+                  for tipo in ['MURO', 'PLACA', 'AUTOCOMPACTABLE', 'TREMIE']:
+                      if tipo in loc_upper: return tipo
+                  return None
+
+              df['TIPO'] = df['Localización'].apply(obtener_tipo)
+              df['Resistencia Promedio (MPa)'] = df.groupby(['Proyecto', 'Localización', 'Cilindro Nº', 'Edad (días)'])['Resistencia (MPa)'].transform('mean')
+              df['Conteo Elementos'] = df.groupby(['Proyecto', 'Localización', 'Cilindro Nº', 'Edad (días)'])['Resistencia (MPa)'].transform('count')
+              df = df.rename(columns={'Resistencia (MPa)': 'Resistencia (MPa) Individual'})
+              df['Resistencia (%) Individual'] = (df['Resistencia (MPa) Individual'] / df['Resistencia nominal (MPa)']) * 100
+
+              cols_num = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa) Individual', 'Resistencia (%) Individual', 'Resistencia Promedio (MPa)', 'Resistencia (%)']
+              df[cols_num] = df[cols_num].round(3)
+              df = df.sort_values(['Edad (días)', 'Resistencia nominal (MPa)'], ascending=[False, False]).reset_index(drop=True)
+
+              df.to_excel(ruta, index=False)
+
+              wb = load_workbook(ruta)
+              ws = wb.active
+              azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
+              blanco = Font(color="FFFFFF", bold=True)
+
+              for col in range(1, ws.max_column + 1):
+                  ws.cell(1, col).fill = azul
+                  ws.cell(1, col).font = blanco
+
+              wb.save(ruta)
+              print(f'[+] Guardado')
+
+          print(f'\n[+] ✓ Transformación completada')
+          EOF
 
       - name: 🔧 Configurar Git
         run: |
@@ -47,21 +214,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           git add datos/
-
           if git diff --quiet --cached; then
-            echo "[*] Sin cambios nuevos"
+            echo "[*] Sin cambios"
           else
             git commit -m "[AUTO] Descarga SGS - $(date '+%Y-%m-%d %H:%M:%S')"
             git push origin main
-            echo "[+] ✅ Push completado"
+            echo "[+] Push completado"
           fi
-
-      - name: 📊 Reporte final
-        if: always()
-        run: |
-          echo "=== RESULTADO FINAL ==="
-          echo "Archivos en datos/:"
-          ls -lh datos/ 2>/dev/null || echo "No hay archivos aún"
-          echo ""
-          echo "Últimos commits:"
-          git log --oneline -3
