@@ -1,8 +1,6 @@
 name: 📊 Descarga Diaria Concrelab
 
 on:
-  schedule:
-    - cron: '0 18 * * *'  # 13:00 Bogotá (18:00 UTC) diariamente
   workflow_dispatch:
 
 jobs:
