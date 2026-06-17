@@ -29,10 +29,12 @@ jobs:
           mkdir -p datos/
           echo "[*] Carpeta datos limpiada"
 
-      - name: ⬇️ Descargar SGS
+      - name: ⬇️ Descargar SGS (NATIVA y VIALE)
         env:
-          SGS_EMAIL: ${{ secrets.SGS_EMAIL }}
-          SGS_PASS: ${{ secrets.SGS_PASS }}
+          SGS_NATIVA_USER: ${{ secrets.SGS_NATIVA_USER }}
+          SGS_NATIVA_PASS: ${{ secrets.SGS_NATIVA_PASS }}
+          SGS_VIALE_USER: ${{ secrets.SGS_VIALE_USER }}
+          SGS_VIALE_PASS: ${{ secrets.SGS_VIALE_PASS }}
         run: |
           python << 'EOF'
           from playwright.sync_api import sync_playwright
@@ -40,165 +42,182 @@ jobs:
           from pathlib import Path
           from datetime import datetime
 
-          email = os.getenv('SGS_EMAIL')
-          password = os.getenv('SGS_PASS')
+          # Lista de proyectos
+          proyectos = ['NATIVA', 'VIALE']
           url_login = "https://qclient.sgs.com/authentication?redirectURL=%2Fhome"
 
-          print('[*] Iniciando descarga SGS')
+          print('[*] Iniciando descarga SGS - Múltiples proyectos')
+          print(f'[*] Proyectos a descargar: {", ".join(proyectos)}')
+
+          # Crear carpeta datos si no existe
+          Path('datos').mkdir(exist_ok=True)
 
           with sync_playwright() as p:
               browser = p.chromium.launch(headless=True)
-              context = browser.new_context(accept_downloads=True)
-              page = context.new_page()
 
-              try:
-                  page.goto(url_login, timeout=60000)
-                  print('[+] Login SGS')
-                  page.fill("input[id='user']", email)
-                  page.fill("input[id='password']", password)
-                  page.get_by_role("button", name="Ingresar").click()
-                  page.wait_for_selector("text=Reportes", timeout=60000)
-                  print('[+] ✅ Login exitoso')
+              # Iterar sobre cada proyecto
+              for proyecto in proyectos:
+                  print(f'\n[*] ========== DESCARGANDO: {proyecto} ==========')
 
-                  page.click("text=Reportes")
-                  page.wait_for_selector("text=Generación de reportes", timeout=30000)
-                  print('[+] ✅ En Reportes')
+                  email = os.getenv(f'SGS_{proyecto}_USER')
+                  password = os.getenv(f'SGS_{proyecto}_PASS')
 
-                  page.click("text=Generación de reportes")
-                  page.wait_for_selector("a.btn.btn-primary.icon-format-list-checks", timeout=30000)
-                  print('[+] ✅ En Generación de reportes')
+                  if not email or not password:
+                      print(f'[!] ERROR: Credenciales no encontradas para {proyecto}')
+                      continue
 
-                  page.click("a.btn.btn-primary.icon-format-list-checks")
-                  page.wait_for_timeout(3000)
-                  page.keyboard.press("Escape")
+                  context = browser.new_context(accept_downloads=True)
+                  page = context.new_page()
 
-                  page.wait_for_selector("mat-form-field:has-text('Tip de Reporte')", timeout=30000)
-                  page.click("mat-form-field:has-text('Tip de Reporte') div.mat-mdc-select-trigger")
-                  page.wait_for_timeout(500)
-
-                  # Tipo Reporte
-                  for _ in range(3):
-                      page.keyboard.press("ArrowDown")
-                  page.keyboard.press("Enter")
-                  page.wait_for_timeout(2000)
-                  print('[+] ✅ Tipo Reporte seleccionado')
-
-                  # Código de Obra
-                  page.click("mat-form-field:has-text('Código de Obra') div.mat-mdc-select-trigger")
-                  page.wait_for_timeout(1000)
-                  page.keyboard.press("ArrowDown")
-                  page.keyboard.press("Enter")
-                  page.wait_for_timeout(1000)
-                  print('[+] ✅ Código de Obra seleccionado')
-
-                  # Esperar a que la página se estabilice completamente
-                  page.wait_for_load_state('networkidle', timeout=30000)
-                  page.wait_for_timeout(3000)
-
-                  # Esperar explícitamente a que el spinner desaparezca
-                  for intento_spinner in range(1, 6):
-                      spinner_hidden = page.is_hidden("div.ngx-spinner-overlay")
-                      if spinner_hidden:
-                          print('[+] Spinner desaparecido')
-                          break
-                      if intento_spinner < 5:
-                          print(f'[*] Esperando spinner intento {intento_spinner}...')
-                          page.wait_for_timeout(2000)
-                      else:
-                          print('[!] Spinner sigue visible, continuando de todas formas')
-
-                  # Tipo Material - con reintentos
-                  for intento_material in range(1, 4):
-                      try:
-                          page.click("mat-form-field:has-text('Tipo Material') div.mat-mdc-select-trigger", timeout=20000)
-                          page.wait_for_timeout(1000)
-                          page.keyboard.press("ArrowDown")
-                          page.keyboard.press("ArrowUp")
-                          page.keyboard.press("Enter")
-                          page.wait_for_timeout(1000)
-                          print('[+] ✅ Tipo Material seleccionado')
-                          break
-                      except Exception as e:
-                          if intento_material < 3:
-                              print(f'[!] Intento {intento_material} fallió, esperando 3s y reintentando...')
-                              page.wait_for_timeout(3000)
-                          else:
-                              print(f'[!] Error: {str(e)}')
-                              raise
-
-                  # Esperar nuevamente a que la página se estabilice
-                  page.wait_for_load_state('networkidle', timeout=30000)
-                  page.wait_for_timeout(2000)
-
-                  # Cerrar cualquier modal o dropdown abierto
-                  for _ in range(3):
-                      page.keyboard.press("Escape")
-                      page.wait_for_timeout(500)
-                  print('[+] Cerrados modales abiertos')
-
-                  # Esperar a que el backdrop desaparezca
                   try:
-                      page.wait_for_selector("div.cdk-overlay-backdrop", state="hidden", timeout=15000)
-                      print('[+] Backdrop desaparecido')
-                  except:
-                      print('[*] Backdrop no encontrado o ya oculto')
-                      pass
+                      page.goto(url_login, timeout=60000)
+                      print(f'[+] Login SGS - {proyecto}')
+                      page.fill("input[id='user']", email)
+                      page.fill("input[id='password']", password)
+                      page.get_by_role("button", name="Ingresar").click()
+                      page.wait_for_selector("text=Reportes", timeout=60000)
+                      print(f'[+] ✅ Login exitoso - {proyecto}')
 
-                  page.wait_for_timeout(2000)
+                      page.click("text=Reportes")
+                      page.wait_for_selector("text=Generación de reportes", timeout=30000)
+                      print(f'[+] ✅ En Reportes - {proyecto}')
 
-                  # Aplicar filtro - con reintentos
-                  for intento_filtro in range(1, 4):
-                      try:
-                          page.wait_for_selector("i.icon-filter-outline", timeout=15000)
-                          page.locator("i.icon-filter-outline").click(timeout=20000)
-                          page.wait_for_timeout(2000)
-                          print('[+] ✅ Filtro aplicado')
-                          break
-                      except Exception as e:
-                          if intento_filtro < 3:
-                              print(f'[!] Intento {intento_filtro} falló, esperando 2s...')
-                              page.keyboard.press("Escape")
+                      page.click("text=Generación de reportes")
+                      page.wait_for_selector("a.btn.btn-primary.icon-format-list-checks", timeout=30000)
+                      print(f'[+] ✅ En Generación de reportes - {proyecto}')
+
+                      page.click("a.btn.btn-primary.icon-format-list-checks")
+                      page.wait_for_timeout(3000)
+                      page.keyboard.press("Escape")
+
+                      page.wait_for_selector("mat-form-field:has-text('Tip de Reporte')", timeout=30000)
+                      page.click("mat-form-field:has-text('Tip de Reporte') div.mat-mdc-select-trigger")
+                      page.wait_for_timeout(500)
+
+                      # Tipo Reporte
+                      for _ in range(3):
+                          page.keyboard.press("ArrowDown")
+                      page.keyboard.press("Enter")
+                      page.wait_for_timeout(2000)
+                      print(f'[+] ✅ Tipo Reporte seleccionado - {proyecto}')
+
+                      # Código de Obra
+                      page.click("mat-form-field:has-text('Código de Obra') div.mat-mdc-select-trigger")
+                      page.wait_for_timeout(1000)
+                      page.keyboard.press("ArrowDown")
+                      page.keyboard.press("Enter")
+                      page.wait_for_timeout(1000)
+                      print(f'[+] ✅ Código de Obra seleccionado - {proyecto}')
+
+                      # Esperar a que la página se estabilice completamente
+                      page.wait_for_load_state('networkidle', timeout=30000)
+                      page.wait_for_timeout(3000)
+
+                      # Esperar explícitamente a que el spinner desaparezca
+                      for intento_spinner in range(1, 6):
+                          spinner_hidden = page.is_hidden("div.ngx-spinner-overlay")
+                          if spinner_hidden:
+                              print(f'[+] Spinner desaparecido - {proyecto}')
+                              break
+                          if intento_spinner < 5:
+                              print(f'[*] Esperando spinner intento {intento_spinner}... - {proyecto}')
                               page.wait_for_timeout(2000)
                           else:
-                              print(f'[!] Error aplicando filtro: {str(e)}')
-                              raise
+                              print(f'[!] Spinner sigue visible, continuando - {proyecto}')
 
-                  # Marcar checkbox
-                  page.wait_for_selector("#mat-mdc-checkbox-1-input", timeout=30000)
-                  page.check("#mat-mdc-checkbox-1-input")
-                  page.wait_for_timeout(2000)
-                  print('[+] ✅ Checkbox marcado')
+                      # Tipo Material - con reintentos
+                      for intento_material in range(1, 4):
+                          try:
+                              page.click("mat-form-field:has-text('Tipo Material') div.mat-mdc-select-trigger", timeout=20000)
+                              page.wait_for_timeout(1000)
+                              page.keyboard.press("ArrowDown")
+                              page.keyboard.press("ArrowUp")
+                              page.keyboard.press("Enter")
+                              page.wait_for_timeout(1000)
+                              print(f'[+] ✅ Tipo Material seleccionado - {proyecto}')
+                              break
+                          except Exception as e:
+                              if intento_material < 3:
+                                  print(f'[!] Intento {intento_material} fallió - {proyecto}')
+                                  page.wait_for_timeout(3000)
+                              else:
+                                  print(f'[!] Error: {str(e)}')
+                                  raise
 
-                  # Crear carpeta datos si no existe
-                  Path('datos').mkdir(exist_ok=True)
+                      # Esperar nuevamente a que la página se estabilice
+                      page.wait_for_load_state('networkidle', timeout=30000)
+                      page.wait_for_timeout(2000)
 
-                  # Descargar Excel - CON REINTENTOS
-                  page.wait_for_selector("button:has(i.icon-file-excel)", timeout=60000)
-                  print('[DESCARGA] Botón encontrado, iniciando descarga...')
+                      # Cerrar cualquier modal o dropdown abierto
+                      for _ in range(3):
+                          page.keyboard.press("Escape")
+                          page.wait_for_timeout(500)
+                      print(f'[+] Cerrados modales abiertos - {proyecto}')
 
-                  for intento in range(1, 4):
+                      # Esperar a que el backdrop desaparezca
                       try:
-                          with page.expect_download(timeout=60000) as download_info:
-                              page.locator("button:has(i.icon-file-excel)").click()
+                          page.wait_for_selector("div.cdk-overlay-backdrop", state="hidden", timeout=15000)
+                          print(f'[+] Backdrop desaparecido - {proyecto}')
+                      except:
+                          print(f'[*] Backdrop no encontrado o ya oculto - {proyecto}')
+                          pass
 
-                          page.wait_for_timeout(3000)
+                      page.wait_for_timeout(2000)
 
-                          download = download_info.value
-                          timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                          filepath = f'datos/reporte_sgs_{timestamp}.xlsx'
-                          download.save_as(filepath)
-                          print(f'[+] ✅ Descargado: {filepath}')
-                          break
-                      except Exception as e:
-                          if intento < 3:
-                              print(f'[!] Intento {intento} falló, reintentando...')
-                              page.wait_for_timeout(2000 * intento)
-                          else:
-                              print(f'[!] Error después de 3 intentos')
-                              raise
+                      # Aplicar filtro - con reintentos
+                      for intento_filtro in range(1, 4):
+                          try:
+                              page.wait_for_selector("i.icon-filter-outline", timeout=15000)
+                              page.locator("i.icon-filter-outline").click(timeout=20000)
+                              page.wait_for_timeout(2000)
+                              print(f'[+] ✅ Filtro aplicado - {proyecto}')
+                              break
+                          except Exception as e:
+                              if intento_filtro < 3:
+                                  print(f'[!] Intento {intento_filtro} falló - {proyecto}')
+                                  page.keyboard.press("Escape")
+                                  page.wait_for_timeout(2000)
+                              else:
+                                  print(f'[!] Error aplicando filtro: {str(e)}')
+                                  raise
 
-              finally:
-                  browser.close()
+                      # Marcar checkbox
+                      page.wait_for_selector("#mat-mdc-checkbox-1-input", timeout=30000)
+                      page.check("#mat-mdc-checkbox-1-input")
+                      page.wait_for_timeout(2000)
+                      print(f'[+] ✅ Checkbox marcado - {proyecto}')
+
+                      # Descargar Excel - CON REINTENTOS
+                      page.wait_for_selector("button:has(i.icon-file-excel)", timeout=60000)
+                      print(f'[DESCARGA] Botón encontrado, iniciando descarga para {proyecto}...')
+
+                      for intento in range(1, 4):
+                          try:
+                              with page.expect_download(timeout=60000) as download_info:
+                                  page.locator("button:has(i.icon-file-excel)").click()
+
+                              page.wait_for_timeout(3000)
+
+                              download = download_info.value
+                              filepath = f'datos/reporte_sgs_{proyecto}.xlsx'
+                              download.save_as(filepath)
+                              print(f'[+] ✅ Descargado: {filepath}')
+                              break
+                          except Exception as e:
+                              if intento < 3:
+                                  print(f'[!] Intento {intento} falló, reintentando...')
+                                  page.wait_for_timeout(2000 * intento)
+                              else:
+                                  print(f'[!] Error después de 3 intentos')
+                                  raise
+
+                  except Exception as e:
+                      print(f'[!] ERROR en {proyecto}: {str(e)}')
+                  finally:
+                      context.close()
+
+              browser.close()
+              print('\n[+] ✅ Descarga SGS completada para todos los proyectos')
 
           EOF
 
