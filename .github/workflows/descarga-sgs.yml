@@ -221,6 +221,157 @@ jobs:
 
           EOF
 
+      - name: 📦 Instalar pandas y openpyxl
+        run: |
+          pip install pandas openpyxl
+
+      - name: 📈 Transformar y Formatear SGS
+        run: |
+          python << 'EOF'
+          import pandas as pd
+          import os
+          from openpyxl import load_workbook
+          from openpyxl.styles import PatternFill, Font
+
+          ruta_datos = "datos"
+
+          # Obtener archivos SGS
+          archivos_sgs = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_sgs_') and f.endswith('.xlsx')]
+          print(f'[*] Transformando {len(archivos_sgs)} archivo(s) SGS')
+
+          for archivo in archivos_sgs:
+              ruta_origen = os.path.join(ruta_datos, archivo)
+              print(f'\n[*] Procesando: {archivo}')
+
+              # Cargar Excel
+              df = pd.read_excel(ruta_origen)
+              print(f'[+] Datos cargados. Forma: {df.shape}')
+
+              # Mapeo de renombramiento (de nombres técnicos a legibles)
+              mapeo_campos = {
+                  'codigoObra': 'Proyecto',
+                  'asentamiento': 'Cilindro Nº',
+                  'codigoMezcla': 'Código de mezcla',
+                  'localizacion': 'Localización',
+                  'fechaMuestreo': 'Toma',
+                  'fechaRotura': 'Rotura',
+                  'edad': 'Edad (días)',
+                  'Resistencia Nominal Mpa': 'Resistencia nominal (MPa)',
+                  'Resistencia Mpa': 'Resistencia (MPa)',
+                  'porcentaje': 'Resistencia (%)'
+              }
+
+              df = df.rename(columns=mapeo_campos)
+              print(f'[+] Columnas renombradas')
+
+              # Mantener solo columnas requeridas
+              columnas_mantener = [
+                  'Proyecto',
+                  'Cilindro Nº',
+                  'Código de mezcla',
+                  'Localización',
+                  'Toma',
+                  'Rotura',
+                  'Edad (días)',
+                  'Resistencia nominal (MPa)',
+                  'Resistencia (MPa)',
+                  'Resistencia (%)'
+              ]
+
+              df = df[[col for col in columnas_mantener if col in df.columns]]
+              print(f'[+] Columnas filtradas')
+
+              # Agregar columna TIPO según Localización
+              def obtener_tipo(localizacion):
+                  if pd.isna(localizacion):
+                      return None
+                  localizacion_upper = str(localizacion).upper()
+                  if "MURO" in localizacion_upper:
+                      return "MURO"
+                  elif "PLACA" in localizacion_upper:
+                      return "PLACA"
+                  elif "AUTOCOMPACTABLE" in localizacion_upper:
+                      return "AUTOCOMPACTABLE"
+                  elif "TREMIE" in localizacion_upper:
+                      return "TREMIE"
+                  return None
+
+              df['TIPO'] = df['Localización'].apply(obtener_tipo)
+              print(f'[+] Columna TIPO agregada')
+
+              # Calcular promedio por grupo (con Localización)
+              df['Resistencia Promedio (MPa)'] = df.groupby(['Proyecto', 'Localización', 'Cilindro Nº', 'Edad (días)'])['Resistencia (MPa)'].transform('mean')
+
+              # Calcular conteo
+              df['Conteo Elementos'] = df.groupby(['Proyecto', 'Localización', 'Cilindro Nº', 'Edad (días)'])['Resistencia (MPa)'].transform('count')
+
+              # Renombrar y calcular porcentaje individual
+              df = df.rename(columns={'Resistencia (MPa)': 'Resistencia (MPa) Individual'})
+              df['Resistencia (%) Individual'] = (df['Resistencia (MPa) Individual'] / df['Resistencia nominal (MPa)']) * 100
+
+              # Redondear a 3 decimales
+              columnas_numericas = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa) Individual', 'Resistencia (%) Individual', 'Resistencia Promedio (MPa)', 'Resistencia (%)']
+              df[columnas_numericas] = df[columnas_numericas].round(3)
+              print(f'[+] Datos redondeados a 3 decimales')
+
+              # Ordenar por Edad y Resistencia nominal (descendente)
+              df = df.sort_values(['Edad (días)', 'Resistencia nominal (MPa)'], ascending=[False, False]).reset_index(drop=True)
+              print(f'[+] Datos ordenados')
+
+              # Guardar transformado
+              df.to_excel(ruta_origen, index=False)
+              print(f'[+] Datos guardados')
+
+              # Aplicar formato
+              wb = load_workbook(ruta_origen)
+              ws = wb.active
+
+              col_promedio = df.columns.get_loc('Resistencia Promedio (MPa)') + 1
+              col_individual = df.columns.get_loc('Resistencia (MPa) Individual') + 1
+              col_individual_pct = df.columns.get_loc('Resistencia (%) Individual') + 1
+              col_conteo = df.columns.get_loc('Conteo Elementos') + 1
+
+              columnas_verde_claro = ['Resistencia (%)', 'Proyecto', 'TIPO', 'Cilindro Nº', 'Código de mezcla', 'Localización', 'Toma', 'Rotura', 'Edad (días)', 'Resistencia nominal (MPa)']
+              col_verde_claro_idx = [df.columns.get_loc(col) + 1 for col in columnas_verde_claro if col in df.columns]
+
+              # Colores
+              verde = PatternFill(start_color="00B050", end_color="00B050", fill_type="solid")
+              azul_claro = PatternFill(start_color="ADD8E6", end_color="ADD8E6", fill_type="solid")
+              verde_claro = PatternFill(start_color="90EE90", end_color="90EE90", fill_type="solid")
+              azul_militar = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
+              blanco = Font(color="FFFFFF")
+
+              # Colorear filas
+              for row in range(2, ws.max_row + 1):
+                  for col_idx in range(1, ws.max_column + 1):
+                      celda = ws.cell(row, col_idx)
+
+                      if col_idx in col_verde_claro_idx:
+                          celda.fill = verde_claro
+                      elif col_idx in [col_individual, col_individual_pct, col_conteo]:
+                          celda.fill = azul_claro
+                      elif col_idx == col_promedio:
+                          valor = ws.cell(row, col_promedio).value
+                          if valor is not None:
+                              celda.fill = verde if valor >= 0 else PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+
+                  # Formato porcentaje
+                  celda_pct = ws.cell(row, col_individual_pct)
+                  celda_pct.number_format = '0.00"%"'
+
+              # Colorear encabezados
+              for col_idx in range(1, ws.max_column + 1):
+                  celda_header = ws.cell(1, col_idx)
+                  celda_header.fill = azul_militar
+                  celda_header.font = blanco
+
+              wb.save(ruta_origen)
+              print(f'[+] ✓ Formato aplicado')
+
+          print(f'\n[+] ✓ Transformación SGS completada')
+
+          EOF
+
       - name: 🔧 Configurar Git
         run: |
           git config --global user.email "action@github.com"
