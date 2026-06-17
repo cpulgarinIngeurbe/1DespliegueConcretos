@@ -1,0 +1,128 @@
+name: 📊 Descarga Diaria Concrelab
+
+on:
+  schedule:
+    - cron: '0 18 * * *'  # 13:00 Bogotá (18:00 UTC) diariamente
+  workflow_dispatch:
+
+jobs:
+  descargar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Instalar Playwright
+        run: |
+          pip install playwright
+          playwright install chromium
+
+      - name: ⬇️ Descargar Excel de Concrelab
+        env:
+          CONCRELAB_EMAIL: ${{ secrets.CONCRELAB_EMAIL }}
+          CONCRELAB_PASS: ${{ secrets.CONCRELAB_PASS }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          python << 'EOF'
+          import asyncio
+          from playwright.async_api import async_playwright
+          import os
+          from pathlib import Path
+
+          async def descargar():
+              email = os.getenv('CONCRELAB_EMAIL')
+              password = os.getenv('CONCRELAB_PASS')
+
+              print('[*] Iniciando descarga')
+
+              async with async_playwright() as p:
+                  browser = await p.chromium.launch(headless=True)
+                  page = await browser.new_page()
+
+                  try:
+                      # Login
+                      await page.goto('https://clientes.concrelab.com.co/login', timeout=30000)
+                      await page.locator('input').nth(0).fill(email)
+                      await page.locator('input').nth(1).fill(password)
+                      await page.locator('button').click()
+                      await page.wait_for_timeout(5000)
+                      print('[+] ✅ Login exitoso')
+
+                      # Navegar a Data Muestras
+                      await page.get_by_text('Concretos').click()
+                      await page.get_by_text('Data Muestras').click()
+                      await page.wait_for_timeout(1000)
+                      print('[+] ✅ En Data Muestras')
+
+                      # Seleccionar opción en dropdown
+                      await page.locator('div.css-1q5wwa7').click()
+                      await page.wait_for_timeout(1000)
+                      await page.locator('[role="option"]').last.click()
+                      await page.wait_for_timeout(1000)
+                      print('[+] ✅ Opción seleccionada')
+
+                      # Abrir menú y descargar
+                      await page.locator('button[title="More"]').wait_for(state="visible", timeout=10000)
+                      await page.locator('button[title="More"]').click()
+                      await page.wait_for_timeout(500)
+
+                      # Capturar descarga con reintentos
+                      for intento in range(1, 4):
+                          try:
+                              async with page.expect_download(timeout=20000) as download_info:
+                                  await page.get_by_text('Exportar a Excel').click()
+
+                              download = await download_info.value
+                              Path('datos').mkdir(exist_ok=True)
+                              filepath = f'datos/{download.suggested_filename}'
+                              await download.save_as(filepath)
+                              print(f'[+] ✅ Descargado: {filepath}')
+                              break
+                          except Exception as e:
+                              if intento < 3:
+                                  print(f'[!] Intento {intento} falló, reintentando...')
+                              else:
+                                  print(f'[!] Falló después de 3 intentos')
+                                  raise
+                              await page.wait_for_timeout(2000 * intento)
+
+                  finally:
+                      await browser.close()
+
+          asyncio.run(descargar())
+          EOF
+
+      - name: 🔧 Configurar Git
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action Bot"
+
+      - name: 📤 Hacer commit y push
+        run: |
+          git add datos/
+
+          if git diff --quiet --cached; then
+            echo "[*] Sin cambios nuevos"
+          else
+            git commit -m "[AUTO] Descarga Concrelab - $(date '+%Y-%m-%d %H:%M:%S')"
+            git push origin main
+            echo "[+] ✅ Push completado"
+          fi
+
+      - name: 📊 Reporte final
+        if: always()
+        run: |
+          echo "=== RESULTADO FINAL ==="
+          echo "Archivos en datos/:"
+          ls -lh datos/ 2>/dev/null || echo "No hay archivos aún"
+          echo ""
+          echo "Últimos commits:"
+          git log --oneline -3
