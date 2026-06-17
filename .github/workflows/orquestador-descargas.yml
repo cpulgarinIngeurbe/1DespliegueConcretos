@@ -77,6 +77,38 @@ jobs:
             });
             console.log('Workflow Concrelab disparado exitosamente');
 
+      - name: ⏳ Esperar a que Concrelab se complete
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          script: |
+            const maxAttempts = 120; // 2 horas máximo
+            let attempt = 0;
+            let completed = false;
+
+            while (attempt < maxAttempts && !completed) {
+              const runs = await github.rest.actions.listWorkflowRuns({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'descarga-concrelab.yml',
+                status: 'in_progress'
+              });
+
+              if (runs.data.workflow_runs.length === 0) {
+                console.log('✅ Concrelab completado');
+                completed = true;
+              } else {
+                attempt++;
+                console.log(`⏳ Esperando Concrelab... intento ${attempt}/${maxAttempts}`);
+                // Esperar 30 segundos
+                await new Promise(resolve => setTimeout(resolve, 30000));
+              }
+            }
+
+            if (!completed) {
+              throw new Error('Timeout esperando a que Concrelab se complete');
+            }
+
   reporte-final:
     name: 📋 Reporte Final
     runs-on: ubuntu-latest
