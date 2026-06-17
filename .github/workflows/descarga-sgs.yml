@@ -69,9 +69,10 @@ jobs:
                       page.wait_for_selector("text=Reportes", timeout=60000)
                       print(f'[+] Login OK')
 
-                      page.click("text=Reportes", force=True)
                       page.wait_for_timeout(2000)
-                      page.click("text=Generación de reportes", force=True)
+                      page.get_by_text("Reportes").first.click()
+                      page.wait_for_timeout(2000)
+                      page.get_by_text("Generación de reportes").first.click()
                       page.wait_for_timeout(2000)
 
                       page.click("a.btn.btn-primary.icon-format-list-checks")
@@ -81,7 +82,7 @@ jobs:
 
                       page.wait_for_selector("mat-form-field:has-text('Tip de Reporte')", timeout=20000)
                       page.click("mat-form-field:has-text('Tip de Reporte') div.mat-mdc-select-trigger")
-                      page.wait_for_timeout(800)
+                      page.wait_for_timeout(1000)
                       for _ in range(3):
                           page.keyboard.press("ArrowDown")
                       page.keyboard.press("Enter")
@@ -105,20 +106,20 @@ jobs:
                       page.wait_for_timeout(1000)
 
                       try:
-                          page.click("i.icon-filter-outline", force=True)
+                          page.click("i.icon-filter-outline", timeout=10000)
                           page.wait_for_timeout(1000)
                       except:
                           pass
 
                       try:
-                          page.check("#mat-mdc-checkbox-1-input")
+                          page.check("#mat-mdc-checkbox-1-input", timeout=10000)
                           page.wait_for_timeout(500)
                       except:
                           pass
 
                       page.wait_for_selector("button:has(i.icon-file-excel)", timeout=20000)
                       with page.expect_download(timeout=45000) as download_info:
-                          page.click("button:has(i.icon-file-excel)", force=True)
+                          page.click("button:has(i.icon-file-excel)")
 
                       download = download_info.value
                       filepath = f'datos/reporte_sgs_{proyecto}.xlsx'
@@ -126,7 +127,7 @@ jobs:
                       print(f'[+] Descargado: {filepath}')
 
                   except Exception as e:
-                      print(f'[!] Error: {str(e)[:80]}')
+                      print(f'[!] Error: {str(e)[:100]}')
                   finally:
                       context.close()
 
