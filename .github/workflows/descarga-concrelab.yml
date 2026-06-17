@@ -23,10 +23,12 @@ jobs:
           pip install playwright
           playwright install chromium
 
-      - name: ⬇️ Descargar Excel de Concrelab
+      - name: ⬇️ Descargar Excel de Concrelab (FLORA y TERRA)
         env:
-          CONCRELAB_EMAIL: ${{ secrets.CONCRELAB_EMAIL }}
-          CONCRELAB_PASS: ${{ secrets.CONCRELAB_PASS }}
+          CONCRELAB_FLORA_USER: ${{ secrets.CONCRELAB_FLORA_USER }}
+          CONCRELAB_FLORA_PASS: ${{ secrets.CONCRELAB_FLORA_PASS }}
+          CONCRELAB_TERRA_USER: ${{ secrets.CONCRELAB_TERRA_USER }}
+          CONCRELAB_TERRA_PASS: ${{ secrets.CONCRELAB_TERRA_PASS }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           python << 'EOF'
@@ -35,94 +37,113 @@ jobs:
           import os
           from pathlib import Path
 
-          async def descargar():
-              email = os.getenv('CONCRELAB_EMAIL')
-              password = os.getenv('CONCRELAB_PASS')
+          # Lista de proyectos
+          proyectos = ['FLORA', 'TERRA']
 
-              print('[*] Iniciando descarga')
+          # Crear carpeta datos si no existe
+          Path('datos').mkdir(exist_ok=True)
+
+          async def descargar():
+              print('[*] Iniciando descarga Concrelab - Múltiples proyectos')
+              print(f'[*] Proyectos a descargar: {", ".join(proyectos)}')
 
               async with async_playwright() as p:
                   browser = await p.chromium.launch(headless=True)
-                  page = await browser.new_page()
 
-                  try:
-                      # Login
-                      await page.goto('https://clientes.concrelab.com.co/login', timeout=30000)
-                      await page.locator('input').nth(0).fill(email)
-                      await page.locator('input').nth(1).fill(password)
-                      await page.locator('button').click()
-                      await page.wait_for_timeout(5000)
-                      print('[+] ✅ Login exitoso')
+                  # Iterar sobre cada proyecto
+                  for proyecto in proyectos:
+                      print(f'\n[*] ========== DESCARGANDO: {proyecto} ==========')
 
-                      # Navegar a Data Muestras
-                      await page.get_by_text('Concretos').click()
-                      await page.get_by_text('Data Muestras').click()
-                      await page.wait_for_timeout(1000)
-                      print('[+] ✅ En Data Muestras')
+                      email = os.getenv(f'CONCRELAB_{proyecto}_USER')
+                      password = os.getenv(f'CONCRELAB_{proyecto}_PASS')
 
-                      # Seleccionar opción en dropdown
-                      await page.locator('div.css-1q5wwa7').click()
-                      await page.wait_for_timeout(1000)
-                      await page.locator('[role="option"]').last.click()
-                      await page.wait_for_timeout(2000)
-                      print('[+] ✅ Opción seleccionada')
+                      if not email or not password:
+                          print(f'[!] ERROR: Credenciales no encontradas para {proyecto}')
+                          continue
 
-                      # Esperar a que la página se cargue completamente
-                      await page.wait_for_load_state('networkidle', timeout=20000)
-                      await page.wait_for_timeout(2000)
-                      print('[+] Esperando a que aparezca el botón...')
+                      page = await browser.new_page()
 
-                      # Intentar múltiples selectores para encontrar el botón (Mas o More)
-                      selectors = [
-                          'button[title="More"]',
-                          'button[title="Mas"]',
-                          'button[aria-label*="More"]',
-                          'button[aria-label*="Mas"]',
-                          'button:has-text("More")',
-                          'button:has-text("Mas")',
-                          'button[class*="more"]',
-                          'button[class*="mas"]'
-                      ]
+                      try:
+                          # Login
+                          await page.goto('https://clientes.concrelab.com.co/login', timeout=30000)
+                          await page.locator('input').nth(0).fill(email)
+                          await page.locator('input').nth(1).fill(password)
+                          await page.locator('button').click()
+                          await page.wait_for_timeout(5000)
+                          print(f'[+] ✅ Login exitoso - {proyecto}')
 
-                      boton_encontrado = False
-                      for selector in selectors:
-                          try:
-                              elemento = page.locator(selector)
-                              if await elemento.is_visible(timeout=5000):
-                                  await elemento.click()
-                                  await page.wait_for_timeout(1000)
-                                  print(f'[+] ✅ Botón encontrado con selector: {selector}')
-                                  boton_encontrado = True
-                                  break
-                          except:
+                          # Navegar a Data Muestras
+                          await page.get_by_text('Concretos').click()
+                          await page.get_by_text('Data Muestras').click()
+                          await page.wait_for_timeout(1000)
+                          print(f'[+] ✅ En Data Muestras - {proyecto}')
+
+                          # Seleccionar opción en dropdown
+                          await page.locator('div.css-1q5wwa7').click()
+                          await page.wait_for_timeout(1000)
+                          await page.locator('[role="option"]').last.click()
+                          await page.wait_for_timeout(2000)
+                          print(f'[+] ✅ Opción seleccionada - {proyecto}')
+
+                          # Esperar a que la página se cargue completamente
+                          await page.wait_for_load_state('networkidle', timeout=20000)
+                          await page.wait_for_timeout(2000)
+                          print(f'[+] Esperando a que aparezca el botón - {proyecto}...')
+
+                          # Intentar múltiples selectores para encontrar el botón (Mas o More)
+                          selectors = [
+                              'button[title="More"]',
+                              'button[title="Mas"]',
+                              'button[aria-label*="More"]',
+                              'button[aria-label*="Mas"]',
+                              'button:has-text("More")',
+                              'button:has-text("Mas")',
+                              'button[class*="more"]',
+                              'button[class*="mas"]'
+                          ]
+
+                          boton_encontrado = False
+                          for selector in selectors:
+                              try:
+                                  elemento = page.locator(selector)
+                                  if await elemento.is_visible(timeout=5000):
+                                      await elemento.click()
+                                      await page.wait_for_timeout(1000)
+                                      print(f'[+] ✅ Botón encontrado con selector: {selector} - {proyecto}')
+                                      boton_encontrado = True
+                                      break
+                              except:
+                                  continue
+
+                          if not boton_encontrado:
+                              print(f'[!] Error: No se encontró el botón More/Mas para {proyecto}')
                               continue
 
-                      if not boton_encontrado:
-                          print('[!] Error: No se encontró el botón More/Mas con ningún selector')
-                          raise Exception('Botón More/Mas no encontrado')
+                          # Capturar descarga con reintentos
+                          for intento in range(1, 4):
+                              try:
+                                  async with page.expect_download(timeout=20000) as download_info:
+                                      await page.get_by_text('Exportar a Excel').click()
 
-                      # Capturar descarga con reintentos
-                      for intento in range(1, 4):
-                          try:
-                              async with page.expect_download(timeout=20000) as download_info:
-                                  await page.get_by_text('Exportar a Excel').click()
+                                  download = await download_info.value
+                                  filepath = f'datos/reporte_concrelab_{proyecto}.xlsx'
+                                  await download.save_as(filepath)
+                                  print(f'[+] ✅ Descargado: {filepath}')
+                                  break
+                              except Exception as e:
+                                  if intento < 3:
+                                      print(f'[!] Intento {intento} falló, reintentando... - {proyecto}')
+                                  else:
+                                      print(f'[!] Falló después de 3 intentos para {proyecto}')
+                                  await page.wait_for_timeout(2000 * intento)
 
-                              download = await download_info.value
-                              Path('datos').mkdir(exist_ok=True)
-                              filepath = f'datos/{download.suggested_filename}'
-                              await download.save_as(filepath)
-                              print(f'[+] ✅ Descargado: {filepath}')
-                              break
-                          except Exception as e:
-                              if intento < 3:
-                                  print(f'[!] Intento {intento} falló, reintentando...')
-                              else:
-                                  print(f'[!] Falló después de 3 intentos')
-                                  raise
-                              await page.wait_for_timeout(2000 * intento)
+                      except Exception as e:
+                          print(f'[!] ERROR en {proyecto}: {str(e)}')
+                      finally:
+                          await page.close()
 
-                  finally:
-                      await browser.close()
+                  await browser.close()
+                  print('\n[+] ✅ Descarga Concrelab completada para todos los proyectos')
 
           asyncio.run(descargar())
           EOF
