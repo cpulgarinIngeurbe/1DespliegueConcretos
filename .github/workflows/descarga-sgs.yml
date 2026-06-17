@@ -1,0 +1,171 @@
+name: 📊 Descarga Diaria SGS - Resistencia Concretos
+
+on:
+  schedule:
+    - cron: '0 18 * * *'  # 13:00 Bogotá (18:00 UTC)
+  workflow_dispatch:
+
+jobs:
+  descargar-sgs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: 🐍 Configurar Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Instalar Playwright
+        run: |
+          pip install playwright
+          playwright install chromium
+
+      - name: ⬇️ Descargar SGS
+        env:
+          SGS_EMAIL: ${{ secrets.SGS_EMAIL }}
+          SGS_PASS: ${{ secrets.SGS_PASS }}
+        run: |
+          python << 'EOF'
+          from playwright.sync_api import sync_playwright
+          import os
+          from pathlib import Path
+          from datetime import datetime
+
+          email = os.getenv('SGS_EMAIL')
+          password = os.getenv('SGS_PASS')
+          url_login = "https://qclient.sgs.com/authentication?redirectURL=%2Fhome"
+
+          print('[*] Iniciando descarga SGS')
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              context = browser.new_context(accept_downloads=True)
+              page = context.new_page()
+
+              try:
+                  page.goto(url_login, timeout=60000)
+                  print('[+] Login SGS')
+                  page.fill("input[id='user']", email)
+                  page.fill("input[id='password']", password)
+                  page.get_by_role("button", name="Ingresar").click()
+                  page.wait_for_selector("text=Reportes", timeout=60000)
+                  print('[+] ✅ Login exitoso')
+
+                  page.click("text=Reportes")
+                  page.wait_for_selector("text=Generación de reportes", timeout=30000)
+                  print('[+] ✅ En Reportes')
+
+                  page.click("text=Generación de reportes")
+                  page.wait_for_selector("a.btn.btn-primary.icon-format-list-checks", timeout=30000)
+                  print('[+] ✅ En Generación de reportes')
+
+                  page.click("a.btn.btn-primary.icon-format-list-checks")
+                  page.wait_for_timeout(3000)
+                  page.keyboard.press("Escape")
+
+                  page.wait_for_selector("mat-form-field:has-text('Tip de Reporte')", timeout=30000)
+                  page.click("mat-form-field:has-text('Tip de Reporte') div.mat-mdc-select-trigger")
+                  page.wait_for_timeout(500)
+
+                  # Tipo Reporte
+                  for _ in range(3):
+                      page.keyboard.press("ArrowDown")
+                  page.keyboard.press("Enter")
+                  page.wait_for_timeout(2000)
+                  print('[+] ✅ Tipo Reporte seleccionado')
+
+                  # Código de Obra
+                  page.click("mat-form-field:has-text('Código de Obra') div.mat-mdc-select-trigger")
+                  page.wait_for_timeout(9000)
+                  page.keyboard.press("ArrowDown")
+                  page.keyboard.press("Enter")
+                  page.wait_for_timeout(9000)
+                  print('[+] ✅ Código de Obra seleccionado')
+
+                  # Tipo Material
+                  page.click("mat-form-field:has-text('Tipo Material') div.mat-mdc-select-trigger")
+                  page.wait_for_timeout(9000)
+                  page.keyboard.press("ArrowDown")
+                  page.keyboard.press("ArrowUp")
+                  page.keyboard.press("Enter")
+                  page.wait_for_timeout(9000)
+                  print('[+] ✅ Tipo Material seleccionado')
+
+                  # Aplicar filtro
+                  page.wait_for_selector("i.icon-filter-outline", timeout=200)
+                  page.locator("i.icon-filter-outline").click()
+                  page.wait_for_timeout(2000)
+                  print('[+] ✅ Filtro aplicado')
+
+                  # Marcar checkbox
+                  page.wait_for_selector("#mat-mdc-checkbox-1-input", timeout=30000)
+                  page.check("#mat-mdc-checkbox-1-input")
+                  page.wait_for_timeout(2000)
+                  print('[+] ✅ Checkbox marcado')
+
+                  # Crear carpeta datos si no existe
+                  Path('datos').mkdir(exist_ok=True)
+
+                  # Descargar Excel - CON REINTENTOS
+                  page.wait_for_selector("button:has(i.icon-file-excel)", timeout=60000)
+                  print('[DESCARGA] Botón encontrado, iniciando descarga...')
+
+                  for intento in range(1, 4):
+                      try:
+                          with page.expect_download(timeout=60000) as download_info:
+                              page.locator("button:has(i.icon-file-excel)").click()
+
+                          page.wait_for_timeout(3000)
+
+                          download = download_info.value
+                          timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                          filepath = f'datos/reporte_sgs_{timestamp}.xlsx'
+                          download.save_as(filepath)
+                          print(f'[+] ✅ Descargado: {filepath}')
+                          break
+                      except Exception as e:
+                          if intento < 3:
+                              print(f'[!] Intento {intento} falló, reintentando...')
+                              page.wait_for_timeout(2000 * intento)
+                          else:
+                              print(f'[!] Error después de 3 intentos')
+                              raise
+
+              finally:
+                  browser.close()
+
+          EOF
+
+      - name: 🔧 Configurar Git
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action Bot"
+
+      - name: 📤 Commit y Push
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git add datos/
+
+          if git diff --quiet --cached; then
+            echo "[*] Sin cambios nuevos"
+          else
+            git commit -m "[AUTO] Descarga SGS - $(date '+%Y-%m-%d %H:%M:%S')"
+            git push origin main
+            echo "[+] ✅ Push completado"
+          fi
+
+      - name: 📊 Reporte final
+        if: always()
+        run: |
+          echo "=== RESULTADO FINAL ==="
+          echo "Archivos en datos/:"
+          ls -lh datos/ 2>/dev/null || echo "No hay archivos aún"
+          echo ""
+          echo "Últimos commits:"
+          git log --oneline -3
