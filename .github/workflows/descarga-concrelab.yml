@@ -524,7 +524,7 @@ jobs:
 
       - name: 📤 Hacer commit y push
         run: |
-          git add datos/
+          git add datos/ desplegable/
 
           if git diff --quiet --cached; then
             echo "[*] Sin cambios nuevos"
