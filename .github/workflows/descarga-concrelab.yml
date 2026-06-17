@@ -303,7 +303,9 @@ jobs:
           Path(ruta_desplegable).mkdir(exist_ok=True)
 
           # Obtener todos los archivos Excel
+          print(f'[*] Buscando archivos en: {ruta_datos}')
           archivos_excel = [f for f in os.listdir(ruta_datos) if f.endswith('.xlsx')]
+          print(f'[*] Archivos encontrados: {archivos_excel}')
           print(f'[*] Consolidando {len(archivos_excel)} archivo(s)')
 
           # Leer y combinar todos los archivos
