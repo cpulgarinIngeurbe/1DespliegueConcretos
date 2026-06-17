@@ -287,6 +287,105 @@ jobs:
 
           EOF
 
+      - name: 📊 Crear Excel Consolidado
+        run: |
+          python << 'EOF'
+          import pandas as pd
+          import os
+          from openpyxl import load_workbook
+          from openpyxl.styles import PatternFill, Font
+
+          ruta_datos = "datos"
+
+          # Obtener todos los archivos Excel
+          archivos_excel = [f for f in os.listdir(ruta_datos) if f.endswith('.xlsx')]
+          print(f'[*] Consolidando {len(archivos_excel)} archivo(s)')
+
+          # Leer y combinar todos los archivos
+          lista_dataframes = []
+
+          for archivo in archivos_excel:
+              ruta_origen = os.path.join(ruta_datos, archivo)
+              print(f'[+] Leyendo: {archivo}')
+              df = pd.read_excel(ruta_origen)
+              lista_dataframes.append(df)
+
+          if lista_dataframes:
+              # Consolidar todos los datos
+              df_consolidado = pd.concat(lista_dataframes, ignore_index=True)
+              print(f'[+] Consolidado creado. Forma: {df_consolidado.shape}')
+
+              # Guardar consolidado
+              ruta_consolidado = os.path.join(ruta_datos, 'ConsolidadoResistencias.xlsx')
+              df_consolidado.to_excel(ruta_consolidado, index=False)
+              print(f'[+] Consolidado guardado en: {ruta_consolidado}')
+
+              # Aplicar formato al consolidado
+              print(f'[+] Aplicando formato al consolidado')
+
+              wb = load_workbook(ruta_consolidado)
+              ws = wb.active
+
+              # Obtener índices de columnas
+              columnas_formato = {
+                  'Resistencia Promedio (MPa)': 'verde',
+                  'Resistencia (MPa) Individual': 'azul_claro',
+                  'Resistencia (%) Individual': 'azul_claro',
+                  'Conteo Elementos': 'azul_claro'
+              }
+
+              columnas_verde_claro = ['Resistencia (%)', 'Proyecto', 'TIPO', 'Cilindro Nº', 'Código de mezcla', 'Localización', 'Toma', 'Rotura', 'Edad (días)', 'Resistencia nominal (MPa)']
+
+              # Colores
+              verde = PatternFill(start_color="00B050", end_color="00B050", fill_type="solid")
+              rojo = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+              azul_claro = PatternFill(start_color="ADD8E6", end_color="ADD8E6", fill_type="solid")
+              verde_claro = PatternFill(start_color="90EE90", end_color="90EE90", fill_type="solid")
+              azul_militar = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
+              blanco = Font(color="FFFFFF")
+
+              col_promedio = None
+              col_individual_pct = None
+              col_verde_claro_idx = []
+
+              for col_idx, col_name in enumerate(df_consolidado.columns, 1):
+                  if col_name == 'Resistencia Promedio (MPa)':
+                      col_promedio = col_idx
+                  if col_name == 'Resistencia (%) Individual':
+                      col_individual_pct = col_idx
+                  if col_name in columnas_verde_claro:
+                      col_verde_claro_idx.append(col_idx)
+
+              # Colorear filas
+              for row in range(2, ws.max_row + 1):
+                  for col_idx in range(1, ws.max_column + 1):
+                      celda = ws.cell(row, col_idx)
+
+                      if col_idx in col_verde_claro_idx:
+                          celda.fill = verde_claro
+                      elif col_promedio and col_idx == col_promedio:
+                          valor = ws.cell(row, col_promedio).value
+                          if valor is not None:
+                              celda.fill = verde if valor >= 0 else rojo
+
+                  # Formato porcentaje
+                  if col_individual_pct:
+                      celda_pct = ws.cell(row, col_individual_pct)
+                      celda_pct.number_format = '0.00"%"'
+
+              # Colorear encabezados
+              for col_idx in range(1, ws.max_column + 1):
+                  celda_header = ws.cell(1, col_idx)
+                  celda_header.fill = azul_militar
+                  celda_header.font = blanco
+
+              wb.save(ruta_consolidado)
+              print(f'[+] ✓ Consolidado formateado')
+          else:
+              print(f'[!] No hay archivos para consolidar')
+
+          EOF
+
       - name: 🔧 Configurar Git
         run: |
           git config --global user.email "action@github.com"
