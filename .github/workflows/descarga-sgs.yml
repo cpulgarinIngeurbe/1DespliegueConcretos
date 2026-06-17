@@ -23,11 +23,11 @@ jobs:
           pip install playwright
           playwright install chromium
 
-      - name: 🗑️ Limpiar carpeta de datos
+      - name: 🗑️ Limpiar archivos SGS anteriores
         run: |
-          rm -rf datos/
           mkdir -p datos/
-          echo "[*] Carpeta datos limpiada"
+          rm -f datos/reporte_sgs_*.xlsx
+          echo "[*] Archivos SGS limpios (mantiene Concrelab)"
 
       - name: ⬇️ Descargar SGS (NATIVA y VIALE)
         env:
