@@ -85,33 +85,50 @@ jobs:
 
                   # Código de Obra
                   page.click("mat-form-field:has-text('Código de Obra') div.mat-mdc-select-trigger")
-                  page.wait_for_timeout(2000)
+                  page.wait_for_timeout(1000)
                   page.keyboard.press("ArrowDown")
                   page.keyboard.press("Enter")
-                  page.wait_for_timeout(2000)
+                  page.wait_for_timeout(1000)
                   print('[+] ✅ Código de Obra seleccionado')
 
-                  # Esperar a que desaparezca el spinner antes de continuar
-                  try:
-                      page.wait_for_selector("div.ngx-spinner-overlay", state="hidden", timeout=15000)
-                  except:
-                      pass
-                  page.wait_for_timeout(2000)
+                  # Esperar a que la página se estabilice completamente
+                  page.wait_for_load_state('networkidle', timeout=30000)
+                  page.wait_for_timeout(3000)
 
-                  # Tipo Material
-                  page.click("mat-form-field:has-text('Tipo Material') div.mat-mdc-select-trigger", timeout=15000)
-                  page.wait_for_timeout(2000)
-                  page.keyboard.press("ArrowDown")
-                  page.keyboard.press("ArrowUp")
-                  page.keyboard.press("Enter")
-                  page.wait_for_timeout(2000)
-                  print('[+] ✅ Tipo Material seleccionado')
+                  # Esperar explícitamente a que el spinner desaparezca
+                  for intento_spinner in range(1, 6):
+                      spinner_hidden = page.is_hidden("div.ngx-spinner-overlay")
+                      if spinner_hidden:
+                          print('[+] Spinner desaparecido')
+                          break
+                      if intento_spinner < 5:
+                          print(f'[*] Esperando spinner intento {intento_spinner}...')
+                          page.wait_for_timeout(2000)
+                      else:
+                          print('[!] Spinner sigue visible, continuando de todas formas')
 
-                  # Esperar a que desaparezca el spinner nuevamente
-                  try:
-                      page.wait_for_selector("div.ngx-spinner-overlay", state="hidden", timeout=15000)
-                  except:
-                      pass
+                  # Tipo Material - con reintentos
+                  for intento_material in range(1, 4):
+                      try:
+                          page.click("mat-form-field:has-text('Tipo Material') div.mat-mdc-select-trigger", timeout=20000)
+                          page.wait_for_timeout(1000)
+                          page.keyboard.press("ArrowDown")
+                          page.keyboard.press("ArrowUp")
+                          page.keyboard.press("Enter")
+                          page.wait_for_timeout(1000)
+                          print('[+] ✅ Tipo Material seleccionado')
+                          break
+                      except Exception as e:
+                          if intento_material < 3:
+                              print(f'[!] Intento {intento_material} fallió, esperando 3s y reintentando...')
+                              page.wait_for_timeout(3000)
+                          else:
+                              print(f'[!] Error: {str(e)}')
+                              raise
+
+                  # Esperar nuevamente a que la página se estabilice
+                  page.wait_for_load_state('networkidle', timeout=30000)
+                  page.wait_for_timeout(2000)
 
                   # Aplicar filtro
                   page.wait_for_selector("i.icon-filter-outline", timeout=200)
