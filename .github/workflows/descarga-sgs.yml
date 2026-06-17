@@ -85,20 +85,33 @@ jobs:
 
                   # Código de Obra
                   page.click("mat-form-field:has-text('Código de Obra') div.mat-mdc-select-trigger")
-                  page.wait_for_timeout(9000)
+                  page.wait_for_timeout(2000)
                   page.keyboard.press("ArrowDown")
                   page.keyboard.press("Enter")
-                  page.wait_for_timeout(9000)
+                  page.wait_for_timeout(2000)
                   print('[+] ✅ Código de Obra seleccionado')
 
+                  # Esperar a que desaparezca el spinner antes de continuar
+                  try:
+                      page.wait_for_selector("div.ngx-spinner-overlay", state="hidden", timeout=15000)
+                  except:
+                      pass
+                  page.wait_for_timeout(2000)
+
                   # Tipo Material
-                  page.click("mat-form-field:has-text('Tipo Material') div.mat-mdc-select-trigger")
-                  page.wait_for_timeout(9000)
+                  page.click("mat-form-field:has-text('Tipo Material') div.mat-mdc-select-trigger", timeout=15000)
+                  page.wait_for_timeout(2000)
                   page.keyboard.press("ArrowDown")
                   page.keyboard.press("ArrowUp")
                   page.keyboard.press("Enter")
-                  page.wait_for_timeout(9000)
+                  page.wait_for_timeout(2000)
                   print('[+] ✅ Tipo Material seleccionado')
+
+                  # Esperar a que desaparezca el spinner nuevamente
+                  try:
+                      page.wait_for_selector("div.ngx-spinner-overlay", state="hidden", timeout=15000)
+                  except:
+                      pass
 
                   # Aplicar filtro
                   page.wait_for_selector("i.icon-filter-outline", timeout=200)
