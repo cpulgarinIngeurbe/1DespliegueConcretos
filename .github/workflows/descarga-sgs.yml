@@ -2,7 +2,11 @@ name: 📊 Descarga Diaria SGS - Resistencia Concretos
 
 on:
   schedule:
-    - cron: '0 18 * * *'  # 13:00 Bogotá (18:00 UTC)
+    - cron: '0 14 * * *'  # 9:00 am Bogotá (14:00 UTC)
+    - cron: '0 17 * * *'  # 12:00 pm Bogotá (17:00 UTC)
+    - cron: '0 19 * * *'  # 2:00 pm Bogotá (19:00 UTC)
+    - cron: '0 21 * * *'  # 4:00 pm Bogotá (21:00 UTC)
+    - cron: '0 23 * * *'  # 6:00 pm Bogotá (23:00 UTC)
   workflow_dispatch:
 
 jobs:
