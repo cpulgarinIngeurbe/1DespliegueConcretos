@@ -29,6 +29,12 @@ jobs:
           pip install playwright
           playwright install chromium
 
+      - name: 🗑️ Limpiar carpeta de datos
+        run: |
+          rm -rf datos/
+          mkdir -p datos/
+          echo "[*] Carpeta datos limpiada"
+
       - name: ⬇️ Descargar SGS
         env:
           SGS_EMAIL: ${{ secrets.SGS_EMAIL }}

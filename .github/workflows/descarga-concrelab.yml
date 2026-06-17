@@ -74,18 +74,6 @@ jobs:
                       await page.wait_for_timeout(2000)
                       print('[+] Esperando a que aparezca el botón...')
 
-                      # Capturar pantalla para depuración
-                      await page.screenshot(path='datos/debug_concrelab.png')
-                      print('[+] Captura de pantalla guardada: datos/debug_concrelab.png')
-
-                      # Listar botones disponibles
-                      buttons = await page.locator('button').all()
-                      print(f'[DEBUG] Total de botones encontrados: {len(buttons)}')
-                      for i, btn in enumerate(buttons[:10]):  # Primeros 10
-                          title = await btn.get_attribute('title')
-                          text = await btn.text_content()
-                          print(f'[DEBUG] Botón {i}: title="{title}" text="{text[:50] if text else ""}"')
-
                       # Intentar múltiples selectores para encontrar el botón (Mas o More)
                       selectors = [
                           'button[title="More"]',
