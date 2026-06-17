@@ -175,10 +175,10 @@ jobs:
               df = pd.read_excel(ruta_origen, skiprows=3)
               print(f'[+] Datos cargados. Forma: {df.shape}')
 
-              # Columnas a mantener
+              # Columnas a mantener (nombres exactos de Concrelab)
               columnas_mantener = [
                   'Proyecto',
-                  'Cilindro Nº',
+                  'Cilindro N°',
                   'Código de mezcla',
                   'Localización',
                   'Toma',
@@ -191,6 +191,10 @@ jobs:
 
               df = df[columnas_mantener]
               print(f'[+] Columnas filtradas')
+
+              # Renombrar para estandarizar (para uso interno)
+              df = df.rename(columns={'Cilindro N°': 'Cilindro Nº'})
+              print(f'[+] Columnas estandarizadas')
 
               # Agregar columna TIPO según Localización
               def obtener_tipo(localizacion):
