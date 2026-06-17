@@ -74,22 +74,46 @@ jobs:
                       await page.wait_for_timeout(2000)
                       print('[+] Esperando a que aparezca el botón...')
 
-                      # Abrir menú y descargar - con reintentos
-                      for intento_boton in range(1, 4):
+                      # Capturar pantalla para depuración
+                      await page.screenshot(path='datos/debug_concrelab.png')
+                      print('[+] Captura de pantalla guardada: datos/debug_concrelab.png')
+
+                      # Listar botones disponibles
+                      buttons = await page.locator('button').all()
+                      print(f'[DEBUG] Total de botones encontrados: {len(buttons)}')
+                      for i, btn in enumerate(buttons[:10]):  # Primeros 10
+                          title = await btn.get_attribute('title')
+                          text = await btn.text_content()
+                          print(f'[DEBUG] Botón {i}: title="{title}" text="{text[:50] if text else ""}"')
+
+                      # Intentar múltiples selectores para encontrar el botón (Mas o More)
+                      selectors = [
+                          'button[title="More"]',
+                          'button[title="Mas"]',
+                          'button[aria-label*="More"]',
+                          'button[aria-label*="Mas"]',
+                          'button:has-text("More")',
+                          'button:has-text("Mas")',
+                          'button[class*="more"]',
+                          'button[class*="mas"]'
+                      ]
+
+                      boton_encontrado = False
+                      for selector in selectors:
                           try:
-                              await page.locator('button[title="More"]').wait_for(state="visible", timeout=15000)
-                              await page.locator('button[title="More"]').click()
-                              await page.wait_for_timeout(1000)
-                              print('[+] ✅ Botón More encontrado y clickeado')
-                              break
-                          except Exception as e:
-                              if intento_boton < 3:
-                                  print(f'[!] Intento {intento_boton} falló, esperando 3s...')
-                                  await page.wait_for_timeout(3000)
-                              else:
-                                  print(f'[!] Error: Botón More no encontrado después de 3 intentos')
-                                  print(f'[DEBUG] Error: {str(e)}')
-                                  raise
+                              elemento = page.locator(selector)
+                              if await elemento.is_visible(timeout=5000):
+                                  await elemento.click()
+                                  await page.wait_for_timeout(1000)
+                                  print(f'[+] ✅ Botón encontrado con selector: {selector}')
+                                  boton_encontrado = True
+                                  break
+                          except:
+                              continue
+
+                      if not boton_encontrado:
+                          print('[!] Error: No se encontró el botón More/Mas con ningún selector')
+                          raise Exception('Botón More/Mas no encontrado')
 
                       # Capturar descarga con reintentos
                       for intento in range(1, 4):
