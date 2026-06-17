@@ -75,36 +75,37 @@ jobs:
                       page.click("text=Generación de reportes")
                       page.wait_for_selector("a.btn.btn-primary.icon-format-list-checks", timeout=20000)
                       page.click("a.btn.btn-primary.icon-format-list-checks")
-                      page.wait_for_timeout(1000)
+                      page.wait_for_timeout(2000)
                       page.keyboard.press("Escape")
 
-                      page.wait_for_selector("mat-form-field:has-text('Tip de Reporte')", timeout=15000)
+                      page.wait_for_selector("mat-form-field:has-text('Tip de Reporte')", timeout=20000)
                       page.click("mat-form-field:has-text('Tip de Reporte') div.mat-mdc-select-trigger")
+                      page.wait_for_timeout(300)
                       for _ in range(3):
                           page.keyboard.press("ArrowDown")
                       page.keyboard.press("Enter")
-                      page.wait_for_timeout(500)
+                      page.wait_for_timeout(800)
 
                       page.click("mat-form-field:has-text('Código de Obra') div.mat-mdc-select-trigger")
-                      page.wait_for_timeout(500)
+                      page.wait_for_timeout(800)
                       page.keyboard.press("ArrowDown")
                       page.keyboard.press("Enter")
-                      page.wait_for_timeout(500)
+                      page.wait_for_timeout(800)
 
                       page.click("mat-form-field:has-text('Tipo Material') div.mat-mdc-select-trigger")
-                      page.wait_for_timeout(500)
+                      page.wait_for_timeout(800)
                       page.keyboard.press("ArrowDown")
                       page.keyboard.press("ArrowUp")
                       page.keyboard.press("Enter")
-                      page.wait_for_timeout(500)
+                      page.wait_for_timeout(800)
 
                       page.keyboard.press("Escape")
                       page.keyboard.press("Escape")
-                      page.wait_for_timeout(300)
+                      page.wait_for_timeout(500)
 
                       try:
                           page.locator("i.icon-filter-outline").click(timeout=10000)
-                          page.wait_for_timeout(300)
+                          page.wait_for_timeout(500)
                       except:
                           pass
 
@@ -114,22 +115,22 @@ jobs:
                       except:
                           pass
 
-                      page.wait_for_selector("button:has(i.icon-file-excel)", timeout=15000)
+                      page.wait_for_selector("button:has(i.icon-file-excel)", timeout=20000)
                       with page.expect_download(timeout=45000) as download_info:
                           page.locator("button:has(i.icon-file-excel)").click()
 
                       download = download_info.value
                       filepath = f'datos/reporte_sgs_{proyecto}.xlsx'
                       download.save_as(filepath)
-                      print(f'[+] Descargado: {filepath}')
+                      print(f'[+] OK: {filepath}')
 
                   except Exception as e:
-                      print(f'[!] Error: {str(e)[:60]}')
+                      print(f'[!] Error: {str(e)[:50]}')
                   finally:
                       context.close()
 
               browser.close()
-              print('\n[+] ✅ Descarga completada')
+              print('\n[+] Descarga completada')
 
           EOF
 
