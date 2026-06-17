@@ -372,7 +372,8 @@ jobs:
           proyectos = sorted(df['Proyecto'].unique().tolist())
           print(f'[+] Proyectos encontrados: {proyectos}')
 
-          # Convertir datos a JSON por proyecto
+          # Convertir datos a JSON por proyecto (convertir datetime a string)
+          df = df.astype(str)
           datos_json = {}
           for proyecto in proyectos:
               df_proyecto = df[df['Proyecto'] == proyecto]
