@@ -32,24 +32,35 @@ jobs:
         with:
           github-token: ${{ secrets.GH_TOKEN }}
           script: |
-            const maxAttempts = 120; // 2 horas máximo (60s * 120)
+            const maxAttempts = 240; // 2 horas máximo
             let attempt = 0;
             let completed = false;
+            let sgsStarted = false;
 
             while (attempt < maxAttempts && !completed) {
               const runs = await github.rest.actions.listWorkflowRuns({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                workflow_id: 'descarga-sgs.yml',
-                status: 'in_progress'
+                workflow_id: 'descarga-sgs.yml'
               });
 
-              if (runs.data.workflow_runs.length === 0) {
-                console.log('✅ SGS completado');
-                completed = true;
-              } else {
+              // Buscar el run más reciente
+              const latestRun = runs.data.workflow_runs[0];
+
+              if (latestRun) {
+                if (latestRun.status === 'in_progress') {
+                  sgsStarted = true;
+                  console.log(`⏳ SGS en progreso... (intento ${attempt}/${maxAttempts})`);
+                } else if (latestRun.status === 'completed' && sgsStarted) {
+                  console.log('✅ SGS completado');
+                  completed = true;
+                } else if (!sgsStarted) {
+                  console.log('⏳ Esperando a que SGS inicie...');
+                }
+              }
+
+              if (!completed) {
                 attempt++;
-                console.log(`⏳ Esperando SGS... intento ${attempt}/${maxAttempts}`);
                 // Esperar 30 segundos
                 await new Promise(resolve => setTimeout(resolve, 30000));
               }

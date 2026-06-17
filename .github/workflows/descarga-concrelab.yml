@@ -489,13 +489,11 @@ jobs:
                   <table>
                       <thead>
                           <tr>
-                              {''.join([f'<th>{col}</th>' for col in df.columns])}
+                              {f"".join(f"<th>{col}</th>" for col in df.columns)}
                           </tr>
                       </thead>
                       <tbody>
-                          {''.join([f'''<tr>
-                              {(lambda row: ''.join([f'<td class="col-verde">{str(val)[:50]}</td>' if col in ['Proyecto', 'TIPO', 'Localización'] else f'<td>{str(val)[:50]}</td>' for col, val in row.items()]))(row)}
-                          </tr>''' for _, row in df.head(1000).iterrows()])}
+                          {f"".join(f"<tr>{''.join(f'<td>{str(val)[:50]}</td>' for val in row)}</tr>" for _, row in df.head(500).iterrows())}
                       </tbody>
                   </table>
 
