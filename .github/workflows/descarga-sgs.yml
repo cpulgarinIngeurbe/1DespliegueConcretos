@@ -71,9 +71,9 @@ jobs:
                       page.wait_for_load_state('networkidle', timeout=30000)
                       print(f'[+] Login OK')
 
-                      page.locator("text=Reportes").click(timeout=20000)
+                      page.locator("text=Reportes").first.click(timeout=20000)
                       page.wait_for_timeout(1000)
-                      page.locator("text=Generación de reportes").click(timeout=20000)
+                      page.locator("text=Generación de reportes").first.click(timeout=20000)
                       page.wait_for_timeout(1000)
                       page.locator("a.btn.btn-primary.icon-format-list-checks").click(timeout=20000)
                       page.wait_for_timeout(2000)
