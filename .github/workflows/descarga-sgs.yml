@@ -70,9 +70,12 @@ jobs:
                       page.wait_for_selector("text=Reportes", timeout=60000)
                       print(f'[+] Login OK')
 
+                      page.wait_for_selector("text=Reportes", timeout=20000)
                       page.click("text=Reportes")
+                      page.wait_for_timeout(500)
                       page.wait_for_selector("text=Generación de reportes", timeout=20000)
                       page.click("text=Generación de reportes")
+                      page.wait_for_timeout(500)
                       page.wait_for_selector("a.btn.btn-primary.icon-format-list-checks", timeout=20000)
                       page.click("a.btn.btn-primary.icon-format-list-checks")
                       page.wait_for_timeout(2000)
