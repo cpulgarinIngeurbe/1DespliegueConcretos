@@ -47,12 +47,18 @@ jobs:
 
           def transformar_concrelab(ruta_origen):
               print(f'\n[*] Transformando Concrelab: {os.path.basename(ruta_origen)}')
-              df = pd.read_excel(ruta_origen, skiprows=3)
-              print(f'[+] Archivo cargado. Forma: {df.shape}')
 
-              columnas_mantener = ['Proyecto', 'Cilindro Nº', 'Código de mezcla', 'Localización', 'Toma', 'Rotura', 'Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)']
-              df = df[columnas_mantener]
-              print(f'[+] Columnas filtradas')
+              df_raw = pd.read_excel(ruta_origen, header=None)
+              print(f'[+] Archivo sin procesar. Forma: {df_raw.shape}')
+              print(f'[+] Primeras 5 filas:')
+              for i in range(min(5, len(df_raw))):
+                  print(f'    Fila {i}: {list(df_raw.iloc[i][:5])}...')
+
+              df = pd.read_excel(ruta_origen, skiprows=3)
+              print(f'[+] Archivo cargado con skiprows=3. Forma: {df.shape}')
+              print(f'[+] Columnas después skiprows: {list(df.columns)}')
+              print(f'[!] Concrelab requiere análisis especial de estructura, saltando por ahora')
+              return None
 
               def obtener_tipo(localizacion):
                   if pd.isna(localizacion):
@@ -150,18 +156,17 @@ jobs:
               print(f'\n[*] Transformando SGS: {os.path.basename(ruta_origen)}')
               df = pd.read_excel(ruta_origen)
               print(f'[+] Archivo cargado. Forma: {df.shape}')
-              print(f'[+] Columnas originales: {list(df.columns)}')
 
               mapeo_campos = {
-                  'codigoObra': 'Proyecto',
+                  'Proyecto': 'Proyecto',
                   'asentamiento': 'Cilindro Nº',
                   'codigoMezcla': 'Código de mezcla',
                   'localizacion': 'Localización',
                   'fechaMuestreo': 'Toma',
                   'fechaRotura': 'Rotura',
-                  'edad': 'Edad (días)',
+                  'Edad (dias)': 'Edad (días)',
                   'Resistencia Nominal Mpa': 'Resistencia nominal (MPa)',
-                  'Resistencia Mpa': 'Resistencia (MPa)',
+                  'Resistencia (MPa)': 'Resistencia (MPa)',
                   'porcentaje': 'Resistencia (%)'
               }
               df = df.rename(columns=mapeo_campos)
@@ -169,8 +174,7 @@ jobs:
               columnas_mantener = ['Proyecto', 'Cilindro Nº', 'Código de mezcla', 'Localización', 'Toma', 'Rotura', 'Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)']
               cols_existentes = [col for col in columnas_mantener if col in df.columns]
               df = df[cols_existentes]
-              print(f'[+] Columnas después de filtrado: {list(df.columns)}')
-              print(f'[+] Columnas filtradas y renombradas')
+              print(f'[+] Columnas filtradas: {list(df.columns)}')
 
               def obtener_tipo(localizacion):
                   if pd.isna(localizacion):
@@ -269,10 +273,12 @@ jobs:
               ruta_origen = os.path.join(ruta_datos, archivo)
               if 'Concrelab' in archivo or 'concrelab' in archivo:
                   df = transformar_concrelab(ruta_origen)
-                  lista_dataframes.append(df)
+                  if df is not None:
+                      lista_dataframes.append(df)
               elif 'SGS' in archivo or 'sgs' in archivo:
                   df = transformar_sgs(ruta_origen)
-                  lista_dataframes.append(df)
+                  if df is not None:
+                      lista_dataframes.append(df)
 
           print('\n[+] Todas las transformaciones completadas')
 
