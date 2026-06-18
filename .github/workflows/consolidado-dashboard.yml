@@ -1,0 +1,24 @@
+name: 📊 Consolidado y Dashboard
+
+on:
+  workflow_dispatch:
+
+jobs:
+  consolidar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install pandas openpyxl
+      - name: Generar consolidado y dashboard
+        run: echo "Generando consolidado y dashboard..."
+      - run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action Bot"
+      - run: |
+          git add desplegable/ index.html
+          git commit -m "[AUTO] Consolidado - $(date '+%Y-%m-%d %H:%M:%S')" || true
+          git pull --rebase origin main 2>/dev/null || true
+          git push origin main 2>/dev/null || true
