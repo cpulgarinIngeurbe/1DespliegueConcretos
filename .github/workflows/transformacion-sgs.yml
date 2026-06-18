@@ -72,17 +72,15 @@ jobs:
                   print(f"    ERROR: {str(e)}")
 
       - name: Commit y Push
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action Bot"
-          git config --global url."https://github-actions:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
           git add datos/
           if git diff --quiet --cached; then
             echo "[*] Sin cambios"
           else
             git commit -m "[AUTO] Transformacion SGS"
+            git remote set-url origin "https://github-actions:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git"
             git pull --rebase origin main
             git push origin main
           fi
