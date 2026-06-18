@@ -119,6 +119,19 @@ jobs:
                       except:
                           pass
 
+                      # Debug: Tomar screenshot antes de descargar
+                      page.screenshot(path=f'datos/screenshot_{proyecto}_predownload.png')
+
+                      # Debug: Buscar posibles botones de descarga
+                      try:
+                          buttons = page.query_selector_all("button")
+                          print(f'[DEBUG] Total buttons encontrados: {len(buttons)}')
+                          for i, btn in enumerate(buttons[:10]):
+                              inner = page.evaluate('(btn) => btn.innerHTML', btn)
+                              print(f'[DEBUG] Button {i}: {inner[:100]}')
+                      except:
+                          print('[DEBUG] Error buscando botones')
+
                       # Descargar con reintentos
                       descargado = False
                       for intento in range(1, 4):
