@@ -146,7 +146,7 @@ jobs:
                           try:
                               page.wait_for_selector("button:has(i.icon-file-excel)", timeout=60000)
                               with page.expect_download(timeout=60000) as download_info:
-                                  page.locator("button:has(i.icon-file-excel)").click()
+                                  page.locator("button:has(i.icon-file-excel)").click(timeout=60000)
 
                               page.wait_for_timeout(9000)
                               download = download_info.value
