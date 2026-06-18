@@ -13,6 +13,12 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: 🗑️ Limpiar carpeta datos
+        run: |
+          echo "[*] Eliminando contenido de la carpeta datos..."
+          rm -rf datos/*
+          echo "[+] ✅ Carpeta datos limpiada"
+
       - name: ⚡ Disparar workflow descarga-sgs.yml
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
