@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install pandas openpyxl
-      
+
       - name: Transformar y reemplazar archivos
         shell: python
         run: |
@@ -22,65 +22,343 @@ jobs:
           import os
           from openpyxl import load_workbook
           from openpyxl.styles import PatternFill, Font
-          
+          from pathlib import Path
+
           ruta_datos = "datos"
-          
-          def obtener_tipo(loc):
-              if pd.isna(loc):
+          archivos_excel = [f for f in os.listdir(ruta_datos) if f.endswith('.xlsx')]
+          print(f'[*] Archivos encontrados: {archivos_excel}')
+
+          def transformar_concrelab(ruta_origen):
+              print(f'\n[*] Transformando Concrelab: {os.path.basename(ruta_origen)}')
+              df = pd.read_excel(ruta_origen, skiprows=3)
+              print(f'[+] Archivo cargado. Forma: {df.shape}')
+
+              columnas_mantener = ['Proyecto', 'Cilindro Nº', 'Código de mezcla', 'Localización', 'Toma', 'Rotura', 'Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)']
+              df = df[columnas_mantener]
+              print(f'[+] Columnas filtradas')
+
+              def obtener_tipo(localizacion):
+                  if pd.isna(localizacion):
+                      return None
+                  localizacion_upper = str(localizacion).upper()
+                  if "MURO" in localizacion_upper:
+                      return "MURO"
+                  elif "PLACA" in localizacion_upper:
+                      return "PLACA"
+                  elif "AUTOCOMPACTABLE" in localizacion_upper:
+                      return "AUTOCOMPACTABLE"
+                  elif "TREMIE" in localizacion_upper:
+                      return "TREMIE"
                   return None
-              loc_upper = str(loc).upper()
-              if "MURO" in loc_upper:
-                  return "MURO"
-              elif "PLACA" in loc_upper:
-                  return "PLACA"
-              elif "AUTOCOMPACTABLE" in loc_upper:
-                  return "AUTOCOMPACTABLE"
-              elif "TREMIE" in loc_upper:
-                  return "TREMIE"
-              return None
-          
-          def formatear(ruta, df):
-              wb = load_workbook(ruta)
+
+              df['TIPO'] = df['Localización'].apply(obtener_tipo)
+              print(f'[+] Columna TIPO agregada')
+
+              df['PK'] = df['Proyecto'].astype(str) + '_' + df['TIPO'].astype(str) + '_' + df['Resistencia nominal (MPa)'].astype(str) + '_' + df['Edad (días)'].astype(str)
+
+              df['Resistencia Promedio (MPa)'] = df.groupby(['Proyecto', 'Cilindro Nº', 'Edad (días)'])['Resistencia (MPa)'].transform('mean')
+              df['Conteo Elementos'] = df.groupby(['Proyecto', 'Cilindro Nº', 'Edad (días)'])['Resistencia (MPa)'].transform('count')
+              df = df.rename(columns={'Resistencia (MPa)': 'Resistencia (MPa) Individual'})
+              df['Resistencia (%) Individual'] = (df['Resistencia (MPa) Individual'] / df['Resistencia nominal (MPa)']) * 100
+
+              columnas_numericas = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa) Individual', 'Resistencia (%) Individual', 'Resistencia Promedio (MPa)', 'Resistencia (%)']
+              df[columnas_numericas] = df[columnas_numericas].round(3)
+              print(f'[+] Cálculos realizados')
+
+              df = df.sort_values(['Edad (días)', 'Resistencia nominal (MPa)'], ascending=[False, False]).reset_index(drop=True)
+
+              df['Promedio móvil'] = None
+              for resistencia_nom in df['Resistencia nominal (MPa)'].unique():
+                  grupo_idx = df[df['Resistencia nominal (MPa)'] == resistencia_nom].index.tolist()
+                  grupo_edad_28 = [idx for idx in grupo_idx if df.loc[idx, 'Edad (días)'] == 28]
+                  inicio = 0
+                  while inicio + 9 <= len(grupo_edad_28):
+                      indices_ventana = grupo_edad_28[inicio:inicio+9]
+                      valores_ventana = df.loc[indices_ventana, 'Resistencia Promedio (MPa)']
+                      promedio = valores_ventana.mean()
+                      posiciones_finales = indices_ventana[6:9]
+                      df.loc[posiciones_finales, 'Promedio móvil'] = round(promedio, 3)
+                      inicio += 3
+
+              cols = df.columns.tolist()
+              idx_promedio = cols.index('Resistencia Promedio (MPa)')
+              cols.remove('Promedio móvil')
+              cols.insert(idx_promedio + 1, 'Promedio móvil')
+              df = df[cols]
+
+              df.to_excel(ruta_origen, index=False)
+              print(f'[+] Datos guardados')
+
+              wb = load_workbook(ruta_origen)
               ws = wb.active
+              col_promedio = df.columns.get_loc('Resistencia Promedio (MPa)') + 1
+              col_individual = df.columns.get_loc('Resistencia (MPa) Individual') + 1
+              col_individual_pct = df.columns.get_loc('Resistencia (%) Individual') + 1
+              col_conteo = df.columns.get_loc('Conteo Elementos') + 1
+
+              columnas_verde_claro = ['Resistencia (%)', 'Proyecto', 'TIPO', 'Cilindro Nº', 'Código de mezcla', 'Localización', 'Toma', 'Rotura', 'Edad (días)', 'Resistencia nominal (MPa)']
+              col_verde_claro = [df.columns.get_loc(col) + 1 for col in columnas_verde_claro if col in df.columns]
+
+              rojo = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+              verde = PatternFill(start_color="00B050", end_color="00B050", fill_type="solid")
+              azul_claro = PatternFill(start_color="ADD8E6", end_color="ADD8E6", fill_type="solid")
+              verde_claro = PatternFill(start_color="90EE90", end_color="90EE90", fill_type="solid")
+              azul_militar = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
+              blanco = Font(color="FFFFFF")
+
               for row in range(2, ws.max_row + 1):
-                  for col in range(1, ws.max_column + 1):
-                      ws.cell(row, col).fill = PatternFill(start_color="90EE90", fill_type="solid")
-              for col in range(1, ws.max_column + 1):
-                  ws.cell(1, col).fill = PatternFill(start_color="1F4788", fill_type="solid")
-                  ws.cell(1, col).font = Font(color="FFFFFF")
-              wb.save(ruta)
-          
-          archivos = [f for f in os.listdir(ruta_datos) if f.endswith('.xlsx')]
-          print(f"[*] Archivos encontrados: {archivos}")
-          
-          for archivo in archivos:
-              ruta_archivo = os.path.join(ruta_datos, archivo)
-              
-              if 'sgs' in archivo.lower():
-                  print(f"[*] Transformando SGS: {archivo}")
-                  df = pd.read_excel(ruta_archivo)
-                  df = df.rename(columns={'codigoObra': 'Proyecto', 'edad': 'Edad (dias)', 'Resistencia Mpa': 'Resistencia (MPa)'})
-                  if 'Localizacion' in df.columns:
-                      df['TIPO'] = df['Localizacion'].apply(obtener_tipo)
-                  df.to_excel(ruta_archivo, index=False)
-                  formatear(ruta_archivo, df)
-                  print(f"[+] SGS transformado y reemplazado")
-              
-              elif 'concrelab' in archivo.lower():
-                  print(f"[*] Transformando Concrelab: {archivo}")
-                  df = pd.read_excel(ruta_archivo, skiprows=3)
-                  if 'Localizacion' in df.columns:
-                      df['TIPO'] = df['Localizacion'].apply(obtener_tipo)
-                  df.to_excel(ruta_archivo, index=False)
-                  formatear(ruta_archivo, df)
-                  print(f"[+] Concrelab transformado y reemplazado")
-          
-          print("[+] Todas las transformaciones completadas")
-      
-      - name: Commit y Push
+                  valor_promedio = ws.cell(row, col_promedio).value
+                  for col_idx in range(1, ws.max_column + 1):
+                      celda = ws.cell(row, col_idx)
+                      if col_idx in col_verde_claro:
+                          celda.fill = verde_claro
+                      elif col_idx in [col_individual, col_individual_pct, col_conteo]:
+                          celda.fill = azul_claro
+                  if valor_promedio is not None:
+                      celda = ws.cell(row, col_promedio)
+                      celda.fill = rojo if valor_promedio < 0 else verde
+                  celda_individual_pct = ws.cell(row, col_individual_pct)
+                  celda_individual_pct.number_format = '0.00"%"'
+
+              for col_idx in range(1, ws.max_column + 1):
+                  celda_header = ws.cell(1, col_idx)
+                  celda_header.fill = azul_militar
+                  celda_header.font = blanco
+
+              wb.save(ruta_origen)
+              print(f'[+] Concrelab transformado y formateado')
+              return df
+
+          def transformar_sgs(ruta_origen):
+              print(f'\n[*] Transformando SGS: {os.path.basename(ruta_origen)}')
+              df = pd.read_excel(ruta_origen)
+              print(f'[+] Archivo cargado. Forma: {df.shape}')
+
+              mapeo_campos = {
+                  'codigoObra': 'Proyecto',
+                  'asentamiento': 'Cilindro Nº',
+                  'codigoMezcla': 'Código de mezcla',
+                  'localizacion': 'Localización',
+                  'fechaMuestreo': 'Toma',
+                  'fechaRotura': 'Rotura',
+                  'edad': 'Edad (días)',
+                  'Resistencia Nominal Mpa': 'Resistencia nominal (MPa)',
+                  'Resistencia Mpa': 'Resistencia (MPa)',
+                  'porcentaje': 'Resistencia (%)'
+              }
+              df = df.rename(columns=mapeo_campos)
+
+              columnas_mantener = ['Proyecto', 'Cilindro Nº', 'Código de mezcla', 'Localización', 'Toma', 'Rotura', 'Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)']
+              df = df[[col for col in columnas_mantener if col in df.columns]]
+              print(f'[+] Columnas filtradas y renombradas')
+
+              def obtener_tipo(localizacion):
+                  if pd.isna(localizacion):
+                      return None
+                  localizacion_upper = str(localizacion).upper()
+                  if "MURO" in localizacion_upper:
+                      return "MURO"
+                  elif "PLACA" in localizacion_upper:
+                      return "PLACA"
+                  elif "AUTOCOMPACTABLE" in localizacion_upper:
+                      return "AUTOCOMPACTABLE"
+                  elif "TREMIE" in localizacion_upper:
+                      return "TREMIE"
+                  return None
+
+              df['TIPO'] = df['Localización'].apply(obtener_tipo)
+              print(f'[+] Columna TIPO agregada')
+
+              df['PK'] = df['Proyecto'].astype(str) + '_' + df['TIPO'].astype(str) + '_' + df['Resistencia nominal (MPa)'].astype(str) + '_' + df['Edad (días)'].astype(str)
+
+              df['Resistencia Promedio (MPa)'] = df.groupby(['Proyecto', 'Localización', 'Cilindro Nº', 'Edad (días)'])['Resistencia (MPa)'].transform('mean')
+              df['Conteo Elementos'] = df.groupby(['Proyecto', 'Localización', 'Cilindro Nº', 'Edad (días)'])['Resistencia (MPa)'].transform('count')
+              df = df.rename(columns={'Resistencia (MPa)': 'Resistencia (MPa) Individual'})
+              df['Resistencia (%) Individual'] = (df['Resistencia (MPa) Individual'] / df['Resistencia nominal (MPa)']) * 100
+
+              columnas_numericas = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa) Individual', 'Resistencia (%) Individual', 'Resistencia Promedio (MPa)', 'Resistencia (%)']
+              df[columnas_numericas] = df[columnas_numericas].round(3)
+              print(f'[+] Cálculos realizados')
+
+              df = df.sort_values(['Edad (días)', 'Resistencia nominal (MPa)'], ascending=[False, False]).reset_index(drop=True)
+
+              df['Promedio móvil'] = None
+              for resistencia_nom in df['Resistencia nominal (MPa)'].unique():
+                  grupo_idx = df[df['Resistencia nominal (MPa)'] == resistencia_nom].index.tolist()
+                  grupo_edad_28 = [idx for idx in grupo_idx if df.loc[idx, 'Edad (días)'] == 28]
+                  inicio = 0
+                  while inicio + 9 <= len(grupo_edad_28):
+                      indices_ventana = grupo_edad_28[inicio:inicio+9]
+                      valores_ventana = df.loc[indices_ventana, 'Resistencia Promedio (MPa)']
+                      promedio = valores_ventana.mean()
+                      posiciones_finales = indices_ventana[6:9]
+                      df.loc[posiciones_finales, 'Promedio móvil'] = round(promedio, 3)
+                      inicio += 3
+
+              cols = df.columns.tolist()
+              idx_promedio = cols.index('Resistencia Promedio (MPa)')
+              cols.remove('Promedio móvil')
+              cols.insert(idx_promedio + 1, 'Promedio móvil')
+              df = df[cols]
+
+              df.to_excel(ruta_origen, index=False)
+              print(f'[+] Datos guardados')
+
+              wb = load_workbook(ruta_origen)
+              ws = wb.active
+              col_promedio = df.columns.get_loc('Resistencia Promedio (MPa)') + 1
+              col_individual = df.columns.get_loc('Resistencia (MPa) Individual') + 1
+              col_individual_pct = df.columns.get_loc('Resistencia (%) Individual') + 1
+              col_conteo = df.columns.get_loc('Conteo Elementos') + 1
+
+              columnas_verde_claro = ['Resistencia (%)', 'Proyecto', 'TIPO', 'Cilindro Nº', 'Código de mezcla', 'Localización', 'Toma', 'Rotura', 'Edad (días)', 'Resistencia nominal (MPa)']
+              col_verde_claro = [df.columns.get_loc(col) + 1 for col in columnas_verde_claro if col in df.columns]
+
+              rojo = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+              verde = PatternFill(start_color="00B050", end_color="00B050", fill_type="solid")
+              azul_claro = PatternFill(start_color="ADD8E6", end_color="ADD8E6", fill_type="solid")
+              verde_claro = PatternFill(start_color="90EE90", end_color="90EE90", fill_type="solid")
+              azul_militar = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
+              blanco = Font(color="FFFFFF")
+
+              for row in range(2, ws.max_row + 1):
+                  valor_promedio = ws.cell(row, col_promedio).value
+                  for col_idx in range(1, ws.max_column + 1):
+                      celda = ws.cell(row, col_idx)
+                      if col_idx in col_verde_claro:
+                          celda.fill = verde_claro
+                      elif col_idx in [col_individual, col_individual_pct, col_conteo]:
+                          celda.fill = azul_claro
+                  if valor_promedio is not None:
+                      celda = ws.cell(row, col_promedio)
+                      celda.fill = rojo if valor_promedio < 0 else verde
+                  celda_individual_pct = ws.cell(row, col_individual_pct)
+                  celda_individual_pct.number_format = '0.00"%"'
+
+              for col_idx in range(1, ws.max_column + 1):
+                  celda_header = ws.cell(1, col_idx)
+                  celda_header.fill = azul_militar
+                  celda_header.font = blanco
+
+              wb.save(ruta_origen)
+              print(f'[+] SGS transformado y formateado')
+              return df
+
+          lista_dataframes = []
+          for archivo in archivos_excel:
+              ruta_origen = os.path.join(ruta_datos, archivo)
+              if 'Concrelab' in archivo or 'concrelab' in archivo:
+                  df = transformar_concrelab(ruta_origen)
+                  lista_dataframes.append(df)
+              elif 'SGS' in archivo or 'sgs' in archivo:
+                  df = transformar_sgs(ruta_origen)
+                  lista_dataframes.append(df)
+
+          print('\n[+] Todas las transformaciones completadas')
+
+          if lista_dataframes:
+              print(f'\n[*] Creando consolidado...')
+              df_consolidado = pd.concat(lista_dataframes, ignore_index=True)
+              print(f'[+] Consolidado creado. Forma: {df_consolidado.shape}')
+
+              ruta_consolidado = os.path.join(ruta_datos, 'ConsolidadoResistenciasConcretos.xlsx')
+              df_consolidado.to_excel(ruta_consolidado, index=False)
+              print(f'[+] Consolidado guardado')
+
+              wb = load_workbook(ruta_consolidado)
+              ws = wb.active
+              col_promedio = df_consolidado.columns.get_loc('Resistencia Promedio (MPa)') + 1
+              col_individual = df_consolidado.columns.get_loc('Resistencia (MPa) Individual') + 1
+              col_individual_pct = df_consolidado.columns.get_loc('Resistencia (%) Individual') + 1
+              col_conteo = df_consolidado.columns.get_loc('Conteo Elementos') + 1
+
+              columnas_verde_claro = ['Resistencia (%)', 'Proyecto', 'TIPO', 'Cilindro Nº', 'Código de mezcla', 'Localización', 'Toma', 'Rotura', 'Edad (días)', 'Resistencia nominal (MPa)']
+              col_verde_claro = [df_consolidado.columns.get_loc(col) + 1 for col in columnas_verde_claro if col in df_consolidado.columns]
+
+              rojo = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+              verde = PatternFill(start_color="00B050", end_color="00B050", fill_type="solid")
+              azul_claro = PatternFill(start_color="ADD8E6", end_color="ADD8E6", fill_type="solid")
+              verde_claro = PatternFill(start_color="90EE90", end_color="90EE90", fill_type="solid")
+              azul_militar = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
+              blanco = Font(color="FFFFFF")
+
+              for row in range(2, ws.max_row + 1):
+                  valor_promedio = ws.cell(row, col_promedio).value
+                  for col_idx in range(1, ws.max_column + 1):
+                      celda = ws.cell(row, col_idx)
+                      if col_idx in col_verde_claro:
+                          celda.fill = verde_claro
+                      elif col_idx in [col_individual, col_individual_pct, col_conteo]:
+                          celda.fill = azul_claro
+                  if valor_promedio is not None:
+                      celda = ws.cell(row, col_promedio)
+                      celda.fill = rojo if valor_promedio < 0 else verde
+                  celda_individual_pct = ws.cell(row, col_individual_pct)
+                  celda_individual_pct.number_format = '0.00"%"'
+
+              for col_idx in range(1, ws.max_column + 1):
+                  celda_header = ws.cell(1, col_idx)
+                  celda_header.fill = azul_militar
+                  celda_header.font = blanco
+
+              wb.save(ruta_consolidado)
+              print(f'[+] Consolidado formateado')
+
+              if os.path.exists('ConsolidadoResistenciaTeoricas.xlsx'):
+                  print(f'\n[*] Enriqueciendo consolidado con datos teóricos')
+                  df_teoricas = pd.read_excel("ConsolidadoResistenciaTeoricas.xlsx")
+                  df_teoricas['Resistencia_int'] = df_teoricas['Resistencia nominal (MPa)'].astype(int)
+                  df_teoricas['join_key'] = (df_teoricas['Proyecto'].astype(str) + '|' +
+                                              df_teoricas['TIPO'].astype(str) + '|' +
+                                              df_teoricas['Resistencia_int'].astype(str) + '|' +
+                                              df_teoricas['Edad'].astype(str))
+
+                  df_consolidado['Resistencia_int'] = df_consolidado['Resistencia nominal (MPa)'].astype(int)
+                  df_consolidado['join_key'] = (df_consolidado['Proyecto'].astype(str) + '|' +
+                                               df_consolidado['TIPO'].astype(str) + '|' +
+                                               df_consolidado['Resistencia_int'].astype(str) + '|' +
+                                               df_consolidado['Edad (días)'].astype(str))
+
+                  lookup_dato = dict(zip(df_teoricas['join_key'], df_teoricas['Dato']))
+                  df_consolidado['Dato'] = df_consolidado['join_key'].map(lookup_dato)
+
+                  coincidencias = df_consolidado['Dato'].notna().sum()
+                  print(f'[+] Coincidencias encontradas: {coincidencias}/{len(df_consolidado)}')
+
+                  df_consolidado['Cumplimiento norma b'] = df_consolidado.apply(
+                      lambda row: 'NoValido' if pd.isna(row['Dato']) else round(row['Dato'] - row['Resistencia Promedio (MPa)'], 3),
+                      axis=1
+                  )
+
+                  df_consolidado = df_consolidado.drop(columns=['Resistencia_int', 'join_key'])
+                  df_consolidado.to_excel(ruta_consolidado, index=False)
+                  print(f'[+] Consolidado enriquecido y guardado')
+
+                  print(f'\n[*] Creando Excel filtrado')
+                  df_consolidado['Cumplimiento_num'] = pd.to_numeric(df_consolidado['Cumplimiento norma b'], errors='coerce')
+                  df_filtrado = df_consolidado[df_consolidado['Cumplimiento_num'] > 0].copy()
+                  df_filtrado = df_filtrado.drop(columns=['Cumplimiento_num'])
+
+                  registros_filtrados = len(df_filtrado)
+                  print(f'[+] Registros que cumplen: {registros_filtrados}/{len(df_consolidado)}')
+
+                  archivo_filtrado = os.path.join(ruta_datos, 'ConsolidadoResistenciasConcretos_Cumple.xlsx')
+                  df_filtrado.to_excel(archivo_filtrado, index=False)
+                  print(f'[+] Excel filtrado guardado')
+              else:
+                  print(f'[!] ConsolidadoResistenciaTeoricas.xlsx no encontrado')
+
+              print(f'\n[+] Consolidado completado')
+          else:
+              print(f'[!] No hay archivos para consolidar')
+
+      - name: Configurar Git
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action Bot"
+
+      - name: Commit y Push
+        run: |
           git add datos/
           if ! git diff --quiet --cached; then
             git commit -m "[AUTO] Transformacion completa - archivos reemplazados en datos/"
