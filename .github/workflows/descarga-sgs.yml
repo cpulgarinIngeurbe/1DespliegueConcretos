@@ -257,7 +257,7 @@ jobs:
             echo "[*] Sin cambios"
           else
             git commit -m "[AUTO] Descarga SGS - $(date '+%Y-%m-%d %H:%M:%S')"
-            git pull origin main --no-edit
+            git pull --rebase origin main
             git push origin main
             echo "[+] Push completado"
           fi
