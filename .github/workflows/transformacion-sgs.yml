@@ -77,12 +77,12 @@ jobs:
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action Bot"
+          git config --global url."https://github-actions:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
           git add datos/
           if git diff --quiet --cached; then
             echo "[*] Sin cambios"
           else
             git commit -m "[AUTO] Transformacion SGS"
-            git config --global url."https://github-actions:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
             git pull --rebase origin main
             git push origin main
           fi
