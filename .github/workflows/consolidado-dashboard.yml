@@ -1,4 +1,4 @@
-name: 📊 Consolidado y Dashboard
+name: Consolidado y Dashboard
 
 on:
   workflow_dispatch:
@@ -8,18 +8,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Clonar repositorio
+      - name: Clonar repositorio
         uses: actions/checkout@v4
 
-      - name: 🐍 Configurar Python
+      - name: Configurar Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: 📦 Instalar dependencias
+      - name: Instalar dependencias
         run: pip install pandas openpyxl
 
-      - name: 📊 Crear Consolidado y Dashboard
+      - name: Crear Consolidado y Dashboard
         run: |
           python3 << 'PYEOF'
 import pandas as pd
@@ -34,7 +34,6 @@ ruta_datos = "datos"
 ruta_desplegable = "desplegable"
 Path(ruta_desplegable).mkdir(exist_ok=True)
 
-# Consolidar todos los Excel
 archivos = [f for f in os.listdir(ruta_datos) if f.endswith('.xlsx')]
 print(f'[*] Consolidando {len(archivos)} archivo(s)')
 
@@ -44,14 +43,13 @@ for f in archivos:
         df = pd.read_excel(os.path.join(ruta_datos, f))
         dfs.append(df)
     except Exception as e:
-        print(f'[!] Error leyendo {f}: {str(e)}')
+        print(f'[!] Error {f}: {str(e)[:50]}')
 
 if dfs:
     df_consolidado = pd.concat(dfs, ignore_index=True)
     ruta_consolidado = os.path.join(ruta_desplegable, 'ConsolidadoResistencias.xlsx')
     df_consolidado.to_excel(ruta_consolidado, index=False)
     
-    # Formatear encabezados en azul
     wb = load_workbook(ruta_consolidado)
     ws = wb.active
     azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
@@ -60,24 +58,20 @@ if dfs:
         ws.cell(1, col).fill = azul
         ws.cell(1, col).font = blanco
     wb.save(ruta_consolidado)
-    print(f'[+] ✅ Consolidado guardado: {ruta_consolidado}')
+    print(f'[+] Consolidado: {ruta_consolidado}')
 
-    # Generar Dashboard HTML con selector
     df = pd.read_excel(ruta_consolidado)
     
-    # Obtener proyectos únicos
     if 'Proyecto' in df.columns:
         proyectos = sorted(df['Proyecto'].unique().tolist())
     else:
         proyectos = []
     
-    # Convertir a strings para JSON
     df = df.astype(str)
     datos_json = {}
     for p in proyectos:
         datos_json[p] = df[df['Proyecto'] == p].to_dict('records')
     
-    # HTML del dashboard
     html = '''<!DOCTYPE html>
 <html class="light" lang="es">
 <head>
@@ -126,11 +120,11 @@ document.getElementById('proyecto-select').addEventListener('change', function()
   if (!proyecto) { contenido.classList.remove('visible'); return; }
   const registros = datos[proyecto];
   const columns = registros.length > 0 ? Object.keys(registros[0]) : [];
-  let headerHTML = '<tr>' + columns.map(c => `<th>${c}</th>`).join('') + '</tr>';
+  let headerHTML = '<tr>' + columns.map(c => '<th>' + c + '</th>').join('') + '</tr>';
   document.getElementById('tabla-header').innerHTML = headerHTML;
   let bodyHTML = '';
   registros.forEach(r => {
-    bodyHTML += '<tr>' + columns.map(c => `<td>${r[c] || ''}</td>`).join('') + '</tr>';
+    bodyHTML += '<tr>' + columns.map(c => '<td>' + (r[c] || '') + '</td>').join('') + '</tr>';
   });
   document.getElementById('tabla-body').innerHTML = bodyHTML;
   contenido.classList.add('visible');
@@ -141,17 +135,17 @@ document.getElementById('proyecto-select').addEventListener('change', function()
     
     with open('index.html', 'w', encoding='utf-8') as f:
         f.write(html)
-    print(f'[+] ✅ Dashboard generado: index.html')
+    print(f'[+] Dashboard: index.html')
 else:
-    print('[!] No hay archivos Excel para consolidar')
+    print('[!] No hay archivos Excel')
 PYEOF
 
-      - name: 🔧 Configurar Git
+      - name: Configurar Git
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action Bot"
 
-      - name: 📤 Commit y Push
+      - name: Commit y Push
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
@@ -162,5 +156,4 @@ PYEOF
             git commit -m "[AUTO] Consolidado y Dashboard - $(date '+%Y-%m-%d %H:%M:%S')"
             git pull --rebase origin main
             git push origin main
-            echo "[+] Push completado"
           fi

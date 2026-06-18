@@ -32,25 +32,7 @@ from openpyxl.styles import PatternFill, Font
 ruta_datos = "datos"
 Path(ruta_datos).mkdir(exist_ok=True)
 
-# Mapeo de columnas SGS
-mapa_sgs = {
-    'Código Obra': 'Proyecto',
-    'OBRA': 'Proyecto',
-    'Tipo Material': 'Material',
-    'Edad': 'Días',
-    'Resultado (MPa)': 'Resistencia_MPa',
-    'Observaciones': 'Observaciones'
-}
-
-# Mapeo de columnas Concrelab
-mapa_concrelab = {
-    'Proyecto': 'Proyecto',
-    'Material': 'Material',
-    'Días': 'Días',
-    'Resistencia': 'Resistencia_MPa',
-    'Notas': 'Observaciones'
-}
-
+# Transformar SGS
 archivos_sgs = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_sgs_') and f.endswith('.xlsx')]
 print(f'[*] Transformando {len(archivos_sgs)} archivo(s) SGS')
 
@@ -59,15 +41,17 @@ for archivo in archivos_sgs:
         ruta = os.path.join(ruta_datos, archivo)
         df = pd.read_excel(ruta)
         
-        # Renombrar columnas
-        columnas_nuevas = {}
-        for col_antigua, col_nueva in mapa_sgs.items():
-            if col_antigua in df.columns:
-                columnas_nuevas[col_antigua] = col_nueva
-        df.rename(columns=columnas_nuevas, inplace=True)
+        # Renombrar columnas de SGS
+        df_renombrado = df.rename(columns={
+            'codigoObra': 'Proyecto',
+            'tipoMaterial': 'Material',
+            'edad': 'Dias',
+            'Resistencia Mpa': 'Resistencia_MPa'
+        })
         
-        # Formato de encabezados azul
-        df.to_excel(ruta, index=False)
+        df_renombrado.to_excel(ruta, index=False)
+        
+        # Formatear con encabezados azules
         wb = load_workbook(ruta)
         ws = wb.active
         azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
@@ -76,27 +60,28 @@ for archivo in archivos_sgs:
             ws.cell(1, col).fill = azul
             ws.cell(1, col).font = blanco
         wb.save(ruta)
-        print(f'[+] ✅ Transformado: {archivo}')
+        print(f'OK: {archivo}')
     except Exception as e:
-        print(f'[!] Error transformando {archivo}: {str(e)}')
+        print(f'ERROR {archivo}: {str(e)[:100]}')
 
+# Transformar Concrelab (skip primeras 3 filas)
 archivos_concrelab = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_concrelab_') and f.endswith('.xlsx')]
 print(f'[*] Transformando {len(archivos_concrelab)} archivo(s) Concrelab')
 
 for archivo in archivos_concrelab:
     try:
         ruta = os.path.join(ruta_datos, archivo)
-        df = pd.read_excel(ruta)
+        df = pd.read_excel(ruta, skiprows=3)
         
-        # Renombrar columnas
-        columnas_nuevas = {}
-        for col_antigua, col_nueva in mapa_concrelab.items():
-            if col_antigua in df.columns:
-                columnas_nuevas[col_antigua] = col_nueva
-        df.rename(columns=columnas_nuevas, inplace=True)
+        # Renombrar columnas de Concrelab
+        if 'Dias de edad' in df.columns:
+            df.rename(columns={'Dias de edad': 'Dias'}, inplace=True)
+        if 'Resistencia (Mpa)' in df.columns:
+            df.rename(columns={'Resistencia (Mpa)': 'Resistencia_MPa'}, inplace=True)
         
-        # Formato de encabezados azul
         df.to_excel(ruta, index=False)
+        
+        # Formatear con encabezados azules
         wb = load_workbook(ruta)
         ws = wb.active
         azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
@@ -105,11 +90,11 @@ for archivo in archivos_concrelab:
             ws.cell(1, col).fill = azul
             ws.cell(1, col).font = blanco
         wb.save(ruta)
-        print(f'[+] ✅ Transformado: {archivo}')
+        print(f'OK: {archivo}')
     except Exception as e:
-        print(f'[!] Error transformando {archivo}: {str(e)}')
+        print(f'ERROR {archivo}: {str(e)[:100]}')
 
-print('[+] ✅ Transformación completada')
+print('[+] Transformacion completada')
 PYEOF
 
       - name: 🔧 Configurar Git
@@ -125,8 +110,7 @@ PYEOF
           if git diff --quiet --cached; then
             echo "[*] Sin cambios"
           else
-            git commit -m "[AUTO] Transformación de datos - $(date '+%Y-%m-%d %H:%M:%S')"
+            git commit -m "[AUTO] Transformacion datos - $(date '+%Y-%m-%d %H:%M:%S')"
             git pull --rebase origin main
             git push origin main
-            echo "[+] Push completado"
           fi
