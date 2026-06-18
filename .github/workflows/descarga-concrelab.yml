@@ -535,13 +535,15 @@ jobs:
               </style>
           </head>
           <body>
+              <nav class="navbar">
+                  <div style="color: #4B4F1D; font-weight: 600;"></div>
+              </nav>
               <div class="container">
-                  <h1>Consolidado de Resistencias</h1>
-
-                  <div class="selector">
+                  <div style="padding: 2rem 0;"></div>
+                  <div class="selector-container">
                       <label for="proyecto-select">Selecciona un proyecto:</label>
-                      <select id="proyecto-select">
-                          <option value="">-- Selecciona un proyecto --</option>
+                          <select id="proyecto-select">
+                              <option value="">-- Selecciona un proyecto --</option>
           '''
 
           # Agregar opciones de proyectos
