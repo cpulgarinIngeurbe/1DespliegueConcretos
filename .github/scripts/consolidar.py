@@ -4,6 +4,7 @@ from pathlib import Path
 from datetime import datetime
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill, Font
+import subprocess
 
 ruta_datos = "datos"
 ruta_desplegable = "desplegable"
@@ -113,3 +114,31 @@ document.getElementById('proyecto-select').addEventListener('change', function()
     print(f'[+] Dashboard creado')
 else:
     print('[!] No hay archivos')
+
+# Hacer commit y push
+try:
+    token = os.getenv('GH_TOKEN', '')
+    if not token:
+        print('[!] GH_TOKEN no configurado')
+        exit(1)
+    
+    subprocess.run(['git', 'config', '--global', 'user.email', 'action@github.com'], check=True)
+    subprocess.run(['git', 'config', '--global', 'user.name', 'GitHub Action Bot'], check=True)
+    
+    subprocess.run(['git', 'add', 'desplegable/', 'index.html'], check=True)
+    subprocess.run(['git', 'commit', '-m', '[AUTO] Consolidado y Dashboard'], check=False)
+    
+    # Obtener la URL del remoto y agregarle el token
+    result = subprocess.run(['git', 'config', '--get', 'remote.origin.url'], 
+                          capture_output=True, text=True, check=True)
+    origin_url = result.stdout.strip()
+    
+    # Reemplazar con URL con token
+    if 'https://' in origin_url:
+        origin_url = origin_url.replace('https://', f'https://github-actions:{token}@')
+    
+    subprocess.run(['git', 'pull', '--rebase', 'origin', 'main'], check=True)
+    subprocess.run(['git', 'push', origin_url, 'main'], check=True)
+    print('[+] Push completado')
+except Exception as e:
+    print(f'[!] Error en push: {str(e)}')
