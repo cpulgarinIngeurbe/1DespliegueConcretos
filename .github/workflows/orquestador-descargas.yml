@@ -7,6 +7,7 @@ on:
     - cron: '0 18 * * *'  # 1:00 pm Bogotá (18:00 UTC)
     - cron: '0 20 * * *'  # 3:00 pm Bogotá (20:00 UTC)
     - cron: '0 23 * * *'  # 6:00 pm Bogotá (23:00 UTC)
+    - cron: '0 2 * * *'   # 9:00 pm Bogotá (02:00 UTC siguiente día)
   workflow_dispatch:
 
 jobs:
