@@ -17,75 +17,99 @@ jobs:
           python-version: '3.11'
 
       - name: 📦 Instalar dependencias
-        run: pip install pandas openpyxl
+        run: |
+          pip install pandas openpyxl
 
-      - name: 📈 Transformar SGS y Concrelab
+      - name: 📈 Transformar datos SGS y Concrelab
         run: |
           python3 << 'PYEOF'
 import pandas as pd
 import os
+from pathlib import Path
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill, Font
 
 ruta_datos = "datos"
-print(f'[*] Transformando archivos en {ruta_datos}')
+Path(ruta_datos).mkdir(exist_ok=True)
 
-# Transformar SGS
+# Mapeo de columnas SGS
+mapa_sgs = {
+    'Código Obra': 'Proyecto',
+    'OBRA': 'Proyecto',
+    'Tipo Material': 'Material',
+    'Edad': 'Días',
+    'Resultado (MPa)': 'Resistencia_MPa',
+    'Observaciones': 'Observaciones'
+}
+
+# Mapeo de columnas Concrelab
+mapa_concrelab = {
+    'Proyecto': 'Proyecto',
+    'Material': 'Material',
+    'Días': 'Días',
+    'Resistencia': 'Resistencia_MPa',
+    'Notas': 'Observaciones'
+}
+
 archivos_sgs = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_sgs_') and f.endswith('.xlsx')]
+print(f'[*] Transformando {len(archivos_sgs)} archivo(s) SGS')
+
 for archivo in archivos_sgs:
-    ruta = os.path.join(ruta_datos, archivo)
-    df = pd.read_excel(ruta)
-    mapeo = {'codigoObra': 'Proyecto', 'asentamiento': 'Cilindro Nº', 'codigoMezcla': 'Código de mezcla', 'localizacion': 'Localización', 'fechaMuestreo': 'Toma', 'fechaRotura': 'Rotura', 'edad': 'Edad (días)', 'Resistencia Nominal Mpa': 'Resistencia nominal (MPa)', 'Resistencia Mpa': 'Resistencia (MPa)', 'porcentaje': 'Resistencia (%)'}
-    df = df.rename(columns=mapeo)
-    cols = ['Proyecto', 'Cilindro Nº', 'Código de mezcla', 'Localización', 'Toma', 'Rotura', 'Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)']
-    df = df[[c for c in cols if c in df.columns]]
-    df['TIPO'] = df['Localización'].apply(lambda x: next((t for t in ['MURO', 'PLACA', 'AUTOCOMPACTABLE', 'TREMIE'] if pd.notna(x) and t in str(x).upper()), None))
-    df['Resistencia Promedio (MPa)'] = df.groupby(['Proyecto', 'Localización', 'Cilindro Nº', 'Edad (días)'])['Resistencia (MPa)'].transform('mean')
-    df['Conteo Elementos'] = df.groupby(['Proyecto', 'Localización', 'Cilindro Nº', 'Edad (días)'])['Resistencia (MPa)'].transform('count')
-    df = df.rename(columns={'Resistencia (MPa)': 'Resistencia (MPa) Individual'})
-    df['Resistencia (%) Individual'] = (df['Resistencia (MPa) Individual'] / df['Resistencia nominal (MPa)']) * 100
-    cols_num = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa) Individual', 'Resistencia (%) Individual', 'Resistencia Promedio (MPa)', 'Resistencia (%)']
-    df[cols_num] = df[cols_num].round(3)
-    df = df.sort_values(['Edad (días)', 'Resistencia nominal (MPa)'], ascending=[False, False]).reset_index(drop=True)
-    df.to_excel(ruta, index=False)
-    wb = load_workbook(ruta)
-    ws = wb.active
-    azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
-    blanco = Font(color="FFFFFF", bold=True)
-    for col in range(1, ws.max_column + 1):
-        ws.cell(1, col).fill = azul
-        ws.cell(1, col).font = blanco
-    wb.save(ruta)
-    print(f'[+] {archivo} transformado')
+    try:
+        ruta = os.path.join(ruta_datos, archivo)
+        df = pd.read_excel(ruta)
+        
+        # Renombrar columnas
+        columnas_nuevas = {}
+        for col_antigua, col_nueva in mapa_sgs.items():
+            if col_antigua in df.columns:
+                columnas_nuevas[col_antigua] = col_nueva
+        df.rename(columns=columnas_nuevas, inplace=True)
+        
+        # Formato de encabezados azul
+        df.to_excel(ruta, index=False)
+        wb = load_workbook(ruta)
+        ws = wb.active
+        azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
+        blanco = Font(color="FFFFFF", bold=True)
+        for col in range(1, ws.max_column + 1):
+            ws.cell(1, col).fill = azul
+            ws.cell(1, col).font = blanco
+        wb.save(ruta)
+        print(f'[+] ✅ Transformado: {archivo}')
+    except Exception as e:
+        print(f'[!] Error transformando {archivo}: {str(e)}')
 
-# Transformar Concrelab
 archivos_concrelab = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_concrelab_') and f.endswith('.xlsx')]
-for archivo in archivos_concrelab:
-    ruta = os.path.join(ruta_datos, archivo)
-    df = pd.read_excel(ruta, skiprows=3)
-    cols_mantener = ['Proyecto', 'Cilindro N°', 'Código de mezcla', 'Localización', 'Toma', 'Rotura', 'Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)']
-    df = df[cols_mantener]
-    df = df.rename(columns={'Cilindro N°': 'Cilindro Nº'})
-    df['TIPO'] = df['Localización'].apply(lambda x: next((t for t in ['MURO', 'PLACA', 'AUTOCOMPACTABLE', 'TREMIE'] if pd.notna(x) and t in str(x).upper()), None))
-    df['Resistencia Promedio (MPa)'] = df.groupby(['Proyecto', 'Cilindro Nº', 'Edad (días)'])['Resistencia (MPa)'].transform('mean')
-    df['Conteo Elementos'] = df.groupby(['Proyecto', 'Cilindro Nº', 'Edad (días)'])['Resistencia (MPa)'].transform('count')
-    df = df.rename(columns={'Resistencia (MPa)': 'Resistencia (MPa) Individual'})
-    df['Resistencia (%) Individual'] = (df['Resistencia (MPa) Individual'] / df['Resistencia nominal (MPa)']) * 100
-    cols_num = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa) Individual', 'Resistencia (%) Individual', 'Resistencia Promedio (MPa)', 'Resistencia (%)']
-    df[cols_num] = df[cols_num].round(3)
-    df = df.sort_values(['Edad (días)', 'Resistencia nominal (MPa)'], ascending=[False, False]).reset_index(drop=True)
-    df.to_excel(ruta, index=False)
-    wb = load_workbook(ruta)
-    ws = wb.active
-    azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
-    blanco = Font(color="FFFFFF", bold=True)
-    for col in range(1, ws.max_column + 1):
-        ws.cell(1, col).fill = azul
-        ws.cell(1, col).font = blanco
-    wb.save(ruta)
-    print(f'[+] {archivo} transformado')
+print(f'[*] Transformando {len(archivos_concrelab)} archivo(s) Concrelab')
 
-print(f'[+] ✓ Transformación completada')
+for archivo in archivos_concrelab:
+    try:
+        ruta = os.path.join(ruta_datos, archivo)
+        df = pd.read_excel(ruta)
+        
+        # Renombrar columnas
+        columnas_nuevas = {}
+        for col_antigua, col_nueva in mapa_concrelab.items():
+            if col_antigua in df.columns:
+                columnas_nuevas[col_antigua] = col_nueva
+        df.rename(columns=columnas_nuevas, inplace=True)
+        
+        # Formato de encabezados azul
+        df.to_excel(ruta, index=False)
+        wb = load_workbook(ruta)
+        ws = wb.active
+        azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
+        blanco = Font(color="FFFFFF", bold=True)
+        for col in range(1, ws.max_column + 1):
+            ws.cell(1, col).fill = azul
+            ws.cell(1, col).font = blanco
+        wb.save(ruta)
+        print(f'[+] ✅ Transformado: {archivo}')
+    except Exception as e:
+        print(f'[!] Error transformando {archivo}: {str(e)}')
+
+print('[+] ✅ Transformación completada')
 PYEOF
 
       - name: 🔧 Configurar Git
@@ -101,7 +125,7 @@ PYEOF
           if git diff --quiet --cached; then
             echo "[*] Sin cambios"
           else
-            git commit -m "[AUTO] Transformación - $(date '+%Y-%m-%d %H:%M:%S')"
+            git commit -m "[AUTO] Transformación de datos - $(date '+%Y-%m-%d %H:%M:%S')"
             git pull --rebase origin main
             git push origin main
             echo "[+] Push completado"

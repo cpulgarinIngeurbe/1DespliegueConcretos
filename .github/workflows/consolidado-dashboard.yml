@@ -34,14 +34,24 @@ ruta_datos = "datos"
 ruta_desplegable = "desplegable"
 Path(ruta_desplegable).mkdir(exist_ok=True)
 
-# Consolidar
+# Consolidar todos los Excel
 archivos = [f for f in os.listdir(ruta_datos) if f.endswith('.xlsx')]
 print(f'[*] Consolidando {len(archivos)} archivo(s)')
-dfs = [pd.read_excel(os.path.join(ruta_datos, f)) for f in archivos]
+
+dfs = []
+for f in archivos:
+    try:
+        df = pd.read_excel(os.path.join(ruta_datos, f))
+        dfs.append(df)
+    except Exception as e:
+        print(f'[!] Error leyendo {f}: {str(e)}')
+
 if dfs:
     df_consolidado = pd.concat(dfs, ignore_index=True)
     ruta_consolidado = os.path.join(ruta_desplegable, 'ConsolidadoResistencias.xlsx')
     df_consolidado.to_excel(ruta_consolidado, index=False)
+    
+    # Formatear encabezados en azul
     wb = load_workbook(ruta_consolidado)
     ws = wb.active
     azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
@@ -50,14 +60,24 @@ if dfs:
         ws.cell(1, col).fill = azul
         ws.cell(1, col).font = blanco
     wb.save(ruta_consolidado)
-    print(f'[+] Consolidado guardado')
+    print(f'[+] ✅ Consolidado guardado: {ruta_consolidado}')
 
-    # Dashboard
+    # Generar Dashboard HTML con selector
     df = pd.read_excel(ruta_consolidado)
-    proyectos = sorted(df['Proyecto'].unique().tolist())
-    df = df.astype(str)
-    datos_json = {p: df[df['Proyecto'] == p].to_dict('records') for p in proyectos}
     
+    # Obtener proyectos únicos
+    if 'Proyecto' in df.columns:
+        proyectos = sorted(df['Proyecto'].unique().tolist())
+    else:
+        proyectos = []
+    
+    # Convertir a strings para JSON
+    df = df.astype(str)
+    datos_json = {}
+    for p in proyectos:
+        datos_json[p] = df[df['Proyecto'] == p].to_dict('records')
+    
+    # HTML del dashboard
     html = '''<!DOCTYPE html>
 <html class="light" lang="es">
 <head>
@@ -85,7 +105,7 @@ tbody tr:hover { background: #f8f8f7; }
 </style>
 </head>
 <body>
-<nav class="navbar"></nav>
+<nav class="navbar"><h1>Consolidado de Resistencias</h1></nav>
 <div class="container">
 <div class="selector-container">
 <label for="proyecto-select">Selecciona un proyecto:</label>
@@ -105,7 +125,7 @@ document.getElementById('proyecto-select').addEventListener('change', function()
   const contenido = document.getElementById('contenido');
   if (!proyecto) { contenido.classList.remove('visible'); return; }
   const registros = datos[proyecto];
-  const columns = Object.keys(registros[0]);
+  const columns = registros.length > 0 ? Object.keys(registros[0]) : [];
   let headerHTML = '<tr>' + columns.map(c => `<th>${c}</th>`).join('') + '</tr>';
   document.getElementById('tabla-header').innerHTML = headerHTML;
   let bodyHTML = '';
@@ -118,9 +138,12 @@ document.getElementById('proyecto-select').addEventListener('change', function()
 </script>
 </body>
 </html>'''
+    
     with open('index.html', 'w', encoding='utf-8') as f:
         f.write(html)
-    print(f'[+] Dashboard generado')
+    print(f'[+] ✅ Dashboard generado: index.html')
+else:
+    print('[!] No hay archivos Excel para consolidar')
 PYEOF
 
       - name: 🔧 Configurar Git
@@ -132,11 +155,11 @@ PYEOF
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          git add desplegable/ index.html
+          git add desplegable/ index.html 2>/dev/null || true
           if git diff --quiet --cached; then
             echo "[*] Sin cambios"
           else
-            git commit -m "[AUTO] Consolidado - $(date '+%Y-%m-%d %H:%M:%S')"
+            git commit -m "[AUTO] Consolidado y Dashboard - $(date '+%Y-%m-%d %H:%M:%S')"
             git pull --rebase origin main
             git push origin main
             echo "[+] Push completado"
