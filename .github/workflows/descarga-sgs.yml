@@ -82,6 +82,16 @@ jobs:
                       page.keyboard.press("Escape")
                       page.wait_for_timeout(1000)
 
+                      # Debug: ver qué mat-form-fields existen
+                      try:
+                          form_fields = page.query_selector_all("mat-form-field")
+                          print(f'[DEBUG] Total mat-form-fields para {proyecto}: {len(form_fields)}')
+                          for i, field in enumerate(form_fields[:5]):
+                              text = page.evaluate('(f) => f.textContent', field)
+                              print(f'[DEBUG] Field {i}: {text[:50]}')
+                      except:
+                          print(f'[DEBUG] Error listando form-fields para {proyecto}')
+
                       page.wait_for_selector("mat-form-field:has-text('Tip de Reporte')", timeout=20000)
                       page.click("mat-form-field:has-text('Tip de Reporte') div.mat-mdc-select-trigger")
                       page.wait_for_timeout(1000)
