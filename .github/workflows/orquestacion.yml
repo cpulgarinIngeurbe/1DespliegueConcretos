@@ -24,7 +24,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           echo "[*] Disparando descarga-sgs.yml..."
-          RUN_ID=$(gh workflow run descarga-sgs.yml --repo ${{ github.repository }} --ref main -q)
+          gh workflow run descarga-sgs.yml --repo ${{ github.repository }} --ref main
+          sleep 5
+          RUN_ID=$(gh run list --workflow descarga-sgs.yml --repo ${{ github.repository }} --limit 1 --json databaseId --jq '.[0].databaseId')
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
           echo "[+] Workflow disparado con RUN_ID: $RUN_ID"
 
@@ -74,7 +76,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           echo "[*] Disparando descarga-concrelab.yml..."
-          RUN_ID=$(gh workflow run descarga-concrelab.yml --repo ${{ github.repository }} --ref main -q)
+          gh workflow run descarga-concrelab.yml --repo ${{ github.repository }} --ref main
+          sleep 5
+          RUN_ID=$(gh run list --workflow descarga-concrelab.yml --repo ${{ github.repository }} --limit 1 --json databaseId --jq '.[0].databaseId')
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
           echo "[+] Workflow disparado con RUN_ID: $RUN_ID"
 
