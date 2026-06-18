@@ -126,7 +126,7 @@ jobs:
 
                       try:
                           page.click("i.icon-filter-outline", timeout=10000)
-                          page.wait_for_timeout(1000)
+                          page.wait_for_timeout(40000)
                       except:
                           pass
 
