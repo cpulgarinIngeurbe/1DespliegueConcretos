@@ -73,16 +73,13 @@ jobs:
                   formatear(ruta_archivo, df)
                   print(f"[+] Concrelab transformado y reemplazado")
           
-          print("[+] Todas las transformaciones completadas y archivos reemplazados")
+          print("[+] Todas las transformaciones completadas")
       
-      - name: Commit y Push
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Commit cambios
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action Bot"
           git add datos/
           if ! git diff --quiet --cached; then
-            git commit -m "[AUTO] Transformacion completa - archivos reemplazados"
-            git push "https://github-actions:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main
+            git commit -m "[AUTO] Transformacion completa - archivos reemplazados en datos/"
           fi
