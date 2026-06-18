@@ -1,0 +1,56 @@
+name: Transformar + JOIN - Concrelab + SGS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  transformar-datos:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: |
+          pip install pandas openpyxl
+
+      - name: Crear carpeta DatosTransformados
+        run: |
+          mkdir -p DatosTransformados
+          echo "[+] Carpeta DatosTransformados creada"
+
+      - name: Limpiar DatosTransformados
+        run: |
+          rm -rf DatosTransformados/*.xlsx
+          echo "[+] DatosTransformados limpiada"
+
+      - name: Transformar archivos
+        run: python .github/scripts/transform_data.py
+
+      - name: Configurar Git
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action Bot"
+
+      - name: Commit y Push
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git config --global url."https://github-actions:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+          git add DatosTransformados/
+          if git diff --quiet --cached; then
+            echo "[*] Sin cambios nuevos"
+          else
+            git commit -m "[AUTO] Transformacion completa - $(date '+%Y-%m-%d %H:%M:%S')"
+            git pull --rebase origin main
+            git push origin main
+            echo "[+] Push completado"
+          fi
