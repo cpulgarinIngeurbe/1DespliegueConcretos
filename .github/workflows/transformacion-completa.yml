@@ -81,10 +81,10 @@ jobs:
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action Bot"
+          git config --global url."https://github-actions:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
           git add DatosTransformados/
           if ! git diff --quiet --cached; then
             git commit -m "[AUTO] Transformacion completa"
-            git config --global url."https://github-actions:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
             git pull --rebase origin main
             git push origin main
           fi
