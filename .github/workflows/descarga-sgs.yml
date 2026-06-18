@@ -119,14 +119,28 @@ jobs:
                       except:
                           pass
 
-                      page.wait_for_selector("button:has(i.icon-file-excel)", timeout=20000)
-                      with page.expect_download(timeout=45000) as download_info:
-                          page.click("button:has(i.icon-file-excel)")
+                      # Descargar con reintentos
+                      descargado = False
+                      for intento in range(1, 4):
+                          try:
+                              page.wait_for_selector("button:has(i.icon-file-excel)", timeout=20000)
+                              with page.expect_download(timeout=45000) as download_info:
+                                  page.click("button:has(i.icon-file-excel)")
 
-                      download = download_info.value
-                      filepath = f'datos/reporte_sgs_{proyecto}.xlsx'
-                      download.save_as(filepath)
-                      print(f'[+] Descargado: {filepath}')
+                              download = download_info.value
+                              filepath = f'datos/reporte_sgs_{proyecto}.xlsx'
+                              download.save_as(filepath)
+                              print(f'[+] Descargado: {filepath}')
+                              descargado = True
+                              break
+                          except Exception as e:
+                              if intento < 3:
+                                  print(f'[!] Intento {intento} falló, reintentando...')
+                                  page.reload()
+                                  page.wait_for_timeout(2000)
+                              else:
+                                  print(f'[!] Falló después de 3 intentos: {str(e)[:50]}')
+                                  raise
 
                   except Exception as e:
                       print(f'[!] Error: {str(e)[:100]}')
