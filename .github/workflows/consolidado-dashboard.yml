@@ -20,22 +20,11 @@ jobs:
         run: pip install pandas openpyxl
 
       - name: Crear Consolidado y Dashboard
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: python3 .github/scripts/consolidar.py
 
       - name: Configurar Git
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action Bot"
-
-      - name: Commit y Push
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          git add desplegable/ index.html 2>/dev/null || true
-          if git diff --quiet --cached; then
-            echo "[*] Sin cambios"
-          else
-            git commit -m "[AUTO] Consolidado y Dashboard"
-            git pull --rebase origin main
-            git push origin main
-          fi

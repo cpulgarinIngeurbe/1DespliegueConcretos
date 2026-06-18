@@ -20,22 +20,11 @@ jobs:
         run: pip install pandas openpyxl
 
       - name: Transformar datos SGS y Concrelab
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: python3 .github/scripts/transformar.py
 
       - name: Configurar Git
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action Bot"
-
-      - name: Commit y Push
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          git add datos/
-          if git diff --quiet --cached; then
-            echo "[*] Sin cambios"
-          else
-            git commit -m "[AUTO] Transformacion datos"
-            git pull --rebase origin main
-            git push origin main
-          fi
