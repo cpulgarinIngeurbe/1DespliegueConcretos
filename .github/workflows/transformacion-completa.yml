@@ -13,50 +13,67 @@ jobs:
           python-version: '3.11'
       - run: pip install pandas openpyxl
       - run: mkdir -p DatosTransformados && rm -rf DatosTransformados/*.xlsx
-      - run: python3 << 'PYSCRIPT'
-import pandas as pd, os
-from openpyxl import load_workbook
-from openpyxl.styles import PatternFill, Font
-
-os.makedirs("DatosTransformados", exist_ok=True)
-
-def obtener_tipo(loc):
-    if pd.isna(loc): return None
-    loc_upper = str(loc).upper()
-    if "MURO" in loc_upper: return "MURO"
-    elif "PLACA" in loc_upper: return "PLACA"
-    elif "AUTOCOMPACTABLE" in loc_upper: return "AUTOCOMPACTABLE"
-    elif "TREMIE" in loc_upper: return "TREMIE"
-    return None
-
-def formatear(ruta, df):
-    wb = load_workbook(ruta)
-    ws = wb.active
-    for row in range(2, ws.max_row + 1):
-        for col in range(1, ws.max_column + 1):
-            ws.cell(row, col).fill = PatternFill(start_color="90EE90", fill_type="solid")
-    for col in range(1, ws.max_column + 1):
-        ws.cell(1, col).fill = PatternFill(start_color="1F4788", fill_type="solid")
-        ws.cell(1, col).font = Font(color="FFFFFF")
-    wb.save(ruta)
-
-for archivo in [f for f in os.listdir("datos") if f.endswith('.xlsx')]:
-    if 'sgs' in archivo.lower():
-        df = pd.read_excel(os.path.join("datos", archivo))
-        df = df.rename(columns={'codigoObra': 'Proyecto', 'edad': 'Edad (dias)', 'Resistencia Mpa': 'Resistencia (MPa)'})
-        df['TIPO'] = df['Localizacion'].apply(obtener_tipo) if 'Localizacion' in df.columns else None
-        df.to_excel(os.path.join("DatosTransformados", archivo), index=False)
-        formatear(os.path.join("DatosTransformados", archivo), df)
-        print(f"[+] {archivo} transformado")
-    elif 'concrelab' in archivo.lower():
-        df = pd.read_excel(os.path.join("datos", archivo), skiprows=3)
-        df['TIPO'] = df['Localizacion'].apply(obtener_tipo) if 'Localizacion' in df.columns else None
-        df.to_excel(os.path.join("DatosTransformados", archivo), index=False)
-        formatear(os.path.join("DatosTransformados", archivo), df)
-        print(f"[+] {archivo} transformado")
-
-print("[+] Transformaciones completadas")
-PYSCRIPT
+      
+      - name: Transformar archivos
+        shell: python
+        run: |
+          import pandas as pd
+          import os
+          from openpyxl import load_workbook
+          from openpyxl.styles import PatternFill, Font
+          
+          os.makedirs("DatosTransformados", exist_ok=True)
+          
+          def obtener_tipo(loc):
+              if pd.isna(loc):
+                  return None
+              loc_upper = str(loc).upper()
+              if "MURO" in loc_upper:
+                  return "MURO"
+              elif "PLACA" in loc_upper:
+                  return "PLACA"
+              elif "AUTOCOMPACTABLE" in loc_upper:
+                  return "AUTOCOMPACTABLE"
+              elif "TREMIE" in loc_upper:
+                  return "TREMIE"
+              return None
+          
+          def formatear(ruta, df):
+              wb = load_workbook(ruta)
+              ws = wb.active
+              for row in range(2, ws.max_row + 1):
+                  for col in range(1, ws.max_column + 1):
+                      ws.cell(row, col).fill = PatternFill(start_color="90EE90", fill_type="solid")
+              for col in range(1, ws.max_column + 1):
+                  ws.cell(1, col).fill = PatternFill(start_color="1F4788", fill_type="solid")
+                  ws.cell(1, col).font = Font(color="FFFFFF")
+              wb.save(ruta)
+          
+          archivos = [f for f in os.listdir("datos") if f.endswith('.xlsx')]
+          print(f"[*] Archivos encontrados: {archivos}")
+          
+          for archivo in archivos:
+              ruta_origen = os.path.join("datos", archivo)
+              ruta_destino = os.path.join("DatosTransformados", archivo)
+              
+              if 'sgs' in archivo.lower():
+                  df = pd.read_excel(ruta_origen)
+                  df = df.rename(columns={'codigoObra': 'Proyecto', 'edad': 'Edad (dias)', 'Resistencia Mpa': 'Resistencia (MPa)'})
+                  if 'Localizacion' in df.columns:
+                      df['TIPO'] = df['Localizacion'].apply(obtener_tipo)
+                  df.to_excel(ruta_destino, index=False)
+                  formatear(ruta_destino, df)
+                  print(f"[+] {archivo} transformado")
+              
+              elif 'concrelab' in archivo.lower():
+                  df = pd.read_excel(ruta_origen, skiprows=3)
+                  if 'Localizacion' in df.columns:
+                      df['TIPO'] = df['Localizacion'].apply(obtener_tipo)
+                  df.to_excel(ruta_destino, index=False)
+                  formatear(ruta_destino, df)
+                  print(f"[+] {archivo} transformado")
+          
+          print("[+] Transformaciones completadas")
       
       - name: Commit y Push
         env:
