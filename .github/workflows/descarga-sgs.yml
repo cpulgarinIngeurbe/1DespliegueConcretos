@@ -130,15 +130,16 @@ jobs:
                       except:
                           pass
 
-                      # Debug: ver qué mat-form-fields existen
-                      try:
-                          form_fields = page.query_selector_all("mat-form-field")
-                          print(f'[DEBUG] Total mat-form-fields para {proyecto}: {len(form_fields)}')
-                          for i, field in enumerate(form_fields[:5]):
-                              text = page.evaluate('(f) => f.textContent', field)
-                              print(f'[DEBUG] Field {i}: {text[:50]}')
-                      except:
-                          print(f'[DEBUG] Error listando form-fields para {proyecto}')
+                      # Debug para NATIVA: buscar botones de descarga disponibles
+                      if proyecto == 'NATIVA':
+                          try:
+                              buttons = page.query_selector_all("button")
+                              excel_buttons = [b for b in buttons if 'excel' in page.evaluate('(b) => b.innerHTML', b).lower()]
+                              print(f'[DEBUG-NATIVA] Total buttons: {len(buttons)}, Excel buttons: {len(excel_buttons)}')
+                              if excel_buttons:
+                                  print(f'[DEBUG-NATIVA] Se encontró botón Excel, intentando descargar...')
+                          except:
+                              print(f'[DEBUG-NATIVA] Error buscando botones')
 
                       # Descargar con reintentos
                       descargado = False
@@ -165,7 +166,8 @@ jobs:
                                   raise
 
                   except Exception as e:
-                      print(f'[!] Error: {str(e)[:100]}')
+                      print(f'[!] Error en {proyecto}: {str(e)[:100]}')
+                      print(f'[!] {proyecto} no se descargó, pero continuamos con el siguiente proyecto')
                   finally:
                       context.close()
 
