@@ -20,125 +20,7 @@ jobs:
         run: pip install pandas openpyxl
 
       - name: Crear Consolidado y Dashboard
-        run: |
-          python3 << 'PYEOF'
-import pandas as pd
-import os
-import json
-from pathlib import Path
-from datetime import datetime
-from openpyxl import load_workbook
-from openpyxl.styles import PatternFill, Font
-
-ruta_datos = "datos"
-ruta_desplegable = "desplegable"
-Path(ruta_desplegable).mkdir(exist_ok=True)
-
-archivos = [f for f in os.listdir(ruta_datos) if f.endswith('.xlsx')]
-print(f'[*] Consolidando {len(archivos)} archivo(s)')
-
-dfs = []
-for f in archivos:
-    try:
-        df = pd.read_excel(os.path.join(ruta_datos, f))
-        dfs.append(df)
-    except Exception as e:
-        print(f'[!] Error {f}: {str(e)[:50]}')
-
-if dfs:
-    df_consolidado = pd.concat(dfs, ignore_index=True)
-    ruta_consolidado = os.path.join(ruta_desplegable, 'ConsolidadoResistencias.xlsx')
-    df_consolidado.to_excel(ruta_consolidado, index=False)
-    
-    wb = load_workbook(ruta_consolidado)
-    ws = wb.active
-    azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
-    blanco = Font(color="FFFFFF", bold=True)
-    for col in range(1, ws.max_column + 1):
-        ws.cell(1, col).fill = azul
-        ws.cell(1, col).font = blanco
-    wb.save(ruta_consolidado)
-    print(f'[+] Consolidado: {ruta_consolidado}')
-
-    df = pd.read_excel(ruta_consolidado)
-    
-    if 'Proyecto' in df.columns:
-        proyectos = sorted(df['Proyecto'].unique().tolist())
-    else:
-        proyectos = []
-    
-    df = df.astype(str)
-    datos_json = {}
-    for p in proyectos:
-        datos_json[p] = df[df['Proyecto'] == p].to_dict('records')
-    
-    html = '''<!DOCTYPE html>
-<html class="light" lang="es">
-<head>
-<meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport">
-<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-<title>Consolidado de Resistencias</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Inter', sans-serif; background: #ffffff; color: #141311; padding: 0; min-height: 100vh; }
-.navbar { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 0, 0, 0.05); padding: 1.5rem 4rem; position: sticky; top: 0; z-index: 50; }
-.container { max-width: 100%; margin: 0; padding: 0; }
-.content { padding: 0 2rem 4rem 2rem; }
-h1 { color: #4B4F1D; margin-bottom: 2rem; font-size: 2.5rem; font-weight: 600; }
-.selector-container { text-align: center; margin: 3rem 0; padding: 2rem; background: rgba(75, 79, 29, 0.02); border-radius: 0.5rem; }
-.selector label { font-size: 0.875rem; font-weight: 600; color: #4B4F1D; margin-right: 1.5rem; }
-.selector select { padding: 0.75rem 1rem; font-size: 0.875rem; border: 1px solid #E7E9C1; border-radius: 0.25rem; min-width: 300px; }
-.contenido { display: none; }
-.contenido.visible { display: block; }
-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: 0.875rem; border: 1px solid #E7E9C1; }
-thead { background: #4B4F1D; color: white; }
-th { padding: 1rem 1.5rem; text-align: left; font-weight: 600; }
-td { padding: 0.75rem 1.5rem; border-bottom: 1px solid #E7E9C1; }
-tbody tr:hover { background: #f8f8f7; }
-.footer { text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #E7E9C1; color: #78786b; font-size: 0.75rem; }
-</style>
-</head>
-<body>
-<nav class="navbar"><h1>Consolidado de Resistencias</h1></nav>
-<div class="container">
-<div class="selector-container">
-<label for="proyecto-select">Selecciona un proyecto:</label>
-<select id="proyecto-select">
-<option value="">-- Selecciona --</option>''' + ''.join(f'<option value="{p}">{p}</option>' for p in proyectos) + '''
-</select>
-</div>
-<div id="contenido" class="contenido">
-<table><thead id="tabla-header"></thead><tbody id="tabla-body"></tbody></table>
-</div>
-<div class="footer">Generado: ''' + datetime.now().strftime('%Y-%m-%d %H:%M:%S') + '''</div>
-</div>
-<script>
-const datos = ''' + json.dumps(datos_json) + ''';
-document.getElementById('proyecto-select').addEventListener('change', function() {
-  const proyecto = this.value;
-  const contenido = document.getElementById('contenido');
-  if (!proyecto) { contenido.classList.remove('visible'); return; }
-  const registros = datos[proyecto];
-  const columns = registros.length > 0 ? Object.keys(registros[0]) : [];
-  let headerHTML = '<tr>' + columns.map(c => '<th>' + c + '</th>').join('') + '</tr>';
-  document.getElementById('tabla-header').innerHTML = headerHTML;
-  let bodyHTML = '';
-  registros.forEach(r => {
-    bodyHTML += '<tr>' + columns.map(c => '<td>' + (r[c] || '') + '</td>').join('') + '</tr>';
-  });
-  document.getElementById('tabla-body').innerHTML = bodyHTML;
-  contenido.classList.add('visible');
-});
-</script>
-</body>
-</html>'''
-    
-    with open('index.html', 'w', encoding='utf-8') as f:
-        f.write(html)
-    print(f'[+] Dashboard: index.html')
-else:
-    print('[!] No hay archivos Excel')
-PYEOF
+        run: python3 .github/scripts/consolidar.py
 
       - name: Configurar Git
         run: |
@@ -153,7 +35,7 @@ PYEOF
           if git diff --quiet --cached; then
             echo "[*] Sin cambios"
           else
-            git commit -m "[AUTO] Consolidado y Dashboard - $(date '+%Y-%m-%d %H:%M:%S')"
+            git commit -m "[AUTO] Consolidado y Dashboard"
             git pull --rebase origin main
             git push origin main
           fi

@@ -1,4 +1,4 @@
-name: 📈 Transformación de Datos
+name: Transformacion de Datos
 
 on:
   workflow_dispatch:
@@ -8,101 +8,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Clonar repositorio
+      - name: Clonar repositorio
         uses: actions/checkout@v4
 
-      - name: 🐍 Configurar Python
+      - name: Configurar Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: 📦 Instalar dependencias
-        run: |
-          pip install pandas openpyxl
+      - name: Instalar dependencias
+        run: pip install pandas openpyxl
 
-      - name: 📈 Transformar datos SGS y Concrelab
-        run: |
-          python3 << 'PYEOF'
-import pandas as pd
-import os
-from pathlib import Path
-from openpyxl import load_workbook
-from openpyxl.styles import PatternFill, Font
+      - name: Transformar datos SGS y Concrelab
+        run: python3 .github/scripts/transformar.py
 
-ruta_datos = "datos"
-Path(ruta_datos).mkdir(exist_ok=True)
-
-# Transformar SGS
-archivos_sgs = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_sgs_') and f.endswith('.xlsx')]
-print(f'[*] Transformando {len(archivos_sgs)} archivo(s) SGS')
-
-for archivo in archivos_sgs:
-    try:
-        ruta = os.path.join(ruta_datos, archivo)
-        df = pd.read_excel(ruta)
-        
-        # Renombrar columnas de SGS
-        df_renombrado = df.rename(columns={
-            'codigoObra': 'Proyecto',
-            'tipoMaterial': 'Material',
-            'edad': 'Dias',
-            'Resistencia Mpa': 'Resistencia_MPa'
-        })
-        
-        df_renombrado.to_excel(ruta, index=False)
-        
-        # Formatear con encabezados azules
-        wb = load_workbook(ruta)
-        ws = wb.active
-        azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
-        blanco = Font(color="FFFFFF", bold=True)
-        for col in range(1, ws.max_column + 1):
-            ws.cell(1, col).fill = azul
-            ws.cell(1, col).font = blanco
-        wb.save(ruta)
-        print(f'OK: {archivo}')
-    except Exception as e:
-        print(f'ERROR {archivo}: {str(e)[:100]}')
-
-# Transformar Concrelab (skip primeras 3 filas)
-archivos_concrelab = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_concrelab_') and f.endswith('.xlsx')]
-print(f'[*] Transformando {len(archivos_concrelab)} archivo(s) Concrelab')
-
-for archivo in archivos_concrelab:
-    try:
-        ruta = os.path.join(ruta_datos, archivo)
-        df = pd.read_excel(ruta, skiprows=3)
-        
-        # Renombrar columnas de Concrelab
-        if 'Dias de edad' in df.columns:
-            df.rename(columns={'Dias de edad': 'Dias'}, inplace=True)
-        if 'Resistencia (Mpa)' in df.columns:
-            df.rename(columns={'Resistencia (Mpa)': 'Resistencia_MPa'}, inplace=True)
-        
-        df.to_excel(ruta, index=False)
-        
-        # Formatear con encabezados azules
-        wb = load_workbook(ruta)
-        ws = wb.active
-        azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
-        blanco = Font(color="FFFFFF", bold=True)
-        for col in range(1, ws.max_column + 1):
-            ws.cell(1, col).fill = azul
-            ws.cell(1, col).font = blanco
-        wb.save(ruta)
-        print(f'OK: {archivo}')
-    except Exception as e:
-        print(f'ERROR {archivo}: {str(e)[:100]}')
-
-print('[+] Transformacion completada')
-PYEOF
-
-      - name: 🔧 Configurar Git
+      - name: Configurar Git
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action Bot"
 
-      - name: 📤 Commit y Push
+      - name: Commit y Push
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
@@ -110,7 +35,7 @@ PYEOF
           if git diff --quiet --cached; then
             echo "[*] Sin cambios"
           else
-            git commit -m "[AUTO] Transformacion datos - $(date '+%Y-%m-%d %H:%M:%S')"
+            git commit -m "[AUTO] Transformacion datos"
             git pull --rebase origin main
             git push origin main
           fi
