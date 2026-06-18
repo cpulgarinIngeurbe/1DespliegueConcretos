@@ -1,0 +1,88 @@
+name: Transformacion SGS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  transformar-sgs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install pandas openpyxl
+
+      - name: Transformar archivos SGS
+        shell: python
+        run: |
+          import pandas as pd
+          import os
+          from pathlib import Path
+          from openpyxl import load_workbook
+          from openpyxl.styles import PatternFill, Font
+
+          ruta_datos = "datos"
+          
+          print("[*] Transformando archivos SGS...")
+          
+          # Buscar archivos SGS
+          archivos_sgs = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_sgs_') and f.endswith('.xlsx')]
+          
+          for archivo in archivos_sgs:
+              try:
+                  ruta = os.path.join(ruta_datos, archivo)
+                  print(f"  Procesando: {archivo}")
+                  
+                  # Leer el archivo
+                  df = pd.read_excel(ruta)
+                  
+                  # Transformar columnas SGS
+                  df = df.rename(columns={
+                      'codigoObra': 'Proyecto',
+                      'tipoMaterial': 'Material',
+                      'edad': 'Dias',
+                      'Resistencia Mpa': 'Resistencia_MPa'
+                  })
+                  
+                  # Guardar
+                  df.to_excel(ruta, index=False, engine='openpyxl')
+                  
+                  # Formatear encabezados en azul
+                  wb = load_workbook(ruta)
+                  ws = wb.active
+                  
+                  azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
+                  blanco = Font(color="FFFFFF", bold=True)
+                  
+                  for col in range(1, ws.max_column + 1):
+                      ws.cell(1, col).fill = azul
+                      ws.cell(1, col).font = blanco
+                  
+                  wb.save(ruta)
+                  print(f"    OK - Transformado")
+                  
+              except Exception as e:
+                  print(f"    ERROR: {str(e)}")
+
+      - name: Commit y Push
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action Bot"
+          git add datos/
+          if git diff --quiet --cached; then
+            echo "[*] Sin cambios"
+          else
+            git commit -m "[AUTO] Transformacion SGS"
+            git config --global url."https://github-actions:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+            git pull --rebase origin main
+            git push origin main
+          fi
