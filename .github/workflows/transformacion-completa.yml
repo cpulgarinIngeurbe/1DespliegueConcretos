@@ -29,36 +29,29 @@ jobs:
           archivos_excel = [f for f in os.listdir(ruta_datos) if f.endswith('.xlsx')]
           print(f'[*] Archivos encontrados: {archivos_excel}')
 
-          print('\n[DEBUG] ========== ESTRUCTURA DE COLUMNAS POR ARCHIVO ==========')
-          for archivo in archivos_excel:
-              ruta = os.path.join(ruta_datos, archivo)
-              try:
-                  if 'concrelab' in archivo.lower():
-                      df_temp = pd.read_excel(ruta, skiprows=3)
-                  else:
-                      df_temp = pd.read_excel(ruta)
-                  print(f'\n{archivo}:')
-                  print(f'  Shape: {df_temp.shape}')
-                  print(f'  Columnas: {list(df_temp.columns)}')
-              except Exception as e:
-                  print(f'  Error: {str(e)}')
-
-          print('\n[DEBUG] ========== FIN DE DEBUG ==========\n')
 
           def transformar_concrelab(ruta_origen):
               print(f'\n[*] Transformando Concrelab: {os.path.basename(ruta_origen)}')
+              df = pd.read_excel(ruta_origen)
+              print(f'[+] Archivo cargado. Forma: {df.shape}')
 
-              df_raw = pd.read_excel(ruta_origen, header=None)
-              print(f'[+] Archivo sin procesar. Forma: {df_raw.shape}')
-              print(f'[+] Primeras 5 filas:')
-              for i in range(min(5, len(df_raw))):
-                  print(f'    Fila {i}: {list(df_raw.iloc[i][:5])}...')
+              mapeo_campos = {
+                  'Cilindro N°': 'Cilindro Nº',
+                  'Localización': 'Localización',
+                  'Toma': 'Toma',
+                  'Rotura': 'Rotura',
+                  'Edad (días)': 'Edad (días)',
+                  'Resistencia nominal (MPa)': 'Resistencia nominal (MPa)',
+                  'Resistencia (MPa)': 'Resistencia (MPa)',
+                  'Resistencia (%)': 'Resistencia (%)',
+                  'Código de mezcla': 'Código de mezcla'
+              }
+              df = df.rename(columns=mapeo_campos)
 
-              df = pd.read_excel(ruta_origen, skiprows=3)
-              print(f'[+] Archivo cargado con skiprows=3. Forma: {df.shape}')
-              print(f'[+] Columnas después skiprows: {list(df.columns)}')
-              print(f'[!] Concrelab requiere análisis especial de estructura, saltando por ahora')
-              return None
+              columnas_mantener = ['Proyecto', 'Cilindro Nº', 'Código de mezcla', 'Localización', 'Toma', 'Rotura', 'Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)']
+              cols_existentes = [col for col in columnas_mantener if col in df.columns]
+              df = df[cols_existentes]
+              print(f'[+] Columnas filtradas: {list(df.columns)}')
 
               def obtener_tipo(localizacion):
                   if pd.isna(localizacion):
