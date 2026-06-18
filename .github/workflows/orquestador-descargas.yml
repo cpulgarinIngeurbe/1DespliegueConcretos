@@ -1,42 +1,42 @@
-name: 🎯 Orquestador - Descargas SGS + Concrelab
+name: Orquestador - Descargas SGS + Concrelab
 
 on:
   schedule:
-    - cron: '0 14 * * *'  # 9:00 am Bogotá (14:00 UTC)
-    - cron: '0 16 * * *'  # 11:00 am Bogotá (16:00 UTC)
-    - cron: '0 18 * * *'  # 1:00 pm Bogotá (18:00 UTC)
-    - cron: '0 20 * * *'  # 3:00 pm Bogotá (20:00 UTC)
-    - cron: '0 23 * * *'  # 6:00 pm Bogotá (23:00 UTC)
-    - cron: '0 2 * * *'   # 9:00 pm Bogotá (02:00 UTC siguiente día)
+    - cron: '0 14 * * *'
+    - cron: '0 16 * * *'
+    - cron: '0 18 * * *'
+    - cron: '0 20 * * *'
+    - cron: '0 23 * * *'
+    - cron: '0 2 * * *'
   workflow_dispatch:
 
 jobs:
   descargar-sgs:
-    name: 📊 Ejecutar Descarga SGS
+    name: 1. Descargar SGS
     runs-on: ubuntu-latest
     steps:
-      - name: 🚀 Disparar workflow SGS
+      - name: Disparar workflow Descarga SGS
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GH_TOKEN }}
           script: |
-            const result = await github.rest.actions.createWorkflowDispatch({
+            await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'descarga-sgs.yml',
               ref: 'main'
             });
-            console.log('Workflow SGS disparado exitosamente');
+            console.log('SGS disparado');
 
-      - name: ⏳ Esperar a que SGS se complete
+      - name: Esperar a que SGS termine
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GH_TOKEN }}
           script: |
-            const maxAttempts = 240; // 2 horas máximo
+            const maxAttempts = 240;
             let attempt = 0;
             let completed = false;
-            let sgsStarted = false;
+            let started = false;
 
             while (attempt < maxAttempts && !completed) {
               const runs = await github.rest.actions.listWorkflowRuns({
@@ -45,56 +45,47 @@ jobs:
                 workflow_id: 'descarga-sgs.yml'
               });
 
-              // Buscar el run más reciente
               const latestRun = runs.data.workflow_runs[0];
-
               if (latestRun) {
                 if (latestRun.status === 'in_progress') {
-                  sgsStarted = true;
-                  console.log(`⏳ SGS en progreso... (intento ${attempt}/${maxAttempts})`);
-                } else if (latestRun.status === 'completed' && sgsStarted) {
-                  console.log('✅ SGS completado');
+                  started = true;
+                  console.log(`[SGS] En progreso...`);
+                } else if (latestRun.status === 'completed' && started) {
+                  console.log('SGS completado');
                   completed = true;
-                } else if (!sgsStarted) {
-                  console.log('⏳ Esperando a que SGS inicie...');
                 }
               }
-
               if (!completed) {
                 attempt++;
-                // Esperar 30 segundos
                 await new Promise(resolve => setTimeout(resolve, 30000));
               }
             }
-
-            if (!completed) {
-              throw new Error('Timeout esperando a que SGS se complete');
-            }
+            if (!completed) throw new Error('Timeout SGS');
 
   descargar-concrelab:
-    name: 📊 Ejecutar Descarga Concrelab
+    name: 2. Descargar Concrelab
     runs-on: ubuntu-latest
     needs: descargar-sgs
     steps:
-      - name: 🚀 Disparar workflow Concrelab
+      - name: Disparar workflow Descarga Concrelab
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GH_TOKEN }}
           script: |
-            const result = await github.rest.actions.createWorkflowDispatch({
+            await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'descarga-concrelab.yml',
               ref: 'main'
             });
-            console.log('Workflow Concrelab disparado exitosamente');
+            console.log('Concrelab disparado');
 
-      - name: ⏳ Esperar a que Concrelab se complete
+      - name: Esperar a que Concrelab termine
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GH_TOKEN }}
           script: |
-            const maxAttempts = 120; // 2 horas máximo
+            const maxAttempts = 120;
             let attempt = 0;
             let completed = false;
 
@@ -105,34 +96,114 @@ jobs:
                 workflow_id: 'descarga-concrelab.yml',
                 status: 'in_progress'
               });
-
               if (runs.data.workflow_runs.length === 0) {
-                console.log('✅ Concrelab completado');
+                console.log('Concrelab completado');
                 completed = true;
               } else {
                 attempt++;
-                console.log(`⏳ Esperando Concrelab... intento ${attempt}/${maxAttempts}`);
-                // Esperar 30 segundos
                 await new Promise(resolve => setTimeout(resolve, 30000));
               }
             }
+            if (!completed) throw new Error('Timeout Concrelab');
 
-            if (!completed) {
-              throw new Error('Timeout esperando a que Concrelab se complete');
+  transformacion:
+    name: 3. Transformar Datos
+    runs-on: ubuntu-latest
+    needs: descargar-concrelab
+    steps:
+      - name: Disparar workflow Transformacion
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'transformacion.yml',
+              ref: 'main'
+            });
+            console.log('Transformacion disparado');
+
+      - name: Esperar a que Transformacion termine
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          script: |
+            const maxAttempts = 120;
+            let attempt = 0;
+            let completed = false;
+
+            while (attempt < maxAttempts && !completed) {
+              const runs = await github.rest.actions.listWorkflowRuns({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'transformacion.yml',
+                status: 'in_progress'
+              });
+              if (runs.data.workflow_runs.length === 0) {
+                console.log('Transformacion completado');
+                completed = true;
+              } else {
+                attempt++;
+                await new Promise(resolve => setTimeout(resolve, 30000));
+              }
             }
+            if (!completed) throw new Error('Timeout Transformacion');
+
+  consolidado-dashboard:
+    name: 4. Consolidado y Dashboard
+    runs-on: ubuntu-latest
+    needs: transformacion
+    steps:
+      - name: Disparar workflow Consolidado y Dashboard
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'consolidado-dashboard.yml',
+              ref: 'main'
+            });
+            console.log('Consolidado disparado');
+
+      - name: Esperar a que Consolidado termine
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          script: |
+            const maxAttempts = 120;
+            let attempt = 0;
+            let completed = false;
+
+            while (attempt < maxAttempts && !completed) {
+              const runs = await github.rest.actions.listWorkflowRuns({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'consolidado-dashboard.yml',
+                status: 'in_progress'
+              });
+              if (runs.data.workflow_runs.length === 0) {
+                console.log('Consolidado completado');
+                completed = true;
+              } else {
+                attempt++;
+                await new Promise(resolve => setTimeout(resolve, 30000));
+              }
+            }
+            if (!completed) throw new Error('Timeout Consolidado');
 
   reporte-final:
-    name: 📋 Reporte Final
+    name: 5. Reporte Final
     runs-on: ubuntu-latest
-    needs: [descargar-sgs, descargar-concrelab]
+    needs: [descargar-sgs, descargar-concrelab, transformacion, consolidado-dashboard]
     if: always()
     steps:
-      - name: ✅ Descargas completadas
+      - name: Ciclo completo
         run: |
-          echo "================================"
-          echo "✅ Ciclo de descargas completado"
-          echo "================================"
-          echo "1️⃣  SGS - Completado"
-          echo "2️⃣  Concrelab - Completado"
-          echo ""
-          echo "Próxima ejecución en el siguiente horario programado"
+          echo "Ciclo completo finalizado"
+          echo "1. Descarga SGS"
+          echo "2. Descarga Concrelab"
+          echo "3. Transformacion"
+          echo "4. Consolidado y Dashboard"
