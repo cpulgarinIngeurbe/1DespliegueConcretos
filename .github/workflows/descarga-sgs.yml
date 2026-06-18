@@ -92,26 +92,26 @@ jobs:
                       except:
                           print(f'[DEBUG] Error listando form-fields para {proyecto}')
 
-                      page.wait_for_selector("mat-form-field:has-text('Tip de Reporte')", timeout=20000)
+                      page.wait_for_selector("mat-form-field:has-text('Tip de Reporte')", timeout=30000)
                       page.click("mat-form-field:has-text('Tip de Reporte') div.mat-mdc-select-trigger")
-                      page.wait_for_timeout(1000)
+                      page.wait_for_timeout(500)
                       for _ in range(3):
                           page.keyboard.press("ArrowDown")
                       page.keyboard.press("Enter")
-                      page.wait_for_timeout(1500)
+                      page.wait_for_timeout(9000)
 
                       page.click("mat-form-field:has-text('Código de Obra') div.mat-mdc-select-trigger")
-                      page.wait_for_timeout(1000)
+                      page.wait_for_timeout(9000)
                       page.keyboard.press("ArrowDown")
                       page.keyboard.press("Enter")
-                      page.wait_for_timeout(1500)
+                      page.wait_for_timeout(9000)
 
                       page.click("mat-form-field:has-text('Tipo Material') div.mat-mdc-select-trigger")
-                      page.wait_for_timeout(1000)
+                      page.wait_for_timeout(9000)
                       page.keyboard.press("ArrowDown")
                       page.keyboard.press("ArrowUp")
                       page.keyboard.press("Enter")
-                      page.wait_for_timeout(1500)
+                      page.wait_for_timeout(9000)
 
                       page.keyboard.press("Escape")
                       page.keyboard.press("Escape")
@@ -129,27 +129,25 @@ jobs:
                       except:
                           pass
 
-                      # Debug: Tomar screenshot antes de descargar
-                      page.screenshot(path=f'datos/screenshot_{proyecto}_predownload.png')
-
-                      # Debug: Buscar posibles botones de descarga
+                      # Debug: ver qué mat-form-fields existen
                       try:
-                          buttons = page.query_selector_all("button")
-                          print(f'[DEBUG] Total buttons encontrados: {len(buttons)}')
-                          for i, btn in enumerate(buttons[:10]):
-                              inner = page.evaluate('(btn) => btn.innerHTML', btn)
-                              print(f'[DEBUG] Button {i}: {inner[:100]}')
+                          form_fields = page.query_selector_all("mat-form-field")
+                          print(f'[DEBUG] Total mat-form-fields para {proyecto}: {len(form_fields)}')
+                          for i, field in enumerate(form_fields[:5]):
+                              text = page.evaluate('(f) => f.textContent', field)
+                              print(f'[DEBUG] Field {i}: {text[:50]}')
                       except:
-                          print('[DEBUG] Error buscando botones')
+                          print(f'[DEBUG] Error listando form-fields para {proyecto}')
 
                       # Descargar con reintentos
                       descargado = False
                       for intento in range(1, 4):
                           try:
-                              page.wait_for_selector("button:has(i.icon-file-excel)", timeout=20000)
-                              with page.expect_download(timeout=45000) as download_info:
-                                  page.click("button:has(i.icon-file-excel)")
+                              page.wait_for_selector("button:has(i.icon-file-excel)", timeout=60000)
+                              with page.expect_download(timeout=60000) as download_info:
+                                  page.locator("button:has(i.icon-file-excel)").click()
 
+                              page.wait_for_timeout(9000)
                               download = download_info.value
                               filepath = f'datos/reporte_sgs_{proyecto}.xlsx'
                               download.save_as(filepath)
@@ -160,7 +158,7 @@ jobs:
                               if intento < 3:
                                   print(f'[!] Intento {intento} falló, reintentando...')
                                   page.reload()
-                                  page.wait_for_timeout(2000)
+                                  page.wait_for_timeout(3000)
                               else:
                                   print(f'[!] Falló después de 3 intentos: {str(e)[:50]}')
                                   raise
