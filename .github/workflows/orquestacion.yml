@@ -1,0 +1,116 @@
+name: 🔄 Orquestación SGS + Concrelab
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ejecutar-sgs:
+    name: Ejecutar descarga SGS
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: ⚡ Disparar workflow descarga-sgs.yml
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "[*] Disparando descarga-sgs.yml..."
+          RUN_ID=$(gh workflow run descarga-sgs.yml --repo ${{ github.repository }} --ref main -q)
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "[+] Workflow disparado con RUN_ID: $RUN_ID"
+
+      - name: ⏳ Esperar a que termine descarga-sgs.yml
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          RUN_ID=${{ env.RUN_ID }}
+          WORKFLOW_NAME="descarga-sgs.yml"
+          TIMEOUT=1800
+          ELAPSED=0
+          INTERVAL=10
+
+          echo "[*] Esperando que termine $WORKFLOW_NAME (timeout: ${TIMEOUT}s)..."
+
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            STATUS=$(gh run view $RUN_ID --repo ${{ github.repository }} --json conclusion --jq '.conclusion' 2>/dev/null || echo "pending")
+
+            if [ "$STATUS" = "success" ]; then
+              echo "[+] ✅ $WORKFLOW_NAME completado exitosamente"
+              exit 0
+            elif [ "$STATUS" = "failure" ] || [ "$STATUS" = "cancelled" ]; then
+              echo "[!] ❌ $WORKFLOW_NAME falló o fue cancelado (status: $STATUS)"
+              exit 1
+            fi
+
+            echo "[*] Estado: in_progress... (${ELAPSED}s)"
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+
+          echo "[!] ⏱️ Timeout esperando $WORKFLOW_NAME"
+          exit 1
+
+  ejecutar-concrelab:
+    name: Ejecutar descarga Concrelab
+    runs-on: ubuntu-latest
+    needs: ejecutar-sgs
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: ⚡ Disparar workflow descarga-concrelab.yml
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "[*] Disparando descarga-concrelab.yml..."
+          RUN_ID=$(gh workflow run descarga-concrelab.yml --repo ${{ github.repository }} --ref main -q)
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "[+] Workflow disparado con RUN_ID: $RUN_ID"
+
+      - name: ⏳ Esperar a que termine descarga-concrelab.yml
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          RUN_ID=${{ env.RUN_ID }}
+          WORKFLOW_NAME="descarga-concrelab.yml"
+          TIMEOUT=1800
+          ELAPSED=0
+          INTERVAL=10
+
+          echo "[*] Esperando que termine $WORKFLOW_NAME (timeout: ${TIMEOUT}s)..."
+
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            STATUS=$(gh run view $RUN_ID --repo ${{ github.repository }} --json conclusion --jq '.conclusion' 2>/dev/null || echo "pending")
+
+            if [ "$STATUS" = "success" ]; then
+              echo "[+] ✅ $WORKFLOW_NAME completado exitosamente"
+              exit 0
+            elif [ "$STATUS" = "failure" ] || [ "$STATUS" = "cancelled" ]; then
+              echo "[!] ❌ $WORKFLOW_NAME falló o fue cancelado (status: $STATUS)"
+              exit 1
+            fi
+
+            echo "[*] Estado: in_progress... (${ELAPSED}s)"
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+
+          echo "[!] ⏱️ Timeout esperando $WORKFLOW_NAME"
+          exit 1
+
+  notificar-completado:
+    name: Notificación de finalización
+    runs-on: ubuntu-latest
+    needs: [ejecutar-sgs, ejecutar-concrelab]
+    if: always()
+    steps:
+      - name: ✅ Orquestación completada
+        run: |
+          echo "[+] 🎉 Orquestación completada exitosamente"
+          echo "    - Descarga SGS: completada"
+          echo "    - Descarga Concrelab: completada"
