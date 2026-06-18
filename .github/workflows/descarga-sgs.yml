@@ -78,7 +78,13 @@ jobs:
                       page.wait_for_timeout(3000)
 
                       page.click("a.btn.btn-primary.icon-format-list-checks")
-                      page.wait_for_timeout(3000)
+                      page.wait_for_timeout(10000)
+
+                      try:
+                          page.click("button[data-dismiss='modal']", timeout=10000)
+                      except:
+                          pass
+
                       page.keyboard.press("Escape")
                       page.wait_for_timeout(2000)
 
@@ -95,24 +101,24 @@ jobs:
                       page.wait_for_timeout(5000)
                       page.wait_for_selector("mat-form-field:has-text('Tip de Reporte')", timeout=30000)
                       page.click("mat-form-field:has-text('Tip de Reporte') div.mat-mdc-select-trigger", timeout=60000)
-                      page.wait_for_timeout(500)
+                      page.wait_for_timeout(3000)
                       for _ in range(3):
                           page.keyboard.press("ArrowDown")
                       page.keyboard.press("Enter")
-                      page.wait_for_timeout(9000)
+                      page.wait_for_timeout(2000)
 
                       page.click("mat-form-field:has-text('Código de Obra') div.mat-mdc-select-trigger", timeout=60000)
-                      page.wait_for_timeout(9000)
+                      page.wait_for_timeout(3000)
                       page.keyboard.press("ArrowDown")
                       page.keyboard.press("Enter")
-                      page.wait_for_timeout(9000)
+                      page.wait_for_timeout(2000)
 
                       page.click("mat-form-field:has-text('Tipo Material') div.mat-mdc-select-trigger", timeout=60000)
-                      page.wait_for_timeout(9000)
+                      page.wait_for_timeout(3000)
                       page.keyboard.press("ArrowDown")
                       page.keyboard.press("ArrowUp")
                       page.keyboard.press("Enter")
-                      page.wait_for_timeout(9000)
+                      page.wait_for_timeout(2000)
 
                       page.keyboard.press("Escape")
                       page.keyboard.press("Escape")
