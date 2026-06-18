@@ -1,56 +1,73 @@
-name: Transformar + JOIN - Concrelab + SGS
+name: Transformacion Completa SGS y Concrelab
 
 on:
   workflow_dispatch:
 
 jobs:
-  transformar-datos:
+  transform:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_TOKEN }}
-
-      - name: Configurar Python 3.11
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+      - run: pip install pandas openpyxl
+      - run: mkdir -p DatosTransformados && rm -rf DatosTransformados/*.xlsx
+      - run: python3 << 'PYSCRIPT'
+import pandas as pd, os
+from openpyxl import load_workbook
+from openpyxl.styles import PatternFill, Font
 
-      - name: Instalar dependencias
-        run: |
-          pip install pandas openpyxl
+os.makedirs("DatosTransformados", exist_ok=True)
 
-      - name: Crear carpeta DatosTransformados
-        run: |
-          mkdir -p DatosTransformados
-          echo "[+] Carpeta DatosTransformados creada"
+def obtener_tipo(loc):
+    if pd.isna(loc): return None
+    loc_upper = str(loc).upper()
+    if "MURO" in loc_upper: return "MURO"
+    elif "PLACA" in loc_upper: return "PLACA"
+    elif "AUTOCOMPACTABLE" in loc_upper: return "AUTOCOMPACTABLE"
+    elif "TREMIE" in loc_upper: return "TREMIE"
+    return None
 
-      - name: Limpiar DatosTransformados
-        run: |
-          rm -rf DatosTransformados/*.xlsx
-          echo "[+] DatosTransformados limpiada"
+def formatear(ruta, df):
+    wb = load_workbook(ruta)
+    ws = wb.active
+    for row in range(2, ws.max_row + 1):
+        for col in range(1, ws.max_column + 1):
+            ws.cell(row, col).fill = PatternFill(start_color="90EE90", fill_type="solid")
+    for col in range(1, ws.max_column + 1):
+        ws.cell(1, col).fill = PatternFill(start_color="1F4788", fill_type="solid")
+        ws.cell(1, col).font = Font(color="FFFFFF")
+    wb.save(ruta)
 
-      - name: Transformar archivos
-        run: python .github/scripts/transform_data.py
+for archivo in [f for f in os.listdir("datos") if f.endswith('.xlsx')]:
+    if 'sgs' in archivo.lower():
+        df = pd.read_excel(os.path.join("datos", archivo))
+        df = df.rename(columns={'codigoObra': 'Proyecto', 'edad': 'Edad (dias)', 'Resistencia Mpa': 'Resistencia (MPa)'})
+        df['TIPO'] = df['Localizacion'].apply(obtener_tipo) if 'Localizacion' in df.columns else None
+        df.to_excel(os.path.join("DatosTransformados", archivo), index=False)
+        formatear(os.path.join("DatosTransformados", archivo), df)
+        print(f"[+] {archivo} transformado")
+    elif 'concrelab' in archivo.lower():
+        df = pd.read_excel(os.path.join("datos", archivo), skiprows=3)
+        df['TIPO'] = df['Localizacion'].apply(obtener_tipo) if 'Localizacion' in df.columns else None
+        df.to_excel(os.path.join("DatosTransformados", archivo), index=False)
+        formatear(os.path.join("DatosTransformados", archivo), df)
+        print(f"[+] {archivo} transformado")
 
-      - name: Configurar Git
-        run: |
-          git config --global user.email "action@github.com"
-          git config --global user.name "GitHub Action Bot"
-
+print("[+] Transformaciones completadas")
+PYSCRIPT
+      
       - name: Commit y Push
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          git config --global url."https://github-actions:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action Bot"
           git add DatosTransformados/
-          if git diff --quiet --cached; then
-            echo "[*] Sin cambios nuevos"
-          else
-            git commit -m "[AUTO] Transformacion completa - $(date '+%Y-%m-%d %H:%M:%S')"
+          if ! git diff --quiet --cached; then
+            git commit -m "[AUTO] Transformacion completa"
+            git config --global url."https://github-actions:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
             git pull --rebase origin main
             git push origin main
-            echo "[+] Push completado"
           fi
