@@ -12,9 +12,8 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install pandas openpyxl
-      - run: mkdir -p DatosTransformados && rm -rf DatosTransformados/*.xlsx
       
-      - name: Transformar archivos
+      - name: Transformar y reemplazar archivos
         shell: python
         run: |
           import pandas as pd
@@ -22,7 +21,7 @@ jobs:
           from openpyxl import load_workbook
           from openpyxl.styles import PatternFill, Font
           
-          os.makedirs("DatosTransformados", exist_ok=True)
+          ruta_datos = "datos"
           
           def obtener_tipo(loc):
               if pd.isna(loc):
@@ -49,38 +48,41 @@ jobs:
                   ws.cell(1, col).font = Font(color="FFFFFF")
               wb.save(ruta)
           
-          archivos = [f for f in os.listdir("datos") if f.endswith('.xlsx')]
+          archivos = [f for f in os.listdir(ruta_datos) if f.endswith('.xlsx')]
           print(f"[*] Archivos encontrados: {archivos}")
           
           for archivo in archivos:
-              ruta_origen = os.path.join("datos", archivo)
-              ruta_destino = os.path.join("DatosTransformados", archivo)
+              ruta_archivo = os.path.join(ruta_datos, archivo)
               
               if 'sgs' in archivo.lower():
-                  df = pd.read_excel(ruta_origen)
+                  print(f"[*] Transformando SGS: {archivo}")
+                  df = pd.read_excel(ruta_archivo)
                   df = df.rename(columns={'codigoObra': 'Proyecto', 'edad': 'Edad (dias)', 'Resistencia Mpa': 'Resistencia (MPa)'})
                   if 'Localizacion' in df.columns:
                       df['TIPO'] = df['Localizacion'].apply(obtener_tipo)
-                  df.to_excel(ruta_destino, index=False)
-                  formatear(ruta_destino, df)
-                  print(f"[+] {archivo} transformado")
+                  df.to_excel(ruta_archivo, index=False)
+                  formatear(ruta_archivo, df)
+                  print(f"[+] SGS transformado y reemplazado")
               
               elif 'concrelab' in archivo.lower():
-                  df = pd.read_excel(ruta_origen, skiprows=3)
+                  print(f"[*] Transformando Concrelab: {archivo}")
+                  df = pd.read_excel(ruta_archivo, skiprows=3)
                   if 'Localizacion' in df.columns:
                       df['TIPO'] = df['Localizacion'].apply(obtener_tipo)
-                  df.to_excel(ruta_destino, index=False)
-                  formatear(ruta_destino, df)
-                  print(f"[+] {archivo} transformado")
+                  df.to_excel(ruta_archivo, index=False)
+                  formatear(ruta_archivo, df)
+                  print(f"[+] Concrelab transformado y reemplazado")
           
-          print("[+] Transformaciones completadas")
+          print("[+] Todas las transformaciones completadas y archivos reemplazados")
       
       - name: Commit y Push
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action Bot"
-          git add DatosTransformados/
+          git add datos/
           if ! git diff --quiet --cached; then
-            git commit -m "[AUTO] Transformacion completa"
+            git commit -m "[AUTO] Transformacion completa - archivos reemplazados"
             git push "https://github-actions:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main
           fi
