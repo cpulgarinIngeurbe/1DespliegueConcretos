@@ -20,108 +20,105 @@ jobs:
         run: pip install pandas openpyxl
 
       - name: Transformar SGS y Concrelab
+        shell: python
         run: |
-          python3 << 'PYEOF'
-import pandas as pd
-import os
-from pathlib import Path
-from openpyxl import load_workbook
-from openpyxl.styles import PatternFill, Font
+          import pandas as pd
+          import os
+          from pathlib import Path
+          from openpyxl import load_workbook
+          from openpyxl.styles import PatternFill, Font
 
-ruta_datos = "datos"
-Path(ruta_datos).mkdir(exist_ok=True)
+          ruta_datos = "datos"
+          Path(ruta_datos).mkdir(exist_ok=True)
 
-# Estilo para encabezados
-azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
-blanco = Font(color="FFFFFF", bold=True)
+          # Estilo para encabezados
+          azul = PatternFill(start_color="1F4788", end_color="1F4788", fill_type="solid")
+          blanco = Font(color="FFFFFF", bold=True)
 
-print("[*] Iniciando transformacion de datos\n")
+          print("[*] Iniciando transformacion de datos\n")
 
-# ===== TRANSFORMAR SGS =====
-print("[*] Transformando archivos SGS...")
-archivos_sgs = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_sgs_') and f.endswith('.xlsx')]
+          # ===== TRANSFORMAR SGS =====
+          print("[*] Transformando archivos SGS...")
+          archivos_sgs = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_sgs_') and f.endswith('.xlsx')]
 
-for archivo in archivos_sgs:
-    try:
-        ruta = os.path.join(ruta_datos, archivo)
-        df = pd.read_excel(ruta)
-        
-        print(f"  - {archivo}")
-        print(f"    Columnas originales: {list(df.columns[:5])}")
-        
-        # Renombrar columnas para SGS
-        columnas_nuevas = {}
-        if 'codigoObra' in df.columns:
-            columnas_nuevas['codigoObra'] = 'Proyecto'
-        if 'tipoMaterial' in df.columns:
-            columnas_nuevas['tipoMaterial'] = 'Material'
-        if 'edad' in df.columns:
-            columnas_nuevas['edad'] = 'Dias'
-        if 'Resistencia Mpa' in df.columns:
-            columnas_nuevas['Resistencia Mpa'] = 'Resistencia_MPa'
-        
-        df = df.rename(columns=columnas_nuevas)
-        
-        # Guardar y formatear
-        df.to_excel(ruta, index=False, engine='openpyxl')
-        wb = load_workbook(ruta)
-        ws = wb.active
-        
-        for col in range(1, ws.max_column + 1):
-            ws.cell(1, col).fill = azul
-            ws.cell(1, col).font = blanco
-        
-        wb.save(ruta)
-        print(f"    OK - Transformado y formateado")
-        
-    except Exception as e:
-        print(f"    ERROR: {str(e)[:80]}")
+          for archivo in archivos_sgs:
+              try:
+                  ruta = os.path.join(ruta_datos, archivo)
+                  df = pd.read_excel(ruta)
+                  
+                  print(f"  - {archivo}")
+                  print(f"    Columnas: {list(df.columns[:3])}")
+                  
+                  # Renombrar columnas para SGS
+                  columnas_nuevas = {}
+                  if 'codigoObra' in df.columns:
+                      columnas_nuevas['codigoObra'] = 'Proyecto'
+                  if 'tipoMaterial' in df.columns:
+                      columnas_nuevas['tipoMaterial'] = 'Material'
+                  if 'edad' in df.columns:
+                      columnas_nuevas['edad'] = 'Dias'
+                  if 'Resistencia Mpa' in df.columns:
+                      columnas_nuevas['Resistencia Mpa'] = 'Resistencia_MPa'
+                  
+                  df = df.rename(columns=columnas_nuevas)
+                  
+                  # Guardar y formatear
+                  df.to_excel(ruta, index=False, engine='openpyxl')
+                  wb = load_workbook(ruta)
+                  ws = wb.active
+                  
+                  for col in range(1, ws.max_column + 1):
+                      ws.cell(1, col).fill = azul
+                      ws.cell(1, col).font = blanco
+                  
+                  wb.save(ruta)
+                  print(f"    OK - Transformado")
+                  
+              except Exception as e:
+                  print(f"    ERROR: {str(e)[:80]}")
 
-# ===== TRANSFORMAR CONCRELAB =====
-print("\n[*] Transformando archivos Concrelab...")
-archivos_concrelab = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_concrelab_') and f.endswith('.xlsx')]
+          # ===== TRANSFORMAR CONCRELAB =====
+          print("\n[*] Transformando archivos Concrelab...")
+          archivos_concrelab = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_concrelab_') and f.endswith('.xlsx')]
 
-for archivo in archivos_concrelab:
-    try:
-        ruta = os.path.join(ruta_datos, archivo)
-        
-        # Concrelab tiene encabezados en fila 4, skipear las primeras 3
-        df = pd.read_excel(ruta, skiprows=3)
-        
-        print(f"  - {archivo}")
-        print(f"    Columnas originales: {list(df.columns[:5])}")
-        
-        # Renombrar columnas para Concrelab
-        columnas_nuevas = {}
-        if 'Dias de edad' in df.columns:
-            columnas_nuevas['Dias de edad'] = 'Dias'
-        if 'Resistencia (Mpa)' in df.columns:
-            columnas_nuevas['Resistencia (Mpa)'] = 'Resistencia_MPa'
-        
-        df = df.rename(columns=columnas_nuevas)
-        
-        # Guardar y formatear
-        df.to_excel(ruta, index=False, engine='openpyxl')
-        wb = load_workbook(ruta)
-        ws = wb.active
-        
-        for col in range(1, ws.max_column + 1):
-            ws.cell(1, col).fill = azul
-            ws.cell(1, col).font = blanco
-        
-        wb.save(ruta)
-        print(f"    OK - Transformado y formateado")
-        
-    except Exception as e:
-        print(f"    ERROR: {str(e)[:80]}")
+          for archivo in archivos_concrelab:
+              try:
+                  ruta = os.path.join(ruta_datos, archivo)
+                  
+                  # Concrelab tiene encabezados en fila 4
+                  df = pd.read_excel(ruta, skiprows=3)
+                  
+                  print(f"  - {archivo}")
+                  print(f"    Columnas: {list(df.columns[:3])}")
+                  
+                  # Renombrar columnas para Concrelab
+                  columnas_nuevas = {}
+                  if 'Dias de edad' in df.columns:
+                      columnas_nuevas['Dias de edad'] = 'Dias'
+                  if 'Resistencia (Mpa)' in df.columns:
+                      columnas_nuevas['Resistencia (Mpa)'] = 'Resistencia_MPa'
+                  
+                  df = df.rename(columns=columnas_nuevas)
+                  
+                  # Guardar y formatear
+                  df.to_excel(ruta, index=False, engine='openpyxl')
+                  wb = load_workbook(ruta)
+                  ws = wb.active
+                  
+                  for col in range(1, ws.max_column + 1):
+                      ws.cell(1, col).fill = azul
+                      ws.cell(1, col).font = blanco
+                  
+                  wb.save(ruta)
+                  print(f"    OK - Transformado")
+                  
+              except Exception as e:
+                  print(f"    ERROR: {str(e)[:80]}")
 
-print("\n[+] Transformacion completada")
-PYEOF
+          print("\n[+] Transformacion completada")
 
-      - name: Verificar archivos transformados
-        run: |
-          echo "[*] Archivos en datos/"
-          ls -lh datos/
+      - name: Verificar archivos
+        run: ls -lh datos/
 
       - name: Commit y Push
         env:
@@ -131,11 +128,10 @@ PYEOF
           git config --global user.name "GitHub Action Bot"
           git add datos/
           if git diff --quiet --cached; then
-            echo "[*] Sin cambios en datos/"
+            echo "[*] Sin cambios"
           else
-            git commit -m "[AUTO] Transform data - $(date '+%Y-%m-%d %H:%M:%S')"
+            git commit -m "[AUTO] Transform data"
             git config --global url."https://github-actions:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
             git pull --rebase origin main
             git push origin main
-            echo "[+] Push completado"
           fi
