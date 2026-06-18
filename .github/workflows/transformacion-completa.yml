@@ -6,6 +6,8 @@ on:
 jobs:
   transform:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
@@ -75,11 +77,12 @@ jobs:
           
           print("[+] Todas las transformaciones completadas")
       
-      - name: Commit cambios
+      - name: Commit y Push
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action Bot"
           git add datos/
           if ! git diff --quiet --cached; then
             git commit -m "[AUTO] Transformacion completa - archivos reemplazados en datos/"
+            git push
           fi
