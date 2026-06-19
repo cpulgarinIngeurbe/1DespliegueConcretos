@@ -109,6 +109,24 @@ jobs:
               if columnas_no_encontradas:
                   print(f'[!] Columnas no encontradas: {", ".join(columnas_no_encontradas)}')
 
+              # Renombrar columnas especificadas
+              renombramientos = {
+                  'label': 'Cilindro N°',
+                  'localizacion': 'Localización',
+                  'fechaMuestreo': 'Toma',
+                  'fechaRotura': 'Rotura',
+                  'edad': 'Edad (días)',
+                  'Resistencia Nominal Mpa': 'Resistencia nominal (MPa)',
+                  'Resistencia Mpa': 'Resistencia (MPa)',
+                  'porcentaje': 'Resistencia (%)',
+                  'tipoMaterial': 'Tipo de mezcla'
+              }
+
+              columnas_renombradas = [col for col in renombramientos.keys() if col in df.columns]
+              if columnas_renombradas:
+                  df = df.rename(columns=renombramientos)
+                  print(f'[+] Columnas renombradas ({len(columnas_renombradas)}): {", ".join(columnas_renombradas)}')
+
               # Guardar el archivo transformado
               df.to_excel(ruta_destino, index=False)
               print(f'[+] ✅ {archivo} transformado y guardado en DatosTransformados/')
