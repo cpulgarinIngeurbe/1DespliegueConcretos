@@ -58,7 +58,17 @@ jobs:
 
               # Leer el archivo saltando las 3 primeras filas
               df = pd.read_excel(ruta_origen, skiprows=3)
-              print(f'[+] Filas innecesarias eliminadas. Forma: {df.shape}')
+              print(f'[+] Filas iniciales: {len(df)}')
+
+              # Filtrar solo registros donde "Tipo de mezcla" contiene "Concreto"
+              if 'Tipo de mezcla' in df.columns:
+                  df_original = len(df)
+                  df = df[df['Tipo de mezcla'].str.contains('Concreto', case=False, na=False)]
+                  filas_filtradas = df_original - len(df)
+                  print(f'[+] Filtrados por "Concreto": {len(df)} filas (eliminadas {filas_filtradas})')
+              else:
+                  print(f'[!] Advertencia: Campo "Tipo de mezcla" no encontrado')
+                  print(f'[*] Columnas disponibles: {list(df.columns)}')
 
               # Guardar el archivo sin imágenes
               df.to_excel(ruta_destino, index=False)
@@ -78,9 +88,9 @@ jobs:
                           ws._drawing._images = []
 
               wb.save(ruta_destino)
-              print(f'[+] Imágenes eliminadas y guardado en DatosTransformados/')
+              print(f'[+] ✅ {archivo} transformado y guardado en DatosTransformados/')
 
-          print('\n[+] ✓ Limpieza completada')
+          print('\n[+] ✓ Transformación completada')
 
           EOF
 
