@@ -46,15 +46,17 @@ jobs:
 
           print(f'[+] Columnas: {", ".join(columnas)}')
 
-          tabla_html = df.head(100).to_html(classes='w-full border-collapse', index=False, justify='center')
+          # Obtener proyectos únicos
+          proyectos = df['Proyecto'].unique().tolist() if 'Proyecto' in df.columns else []
+          proyectos_sorted = sorted([p for p in proyectos if pd.notna(p)])
 
-          stats_html = ''
-          for col in columnas[:5]:
-              if pd.api.types.is_numeric_dtype(df[col]):
-                  media = df[col].mean()
-                  maximo = df[col].max()
-                  minimo = df[col].min()
-                  stats_html += f'<div class="glass-card-light p-4 rounded-lg border border-accent-active/20"><h3 class="font-label-sm text-accent-active uppercase tracking-wider mb-3">{col}</h3><div class="space-y-1 text-sm"><p><span class="text-secondary font-semibold">Media:</span> {media:.2f}</p><p><span class="text-secondary font-semibold">Máximo:</span> {maximo:.2f}</p><p><span class="text-secondary font-semibold">Mínimo:</span> {minimo:.2f}</p></div></div>'
+          # Convertir DataFrame a JSON
+          datos_json = df.to_json(orient='records')
+
+          # Generar opciones del dropdown
+          opciones_html = '<option value="">-- Seleccione el proyecto --</option>'
+          for proyecto in proyectos_sorted:
+              opciones_html += f'<option value="{proyecto}">{proyecto}</option>'
 
           html = f"""<!DOCTYPE html>
           <html class="light" lang="es">
@@ -62,10 +64,17 @@ jobs:
               <meta charset="utf-8">
               <meta content="width=device-width, initial-scale=1.0" name="viewport">
               <title>Consolidado de Resistencias</title>
-              <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
               <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
               <style>
-                  body {{ background-color: #ffffff; color: #141311; margin: 0; padding: 24px; }}
+                  body {{ background-color: #ffffff; color: #141311; margin: 0; padding: 24px; font-family: 'Inter', sans-serif; }}
+                  .container {{ max-width: 1440px; margin: 0 auto; }}
+                  .selector-section {{ margin-bottom: 32px; }}
+                  .selector-label {{ font-size: 12px; color: #4B4F1D; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 8px; display: block; }}
+                  .selector-dropdown {{ width: 100%; padding: 12px 16px; border: 2px solid #A3C610; background-color: #ffffff; color: #141311; border-radius: 4px; font-size: 16px; cursor: pointer; font-family: 'Inter', sans-serif; }}
+                  .selector-dropdown:hover {{ background-color: #f8f8f7; }}
+                  .selector-dropdown:focus {{ outline: none; background-color: #4B4F1D; color: #A3C610; }}
+                  .table-section {{ display: none; }}
+                  .table-section.active {{ display: block; }}
                   table {{ border-collapse: collapse; width: 100%; }}
                   table th {{ background-color: #4B4F1D; color: #ffffff; padding: 12px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; }}
                   table td {{ padding: 12px; border-bottom: 1px solid #e5e2dd; }}
@@ -73,7 +82,72 @@ jobs:
               </style>
           </head>
           <body>
-              {tabla_html}
+              <div class="container">
+                  <div class="selector-section">
+                      <label class="selector-label">Seleccione el proyecto</label>
+                      <select id="proyectoSelector" class="selector-dropdown">
+                          {opciones_html}
+                      </select>
+                  </div>
+                  <div id="tableSection" class="table-section">
+                      <table id="dataTable">
+                          <thead></thead>
+                          <tbody></tbody>
+                      </table>
+                  </div>
+              </div>
+
+              <script>
+                  const datosCompletos = {datos_json};
+                  const selector = document.getElementById('proyectoSelector');
+                  const tableSection = document.getElementById('tableSection');
+                  const dataTable = document.getElementById('dataTable');
+
+                  selector.addEventListener('change', function() {{
+                      const proyectoSeleccionado = this.value;
+
+                      if (!proyectoSeleccionado) {{
+                          tableSection.classList.remove('active');
+                          return;
+                      }}
+
+                      // Filtrar datos por proyecto
+                      const datosFiltrados = datosCompletos.filter(row => row['Proyecto'] === proyectoSeleccionado);
+
+                      // Generar tabla
+                      if (datosFiltrados.length > 0) {{
+                          const thead = dataTable.querySelector('thead');
+                          const tbody = dataTable.querySelector('tbody');
+
+                          // Limpiar tabla
+                          thead.innerHTML = '';
+                          tbody.innerHTML = '';
+
+                          // Generar encabezados
+                          const headers = Object.keys(datosFiltrados[0]);
+                          const headerRow = document.createElement('tr');
+                          headers.forEach(header => {{
+                              const th = document.createElement('th');
+                              th.textContent = header;
+                              headerRow.appendChild(th);
+                          }});
+                          thead.appendChild(headerRow);
+
+                          // Generar filas de datos
+                          datosFiltrados.forEach(row => {{
+                              const tr = document.createElement('tr');
+                              headers.forEach(header => {{
+                                  const td = document.createElement('td');
+                                  td.textContent = row[header] !== null ? row[header] : '';
+                                  tr.appendChild(td);
+                              }});
+                              tbody.appendChild(tr);
+                          }});
+
+                          tableSection.classList.add('active');
+                      }}
+                  }});
+              </script>
           </body>
           </html>"""
 
