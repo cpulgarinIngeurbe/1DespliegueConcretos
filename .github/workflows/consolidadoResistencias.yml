@@ -92,7 +92,8 @@ jobs:
                   '23472 - TERRA (MANAZANA 4)': 'TERRA',
                   '24603 - FLORA - PARQUE CENTRAL LOS ROBLES': 'FLORA',
                   'B-19322 VIALE 26': 'VIALE 26',
-                  'B-19322 NATIVA': 'NATIVA'
+                  'B-19322 NATIVA': 'NATIVA',
+                  'B-19388 NATIVA': 'NATIVA'
               }
 
               valores_antes = df_consolidado['Proyecto'].nunique()
