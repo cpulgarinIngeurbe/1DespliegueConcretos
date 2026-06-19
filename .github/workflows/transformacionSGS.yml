@@ -104,6 +104,11 @@ jobs:
               if columnas_no_encontradas:
                   print(f'[!] Columnas no encontradas: {", ".join(columnas_no_encontradas)}')
 
+              # Ordenar por "fechaMuestreo" de Z-A (descendente)
+              if 'fechaMuestreo' in df.columns:
+                  df = df.sort_values('fechaMuestreo', ascending=False)
+                  print(f'[+] Datos ordenados por fechaMuestreo (Z-A)')
+
               # Guardar el archivo transformado
               df.to_excel(ruta_destino, index=False)
               print(f'[+] ✅ {archivo} transformado y guardado en DatosTransformados/')
