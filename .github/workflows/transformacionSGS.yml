@@ -119,7 +119,8 @@ jobs:
                   'Resistencia Nominal Mpa': 'Resistencia nominal (MPa)',
                   'Resistencia Mpa': 'Resistencia (MPa)',
                   'porcentaje': 'Resistencia (%)',
-                  'tipoMaterial': 'Tipo de mezcla'
+                  'tipoMaterial': 'Tipo de mezcla',
+                  'codigoObra': 'Proyecto'
               }
 
               columnas_renombradas = [col for col in renombramientos.keys() if col in df.columns]
