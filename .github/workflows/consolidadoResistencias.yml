@@ -1,0 +1,106 @@
+name: 📦 Consolidado de Resistencias
+
+on:
+  workflow_dispatch:
+
+jobs:
+  consolidar-datos:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: 🐍 Configurar Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Instalar dependencias
+        run: |
+          pip install pandas openpyxl
+
+      - name: 📁 Crear carpeta desplegable
+        run: |
+          mkdir -p desplegable
+          echo "[+] ✓ Carpeta desplegable creada"
+
+      - name: 📋 Consolidar archivos transformados
+        run: |
+          python << 'EOF'
+          import pandas as pd
+          import os
+          from pathlib import Path
+
+          ruta_datos_transformados = "DatosTransformados"
+          ruta_desplegable = "desplegable"
+          archivo_consolidado = os.path.join(ruta_desplegable, "ConsolidadoResistencias.xlsx")
+
+          # Buscar todos los archivos Excel en DatosTransformados (excluyendo consolidado si existe)
+          archivos_excel = [f for f in os.listdir(ruta_datos_transformados)
+                          if f.endswith('.xlsx')
+                          and f != 'consolidado_concrelab.xlsx'
+                          and not f.startswith('Consolidado')]
+
+          print(f'[*] Archivos encontrados para consolidar: {archivos_excel}')
+
+          if not archivos_excel:
+              print('[!] No se encontraron archivos para consolidar')
+              exit(0)
+
+          # Leer y consolidar todos los archivos
+          dataframes = []
+          for archivo in archivos_excel:
+              ruta_archivo = os.path.join(ruta_datos_transformados, archivo)
+              print(f'[*] Leyendo: {archivo}')
+              try:
+                  df = pd.read_excel(ruta_archivo)
+                  print(f'  [+] {len(df)} registros cargados')
+                  dataframes.append(df)
+              except Exception as e:
+                  print(f'  [!] Error al leer {archivo}: {str(e)}')
+
+          if not dataframes:
+              print('[!] No se pudieron leer los archivos')
+              exit(1)
+
+          # Consolidar todos los DataFrames
+          df_consolidado = pd.concat(dataframes, ignore_index=True)
+          print(f'\n[+] Consolidado creado: {len(df_consolidado)} registros totales')
+          print(f'[+] Columnas del consolidado: {list(df_consolidado.columns)}')
+
+          # Guardar el consolidado
+          df_consolidado.to_excel(archivo_consolidado, index=False)
+          print(f'[+] ✅ Consolidado guardado en: {archivo_consolidado}')
+
+          EOF
+
+      - name: 🔧 Configurar Git
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action Bot"
+
+      - name: 🤖 Commit y Push
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git add desplegable/
+
+          if git diff --quiet --cached; then
+            echo "[*] Sin cambios nuevos"
+          else
+            git commit -m "[AUTO] Consolidado de Resistencias - $(date '+%Y-%m-%d %H:%M:%S')"
+            git pull --rebase origin main
+            git push origin main
+            echo "[+] ✓ Push completado"
+          fi
+
+      - name: 📊 Reporte final
+        if: always()
+        run: |
+          echo "=== CONSOLIDADO DE RESISTENCIAS COMPLETADO ==="
+          echo ""
+          echo "📤 Archivo consolidado:"
+          ls -lh desplegable/ 2>/dev/null || echo "No hay archivos"
