@@ -74,7 +74,7 @@ jobs:
                   .selector-dropdown:hover {{ background-color: #f8f8f7; }}
                   .selector-dropdown:focus {{ outline: none; border-color: #4B4F1D; background-color: #fffdf8; }}
                   .proyecto-input-row {{ display: flex; gap: 12px; align-items: flex-end; margin-bottom: 32px; }}
-                  .proyecto-input-wrapper {{ flex: 1; }}
+                  .proyecto-input-wrapper {{ flex: 0 1 auto; width: 65%; }}
                   .proyecto-input-wrapper .selector-label {{ margin-bottom: 8px; }}
                   .proyecto-input-wrapper input {{ width: 100%; }}
                   .btn-reset {{ padding: 12px 24px; border: 2px solid #A3C610; background-color: #4B4F1D; color: #A3C610; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s ease; }}
