@@ -37,7 +37,6 @@ jobs:
           python << 'EOF'
           import pandas as pd
           import os
-          from openpyxl import load_workbook
 
           ruta_datos = "datos"
           ruta_transformados = "DatosTransformados"
@@ -108,24 +107,8 @@ jobs:
               if columnas_no_encontradas:
                   print(f'[!] Columnas no encontradas: {", ".join(columnas_no_encontradas)}')
 
-              # Guardar el archivo sin imágenes
+              # Guardar el archivo transformado
               df.to_excel(ruta_destino, index=False)
-
-              # Ahora remover imágenes usando openpyxl
-              wb = load_workbook(ruta_destino)
-              for sheet_name in wb.sheetnames:
-                  ws = wb[sheet_name]
-
-                  # Eliminar imágenes si existen
-                  if hasattr(ws, '_images'):
-                      ws._images = []
-
-                  # Eliminar del drawing si existe
-                  if hasattr(ws, '_drawing') and ws._drawing:
-                      if hasattr(ws._drawing, '_images'):
-                          ws._drawing._images = []
-
-              wb.save(ruta_destino)
               print(f'[+] ✅ {archivo} transformado y guardado en DatosTransformados/')
 
           print('\n[+] ✓ Transformación completada')
