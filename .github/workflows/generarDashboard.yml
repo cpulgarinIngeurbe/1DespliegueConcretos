@@ -73,6 +73,13 @@ jobs:
                   .selector-dropdown {{ width: 100%; padding: 12px 16px; border: 2px solid #A3C610; background-color: #ffffff; color: #141311; border-radius: 4px; font-size: 16px; cursor: pointer; font-family: 'Inter', sans-serif; }}
                   .selector-dropdown:hover {{ background-color: #f8f8f7; }}
                   .selector-dropdown:focus {{ outline: none; border-color: #4B4F1D; background-color: #fffdf8; }}
+                  .proyecto-input-row {{ display: flex; gap: 12px; align-items: flex-end; margin-bottom: 32px; }}
+                  .proyecto-input-wrapper {{ flex: 1; }}
+                  .proyecto-input-wrapper .selector-label {{ margin-bottom: 8px; }}
+                  .proyecto-input-wrapper input {{ width: 100%; }}
+                  .btn-reset {{ padding: 12px 24px; border: 2px solid #A3C610; background-color: #4B4F1D; color: #A3C610; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s ease; }}
+                  .btn-reset:hover {{ background-color: #3d401a; border-color: #A3C610; }}
+                  .btn-reset:active {{ background-color: #2f3215; }}
                   .filters-row {{ display: flex; gap: 24px; margin-bottom: 32px; }}
                   .filters-row .selector-section {{ margin-bottom: 0; flex: 1; }}
                   .filters-row .selector-dropdown {{ width: 100%; }}
@@ -86,12 +93,15 @@ jobs:
           </head>
           <body>
               <div class="container">
-                  <div class="selector-section">
-                      <label class="selector-label">Seleccione el proyecto</label>
-                      <input type="text" id="proyectoInput" class="selector-dropdown" placeholder="Buscar proyecto..." list="proyectoList" autocomplete="off" />
-                      <datalist id="proyectoList">
-                          {opciones_html}
-                      </datalist>
+                  <div class="proyecto-input-row">
+                      <div class="proyecto-input-wrapper">
+                          <label class="selector-label">Seleccione el proyecto</label>
+                          <input type="text" id="proyectoInput" class="selector-dropdown" placeholder="Buscar proyecto..." list="proyectoList" autocomplete="off" />
+                          <datalist id="proyectoList">
+                              {opciones_html}
+                          </datalist>
+                      </div>
+                      <button id="btnReset" class="btn-reset">Restaurar</button>
                   </div>
                   <div id="filtersRow" class="filters-row" style="display: none; opacity: 0;">
                       <div id="cilindroSection" class="selector-section">
@@ -127,9 +137,68 @@ jobs:
                   const filtersRow = document.getElementById('filtersRow');
                   const tableSection = document.getElementById('tableSection');
                   const dataTable = document.getElementById('dataTable');
+                  const btnReset = document.getElementById('btnReset');
 
                   let datosFiltrados = [];
                   const proyectos = [...new Set(datosCompletos.map(row => row['Proyecto']))].filter(p => p).sort();
+
+                  function recalcularOpcionesFiltros() {{
+                      const cilindroSeleccionado = selectorCilindro.value;
+                      const localizacionSeleccionada = selectorLocalizacion.value;
+                      const tomaSeleccionada = selectorToma.value;
+
+                      // Filtrar datos basándose en los filtros actuales
+                      let datosTemp = datosFiltrados;
+
+                      if (cilindroSeleccionado) {{
+                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindroSeleccionado);
+                      }}
+                      if (localizacionSeleccionada) {{
+                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacionSeleccionada);
+                      }}
+                      if (tomaSeleccionada) {{
+                          datosTemp = datosTemp.filter(row => row['Toma'] === tomaSeleccionada);
+                      }}
+
+                      // Obtener opciones disponibles para cada filtro basándose en datosTemp
+                      const cilindrosDisponibles = [...new Set(datosTemp.map(row => row['Cilindro N°']))].filter(c => c).sort();
+                      const localizacionesDisponibles = [...new Set(datosTemp.map(row => row['Localización']))].filter(l => l).sort();
+                      const tomasDisponibles = [...new Set(datosTemp.map(row => row['Toma']))].filter(t => t).sort();
+
+                      // Actualizar selectores con opciones disponibles
+                      const cilindroActual = selectorCilindro.value;
+                      selectorCilindro.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      cilindrosDisponibles.forEach(cilindro => {{
+                          const option = document.createElement('option');
+                          option.value = cilindro;
+                          option.textContent = cilindro;
+                          selectorCilindro.appendChild(option);
+                      }});
+                      selectorCilindro.value = cilindroActual;
+
+                      const localizacionActual = selectorLocalizacion.value;
+                      selectorLocalizacion.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
+                      localizacionesDisponibles.forEach(localizacion => {{
+                          const option = document.createElement('option');
+                          option.value = localizacion;
+                          option.textContent = localizacion;
+                          selectorLocalizacion.appendChild(option);
+                      }});
+                      selectorLocalizacion.value = localizacionActual;
+
+                      const tomaActual = selectorToma.value;
+                      selectorToma.innerHTML = '<option value="">-- Todas las tomas --</option>';
+                      tomasDisponibles.forEach(toma => {{
+                          const option = document.createElement('option');
+                          option.value = toma;
+                          option.textContent = toma;
+                          selectorToma.appendChild(option);
+                      }});
+                      selectorToma.value = tomaActual;
+
+                      // Actualizar tabla con filtros aplicados
+                      actualizarFiltros();
+                  }}
 
                   // Función para formatear fechas
                   function formatearFecha(valor) {{
@@ -245,6 +314,11 @@ jobs:
                       // Filtrar por proyecto
                       datosFiltrados = datosCompletos.filter(row => row['Proyecto'] === valor);
 
+                      // Resetear selectores
+                      selectorCilindro.value = '';
+                      selectorLocalizacion.value = '';
+                      selectorToma.value = '';
+
                       // Obtener valores únicos para cada filtro
                       const cilindros = [...new Set(datosFiltrados.map(row => row['Cilindro N°']))].filter(c => c).sort();
                       const localizaciones = [...new Set(datosFiltrados.map(row => row['Localización']))].filter(l => l).sort();
@@ -280,17 +354,23 @@ jobs:
 
                       // Mostrar filtros con delay
                       mostrarFiltrosConDelay();
-
-                      // Resetear selectores
-                      selectorCilindro.value = '';
-                      selectorLocalizacion.value = '';
-                      selectorToma.value = '';
                   }});
 
                   // Listeners para cambios en filtros secundarios
-                  selectorCilindro.addEventListener('change', actualizarFiltros);
-                  selectorLocalizacion.addEventListener('change', actualizarFiltros);
-                  selectorToma.addEventListener('change', actualizarFiltros);
+                  selectorCilindro.addEventListener('change', recalcularOpcionesFiltros);
+                  selectorLocalizacion.addEventListener('change', recalcularOpcionesFiltros);
+                  selectorToma.addEventListener('change', recalcularOpcionesFiltros);
+
+                  // Listener para botón de reset
+                  btnReset.addEventListener('click', function() {{
+                      proyectoInput.value = '';
+                      selectorCilindro.value = '';
+                      selectorLocalizacion.value = '';
+                      selectorToma.value = '';
+                      filtersRow.style.display = 'none';
+                      tableSection.classList.remove('active');
+                      proyectoInput.focus();
+                  }});
               </script>
           </body>
           </html>"""
