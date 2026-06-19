@@ -103,6 +103,37 @@ jobs:
                   const tableSection = document.getElementById('tableSection');
                   const dataTable = document.getElementById('dataTable');
 
+                  // Función para formatear fechas
+                  function formatearFecha(valor) {{
+                      if (!valor) return '';
+
+                      // Si es un timestamp de pandas (número)
+                      if (typeof valor === 'number') {{
+                          const fecha = new Date(valor);
+                          const d = String(fecha.getDate()).padStart(2, '0');
+                          const m = String(fecha.getMonth() + 1).padStart(2, '0');
+                          const y = fecha.getFullYear();
+                          return d + '-' + m + '-' + y;
+                      }}
+
+                      // Si es una cadena de texto (ISO format o similar)
+                      if (typeof valor === 'string') {{
+                          try {{
+                              const fecha = new Date(valor);
+                              if (!isNaN(fecha.getTime())) {{
+                                  const d = String(fecha.getDate()).padStart(2, '0');
+                                  const m = String(fecha.getMonth() + 1).padStart(2, '0');
+                                  const y = fecha.getFullYear();
+                                  return d + '-' + m + '-' + y;
+                              }}
+                          }} catch (e) {{
+                              return valor;
+                          }}
+                      }}
+
+                      return valor;
+                  }}
+
                   selector.addEventListener('change', function() {{
                       const proyectoSeleccionado = this.value;
 
@@ -138,7 +169,14 @@ jobs:
                               const tr = document.createElement('tr');
                               headers.forEach(header => {{
                                   const td = document.createElement('td');
-                                  td.textContent = row[header] !== null ? row[header] : '';
+                                  let valor = row[header] !== null ? row[header] : '';
+
+                                  // Formatear fechas para columnas específicas
+                                  if ((header === 'Rotura' || header === 'Toma') && valor !== '') {{
+                                      valor = formatearFecha(valor);
+                                  }}
+
+                                  td.textContent = valor;
                                   tr.appendChild(td);
                               }});
                               tbody.appendChild(tr);
