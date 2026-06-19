@@ -83,6 +83,29 @@ jobs:
           print(f'[+] Verificación: suma de registros = {registros_totales}')
           print(f'[+] Columnas finales: {list(df_consolidado.columns)}')
 
+          # Normalizar valores en la columna "Proyecto"
+          if 'Proyecto' in df_consolidado.columns:
+              print(f'\n[*] Normalizando valores de columna "Proyecto"...')
+
+              # Mapeo de valores a reemplazar
+              reemplazos = {
+                  '23472 - TERRA (MANAZANA 4)': 'TERRA',
+                  '24603 - FLORA - PARQUE CENTRAL LOS ROBLES': 'FLORA',
+                  'B-19322 VIALE 26': 'VIALE 26',
+                  'B-19322 NATIVA': 'NATIVA'
+              }
+
+              valores_antes = df_consolidado['Proyecto'].nunique()
+
+              for valor_original, valor_nuevo in reemplazos.items():
+                  cantidad = (df_consolidado['Proyecto'] == valor_original).sum()
+                  if cantidad > 0:
+                      df_consolidado['Proyecto'] = df_consolidado['Proyecto'].replace(valor_original, valor_nuevo)
+                      print(f'  [+] "{valor_original}" → "{valor_nuevo}": {cantidad} registros')
+
+              valores_despues = df_consolidado['Proyecto'].nunique()
+              print(f'  [+] Valores únicos: {valores_antes} → {valores_despues}')
+
           # Guardar el consolidado
           df_consolidado.to_excel(archivo_consolidado, index=False)
           print(f'[+] ✅ Consolidado guardado en: {archivo_consolidado}')
