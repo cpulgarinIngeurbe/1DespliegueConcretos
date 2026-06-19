@@ -86,6 +86,28 @@ jobs:
                       campos_faltantes.append('"Toma"')
                   print(f'[!] Advertencia: Campos no encontrados: {", ".join(campos_faltantes)}')
 
+              # Eliminar columnas especificadas
+              columnas_eliminar = [
+                  'Observaciones',
+                  'Forma de falla',
+                  'Resistencia (kg/cm²)',
+                  'Carga máxima (kN)',
+                  'Area (mm²)',
+                  'Diámetro (mm)',
+                  'Recepción',
+                  'OT'
+              ]
+
+              columnas_encontradas = [col for col in columnas_eliminar if col in df.columns]
+              columnas_no_encontradas = [col for col in columnas_eliminar if col not in df.columns]
+
+              if columnas_encontradas:
+                  df = df.drop(columns=columnas_encontradas)
+                  print(f'[+] Columnas eliminadas ({len(columnas_encontradas)}): {", ".join(columnas_encontradas)}')
+
+              if columnas_no_encontradas:
+                  print(f'[!] Columnas no encontradas: {", ".join(columnas_no_encontradas)}')
+
               # Guardar el archivo sin imágenes
               df.to_excel(ruta_destino, index=False)
 
