@@ -70,6 +70,22 @@ jobs:
                   print(f'[!] Advertencia: Campo "Tipo de mezcla" no encontrado')
                   print(f'[*] Columnas disponibles: {list(df.columns)}')
 
+              # Organizar: agrupar por "Cilindro N°" y ordenar por "Toma" (fecha)
+              if 'Cilindro N°' in df.columns and 'Toma' in df.columns:
+                  print(f'[+] Agrupando por "Cilindro N°" y ordenando por "Toma"...')
+                  # Convertir "Toma" a datetime si no lo es
+                  df['Toma'] = pd.to_datetime(df['Toma'], errors='coerce')
+                  # Ordenar por Cilindro N° y luego por Toma (menor a mayor = ascendente)
+                  df = df.sort_values(['Cilindro N°', 'Toma'])
+                  print(f'[+] ✅ Datos organizados correctamente')
+              else:
+                  campos_faltantes = []
+                  if 'Cilindro N°' not in df.columns:
+                      campos_faltantes.append('"Cilindro N°"')
+                  if 'Toma' not in df.columns:
+                      campos_faltantes.append('"Toma"')
+                  print(f'[!] Advertencia: Campos no encontrados: {", ".join(campos_faltantes)}')
+
               # Guardar el archivo sin imágenes
               df.to_excel(ruta_destino, index=False)
 
