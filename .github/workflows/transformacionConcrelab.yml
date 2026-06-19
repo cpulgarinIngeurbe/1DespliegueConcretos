@@ -94,7 +94,8 @@ jobs:
                   'Area (mm²)',
                   'Diámetro (mm)',
                   'Recepción',
-                  'OT'
+                  'OT',
+                  'Referencia'
               ]
 
               columnas_encontradas = [col for col in columnas_eliminar if col in df.columns]
