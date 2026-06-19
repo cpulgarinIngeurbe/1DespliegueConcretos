@@ -89,6 +89,11 @@ jobs:
                           {opciones_html}
                       </select>
                   </div>
+                  <div id="cilindroSection" class="selector-section" style="display: none; opacity: 0;">
+                      <label class="selector-label">Cilindro N°</label>
+                      <select id="cilindroSelector" class="selector-dropdown">
+                      </select>
+                  </div>
                   <div id="tableSection" class="table-section">
                       <table id="dataTable">
                           <thead></thead>
@@ -100,6 +105,8 @@ jobs:
               <script>
                   const datosCompletos = {datos_json};
                   const selector = document.getElementById('proyectoSelector');
+                  const selectorCilindro = document.getElementById('cilindroSelector');
+                  const cilindroSection = document.getElementById('cilindroSection');
                   const tableSection = document.getElementById('tableSection');
                   const dataTable = document.getElementById('dataTable');
 
@@ -134,19 +141,8 @@ jobs:
                       return valor;
                   }}
 
-                  selector.addEventListener('change', function() {{
-                      const proyectoSeleccionado = this.value;
-
-                      if (!proyectoSeleccionado) {{
-                          tableSection.classList.remove('active');
-                          return;
-                      }}
-
-                      // Filtrar datos por proyecto
-                      const datosFiltrados = datosCompletos.filter(row => row['Proyecto'] === proyectoSeleccionado);
-
-                      // Generar tabla
-                      if (datosFiltrados.length > 0) {{
+                  function generarTabla(datos) {{
+                      if (datos.length > 0) {{
                           const thead = dataTable.querySelector('thead');
                           const tbody = dataTable.querySelector('tbody');
 
@@ -155,7 +151,7 @@ jobs:
                           tbody.innerHTML = '';
 
                           // Generar encabezados
-                          const headers = Object.keys(datosFiltrados[0]);
+                          const headers = Object.keys(datos[0]);
                           const headerRow = document.createElement('tr');
                           headers.forEach(header => {{
                               const th = document.createElement('th');
@@ -165,7 +161,7 @@ jobs:
                           thead.appendChild(headerRow);
 
                           // Generar filas de datos
-                          datosFiltrados.forEach(row => {{
+                          datos.forEach(row => {{
                               const tr = document.createElement('tr');
                               headers.forEach(header => {{
                                   const td = document.createElement('td');
@@ -184,6 +180,58 @@ jobs:
 
                           tableSection.classList.add('active');
                       }}
+                  }}
+
+                  selector.addEventListener('change', function() {{
+                      const proyectoSeleccionado = this.value;
+
+                      if (!proyectoSeleccionado) {{
+                          tableSection.classList.remove('active');
+                          cilindroSection.style.display = 'none';
+                          return;
+                      }}
+
+                      // Filtrar datos por proyecto
+                      const datosFiltrados = datosCompletos.filter(row => row['Proyecto'] === proyectoSeleccionado);
+
+                      // Resetear selector de proyecto a blanco
+                      setTimeout(() => {{
+                          selector.value = '';
+                      }}, 100);
+
+                      // Generar tabla con datos del proyecto
+                      generarTabla(datosFiltrados);
+
+                      // Obtener cilindros únicos del proyecto
+                      const cilindros = [...new Set(datosFiltrados.map(row => row['Cilindro N°']))].filter(c => c);
+
+                      // Llenar selector de cilindro
+                      selectorCilindro.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      cilindros.forEach(cilindro => {{
+                          const option = document.createElement('option');
+                          option.value = cilindro;
+                          option.textContent = cilindro;
+                          selectorCilindro.appendChild(option);
+                      }});
+
+                      // Mostrar selector de cilindro con fade-in
+                      cilindroSection.style.opacity = '0';
+                      cilindroSection.style.display = 'block';
+                      setTimeout(() => {{
+                          cilindroSection.style.transition = 'opacity 1500ms ease-in-out';
+                          cilindroSection.style.opacity = '1';
+                      }}, 0);
+
+                      // Listener para filtro de cilindro
+                      selectorCilindro.onchange = function() {{
+                          const cilindroSeleccionado = this.value;
+                          if (cilindroSeleccionado) {{
+                              const datosCilindro = datosFiltrados.filter(row => row['Cilindro N°'] === cilindroSeleccionado);
+                              generarTabla(datosCilindro);
+                          }} else {{
+                              generarTabla(datosFiltrados);
+                          }}
+                      }};
                   }});
               </script>
           </body>
