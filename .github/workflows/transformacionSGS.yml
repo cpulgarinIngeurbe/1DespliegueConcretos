@@ -55,9 +55,9 @@ jobs:
 
               print(f'\n[*] Procesando: {archivo}')
 
-              # Leer el archivo
+              # Leer el archivo - NO elimina filas
               df = pd.read_excel(ruta_origen)
-              print(f'[+] Filas iniciales: {len(df)}')
+              print(f'[+] Filas leídas: {len(df)}')
 
               # Filtrar solo registros donde "tipoMaterial" contiene "Concreto"
               if 'tipoMaterial' in df.columns:
