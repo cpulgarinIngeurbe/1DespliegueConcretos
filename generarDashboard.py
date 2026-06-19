@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 archivo_consolidado = "desplegable/Consolidado.xlsx"
-archivo_html = "desplegable/dashboard.html"
+archivo_html = "index.html"
 
 # Verificar que el archivo existe
 if not os.path.exists(archivo_consolidado):
