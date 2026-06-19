@@ -69,16 +69,18 @@ jobs:
                   print(f'[!] Advertencia: Campo "tipoMaterial" no encontrado')
                   print(f'[*] Columnas disponibles: {list(df.columns)}')
 
-              # Organizar: agrupar por "label" y ordenar por "Edad (días)" descendente dentro de cada grupo
-              if 'label' in df.columns and 'edad' in df.columns:
-                  print(f'[+] Agrupando por label y ordenando por Edad (descendente)...')
-                  # Ordenar por label (ascendente = A-Z) y luego por edad (descendente = números mayores primero)
-                  df = df.sort_values(['label', 'edad'], ascending=[True, False])
+              # Organizar: agrupar por "label", ordenar por "fechaMuestreo" (más reciente), luego por "Edad" descendente
+              if 'label' in df.columns and 'fechaMuestreo' in df.columns and 'edad' in df.columns:
+                  print(f'[+] Agrupando por label, ordenando por fecha (más reciente) y Edad (descendente)...')
+                  # Ordenar por: label (A-Z), fechaMuestreo (Z-A más reciente), edad (descendente números mayores)
+                  df = df.sort_values(['label', 'fechaMuestreo', 'edad'], ascending=[True, False, False])
                   print(f'[+] ✅ Datos agrupados y ordenados correctamente')
               else:
                   campos_faltantes = []
                   if 'label' not in df.columns:
                       campos_faltantes.append('"label"')
+                  if 'fechaMuestreo' not in df.columns:
+                      campos_faltantes.append('"fechaMuestreo"')
                   if 'edad' not in df.columns:
                       campos_faltantes.append('"edad"')
                   print(f'[!] Advertencia: Campos no encontrados: {", ".join(campos_faltantes)}')
