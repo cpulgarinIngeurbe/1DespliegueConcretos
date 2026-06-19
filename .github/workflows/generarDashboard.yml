@@ -83,8 +83,8 @@ jobs:
                   .filters-row {{ display: flex; gap: 24px; margin-bottom: 32px; }}
                   .filters-row .selector-section {{ margin-bottom: 0; flex: 1; }}
                   .filters-row .selector-dropdown {{ width: 100%; }}
-                  .table-section {{ display: none; }}
-                  .table-section.active {{ display: block; }}
+                  .table-section {{ display: none; opacity: 0; }}
+                  .table-section.active {{ display: block; transition: opacity 1500ms ease-in-out; opacity: 1; }}
                   table {{ border-collapse: collapse; width: 100%; }}
                   table th {{ background-color: #4B4F1D; color: #ffffff; padding: 12px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; }}
                   table td {{ padding: 12px; border-bottom: 1px solid #e5e2dd; }}
@@ -140,6 +140,7 @@ jobs:
                   const btnReset = document.getElementById('btnReset');
 
                   let datosFiltrados = [];
+                  let tablaVisible = false;
                   const proyectos = [...new Set(datosCompletos.map(row => row['Proyecto']))].filter(p => p).sort();
 
                   function recalcularOpcionesFiltros() {{
@@ -231,7 +232,7 @@ jobs:
                       return valor;
                   }}
 
-                  function generarTabla(datos) {{
+                  function generarTabla(datos, conDelay = false) {{
                       if (datos.length > 0) {{
                           const thead = dataTable.querySelector('thead');
                           const tbody = dataTable.querySelector('tbody');
@@ -268,7 +269,16 @@ jobs:
                               tbody.appendChild(tr);
                           }});
 
-                          tableSection.classList.add('active');
+                          // Mostrar tabla con delay si es primera vez
+                          if (conDelay && !tablaVisible) {{
+                              setTimeout(() => {{
+                                  tableSection.classList.add('active');
+                                  tablaVisible = true;
+                              }}, 800);
+                          }} else {{
+                              tableSection.classList.add('active');
+                              tablaVisible = true;
+                          }}
                       }}
                   }}
 
@@ -349,11 +359,11 @@ jobs:
                           selectorToma.appendChild(option);
                       }});
 
-                      // Generar tabla
-                      generarTabla(datosFiltrados);
-
                       // Mostrar filtros con delay
                       mostrarFiltrosConDelay();
+
+                      // Generar tabla con delay
+                      generarTabla(datosFiltrados, true);
                   }});
 
                   // Listeners para cambios en filtros secundarios
@@ -369,6 +379,7 @@ jobs:
                       selectorToma.value = '';
                       filtersRow.style.display = 'none';
                       tableSection.classList.remove('active');
+                      tablaVisible = false;
                       proyectoInput.focus();
                   }});
               </script>
