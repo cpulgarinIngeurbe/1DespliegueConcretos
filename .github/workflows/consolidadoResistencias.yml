@@ -38,13 +38,16 @@ jobs:
           ruta_desplegable = "desplegable"
           archivo_consolidado = os.path.join(ruta_desplegable, "ConsolidadoResistencias.xlsx")
 
-          # Buscar todos los archivos Excel en DatosTransformados (excluyendo consolidado si existe)
-          archivos_excel = [f for f in os.listdir(ruta_datos_transformados)
-                          if f.endswith('.xlsx')
-                          and f != 'consolidado_concrelab.xlsx'
-                          and not f.startswith('Consolidado')]
+          # Buscar todos los archivos Excel en DatosTransformados
+          if not os.path.exists(ruta_datos_transformados):
+              print(f'[!] La carpeta {ruta_datos_transformados} no existe')
+              exit(1)
 
-          print(f'[*] Archivos encontrados para consolidar: {archivos_excel}')
+          archivos_excel = sorted([f for f in os.listdir(ruta_datos_transformados)
+                                  if f.endswith('.xlsx')])
+
+          print(f'[*] Total de archivos encontrados: {len(archivos_excel)}')
+          print(f'[*] Archivos: {archivos_excel}')
 
           if not archivos_excel:
               print('[!] No se encontraron archivos para consolidar')
@@ -52,12 +55,18 @@ jobs:
 
           # Leer y consolidar todos los archivos
           dataframes = []
+          registros_totales = 0
+
           for archivo in archivos_excel:
               ruta_archivo = os.path.join(ruta_datos_transformados, archivo)
-              print(f'[*] Leyendo: {archivo}')
+              print(f'\n[*] Leyendo: {archivo}')
               try:
                   df = pd.read_excel(ruta_archivo)
-                  print(f'  [+] {len(df)} registros cargados')
+                  num_registros = len(df)
+                  num_columnas = len(df.columns)
+                  print(f'  [+] {num_registros} registros cargados ({num_columnas} columnas)')
+                  print(f'  [+] Columnas: {list(df.columns)}')
+                  registros_totales += num_registros
                   dataframes.append(df)
               except Exception as e:
                   print(f'  [!] Error al leer {archivo}: {str(e)}')
@@ -66,10 +75,13 @@ jobs:
               print('[!] No se pudieron leer los archivos')
               exit(1)
 
-          # Consolidar todos los DataFrames
-          df_consolidado = pd.concat(dataframes, ignore_index=True)
-          print(f'\n[+] Consolidado creado: {len(df_consolidado)} registros totales')
-          print(f'[+] Columnas del consolidado: {list(df_consolidado.columns)}')
+          # Consolidar todos los DataFrames con pd.concat
+          print(f'\n[*] Consolidando {len(dataframes)} archivo(s)...')
+          df_consolidado = pd.concat(dataframes, ignore_index=True, sort=False)
+
+          print(f'[+] ✅ Consolidado creado: {len(df_consolidado)} registros totales')
+          print(f'[+] Verificación: suma de registros = {registros_totales}')
+          print(f'[+] Columnas finales: {list(df_consolidado.columns)}')
 
           # Guardar el consolidado
           df_consolidado.to_excel(archivo_consolidado, index=False)
