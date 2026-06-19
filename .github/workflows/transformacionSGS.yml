@@ -69,12 +69,12 @@ jobs:
                   print(f'[!] Advertencia: Campo "tipoMaterial" no encontrado')
                   print(f'[*] Columnas disponibles: {list(df.columns)}')
 
-              # Organizar: agrupar por "label"
+              # Organizar: agrupar por "label" y ordenar por "fechaMuestreo" (Z-A = más reciente a más antiguo)
               if 'label' in df.columns:
-                  print(f'[+] Agrupando por "label"...')
-                  # Ordenar solo por label (sin convertir fechaMuestreo)
-                  df = df.sort_values(['label'])
-                  print(f'[+] ✅ Datos agrupados correctamente')
+                  print(f'[+] Agrupando por "label" y ordenando por fechaMuestreo (Z-A)...')
+                  # Ordenar por label y luego por fechaMuestreo (descendente = Z-A, más reciente primero)
+                  df = df.sort_values(['label', 'fechaMuestreo'], ascending=[True, False])
+                  print(f'[+] ✅ Datos agrupados y ordenados correctamente')
               else:
                   print(f'[!] Advertencia: Campo "label" no encontrado')
 
@@ -103,11 +103,6 @@ jobs:
 
               if columnas_no_encontradas:
                   print(f'[!] Columnas no encontradas: {", ".join(columnas_no_encontradas)}')
-
-              # Ordenar por "fechaMuestreo" de Z-A (descendente)
-              if 'fechaMuestreo' in df.columns:
-                  df = df.sort_values('fechaMuestreo', ascending=False)
-                  print(f'[+] Datos ordenados por fechaMuestreo (Z-A)')
 
               # Guardar el archivo transformado
               df.to_excel(ruta_destino, index=False)
