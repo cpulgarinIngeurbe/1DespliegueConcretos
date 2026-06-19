@@ -1,0 +1,122 @@
+name: 📦 Unificación
+
+on:
+  workflow_dispatch:
+
+jobs:
+  unificar-datos:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: 🐍 Configurar Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Instalar dependencias
+        run: |
+          pip install pandas openpyxl
+
+      - name: 📁 Crear carpeta desplegable
+        run: |
+          mkdir -p desplegable
+          echo "[+] ✓ Carpeta desplegable creada"
+
+      - name: 📋 Unificar archivos transformados
+        run: |
+          python << 'EOF'
+          import pandas as pd
+          import os
+          from pathlib import Path
+
+          ruta_datos_transformados = "DatosTransformados"
+          ruta_desplegable = "desplegable"
+          archivo_unificado = os.path.join(ruta_desplegable, "Consolidado.xlsx")
+
+          # Buscar todos los archivos Excel en DatosTransformados
+          if not os.path.exists(ruta_datos_transformados):
+              print(f'[!] La carpeta {ruta_datos_transformados} no existe')
+              exit(1)
+
+          archivos_excel = sorted([f for f in os.listdir(ruta_datos_transformados)
+                                  if f.endswith('.xlsx')])
+
+          print(f'[*] Total de archivos encontrados: {len(archivos_excel)}')
+          print(f'[*] Archivos a unificar:')
+          for archivo in archivos_excel:
+              print(f'    - {archivo}')
+
+          if not archivos_excel:
+              print('[!] No se encontraron archivos para unificar')
+              exit(0)
+
+          # Leer y unificar todos los archivos
+          dataframes = []
+          registros_totales = 0
+
+          for archivo in archivos_excel:
+              ruta_archivo = os.path.join(ruta_datos_transformados, archivo)
+              print(f'\n[*] Leyendo: {archivo}')
+              try:
+                  df = pd.read_excel(ruta_archivo)
+                  num_registros = len(df)
+                  num_columnas = len(df.columns)
+                  print(f'  [+] {num_registros} registros cargados ({num_columnas} columnas)')
+                  registros_totales += num_registros
+                  dataframes.append(df)
+              except Exception as e:
+                  print(f'  [!] Error al leer {archivo}: {str(e)}')
+
+          if not dataframes:
+              print('[!] No se pudieron leer los archivos')
+              exit(1)
+
+          # Unificar todos los DataFrames
+          print(f'\n[*] Unificando {len(dataframes)} archivo(s)...')
+          df_unificado = pd.concat(dataframes, ignore_index=True)
+
+          print(f'\n[+] ✅ Unificación completada:')
+          print(f'  [+] Total de registros: {len(df_unificado)}')
+          print(f'  [+] Verificación: suma de registros = {registros_totales}')
+          print(f'  [+] Total de columnas: {len(df_unificado.columns)}')
+          print(f'  [+] Columnas: {list(df_unificado.columns)}')
+
+          # Guardar el archivo unificado
+          df_unificado.to_excel(archivo_unificado, index=False)
+          print(f'\n[+] ✅ Archivo unificado guardado en: {archivo_unificado}')
+          print(f'  [+] Tamaño: {len(df_unificado)} registros x {len(df_unificado.columns)} columnas')
+
+          EOF
+
+      - name: 🔧 Configurar Git
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action Bot"
+
+      - name: 🤖 Commit y Push
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git add desplegable/
+
+          if git diff --quiet --cached; then
+            echo "[*] Sin cambios nuevos"
+          else
+            git commit -m "[AUTO] Unificación de datos - $(date '+%Y-%m-%d %H:%M:%S')"
+            git pull --rebase origin main
+            git push origin main
+            echo "[+] ✓ Push completado"
+          fi
+
+      - name: 📊 Reporte final
+        if: always()
+        run: |
+          echo "=== UNIFICACIÓN COMPLETADA ==="
+          echo ""
+          echo "📤 Archivo unificado:"
+          ls -lh desplegable/Consolidado.xlsx 2>/dev/null || echo "No hay archivo"
