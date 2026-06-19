@@ -128,6 +128,27 @@ jobs:
                   df = df.rename(columns=renombramientos)
                   print(f'[+] Columnas renombradas ({len(columnas_renombradas)}): {", ".join(columnas_renombradas)}')
 
+              # Reordenar columnas en el orden especificado
+              orden_columnas = [
+                  'Proyecto',
+                  'Cilindro N°',
+                  'codigoMezcla',
+                  'Tipo de mezcla',
+                  'Localización',
+                  'Toma',
+                  'Rotura',
+                  'Edad (días)',
+                  'Resistencia nominal (MPa)',
+                  'Resistencia (MPa)',
+                  'Resistencia (%)'
+              ]
+
+              # Filtrar solo las columnas que existen en el dataframe
+              columnas_existentes = [col for col in orden_columnas if col in df.columns]
+              if len(columnas_existentes) > 0:
+                  df = df[columnas_existentes]
+                  print(f'[+] Columnas reordenadas: {", ".join(columnas_existentes)}')
+
               # Guardar el archivo transformado
               df.to_excel(ruta_destino, index=False)
               print(f'[+] ✅ {archivo} transformado y guardado en DatosTransformados/')
