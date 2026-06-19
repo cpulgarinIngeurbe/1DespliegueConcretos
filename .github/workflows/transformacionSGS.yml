@@ -72,8 +72,16 @@ jobs:
               # Organizar: agrupar por "label" y ordenar por "fechaMuestreo" (más reciente a más antiguo)
               if 'label' in df.columns and 'fechaMuestreo' in df.columns:
                   print(f'[+] Agrupando por "label" y ordenando por "fechaMuestreo" (más reciente a más antiguo)...')
-                  # Convertir "fechaMuestreo" a datetime - usar infer_datetime_format para flexibilidad
-                  df['fechaMuestreo'] = pd.to_datetime(df['fechaMuestreo'], infer_datetime_format=True, errors='coerce')
+                  # Convertir "fechaMuestreo" a datetime - intentar con múltiples formatos
+                  try:
+                      # Primero intentar con el formato esperado
+                      df['fechaMuestreo'] = pd.to_datetime(df['fechaMuestreo'], format='%d/%m/%Y %H:%M:%S %p', errors='coerce')
+                      # Si falló, intentar sin formato especificado
+                      if df['fechaMuestreo'].isna().all():
+                          df['fechaMuestreo'] = pd.to_datetime(df['fechaMuestreo'], errors='coerce')
+                  except:
+                      df['fechaMuestreo'] = pd.to_datetime(df['fechaMuestreo'], errors='coerce')
+
                   # Ordenar por label (ascendente) y luego por fechaMuestreo (descendente = más reciente primero)
                   df = df.sort_values(['label', 'fechaMuestreo'], ascending=[True, False])
                   print(f'[+] ✅ Datos organizados correctamente')
