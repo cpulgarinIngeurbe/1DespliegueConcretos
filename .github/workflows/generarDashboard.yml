@@ -35,7 +35,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          git add desplegable/dashboard.html
+          git add index.html
 
           if git diff --quiet --cached; then
             echo "[*] Sin cambios nuevos"
@@ -52,4 +52,4 @@ jobs:
           echo "=== DASHBOARD GENERADO ==="
           echo ""
           echo "📄 Archivo generado:"
-          ls -lh desplegable/dashboard.html 2>/dev/null || echo "No hay archivo"
+          ls -lh index.html 2>/dev/null || echo "No hay archivo"
