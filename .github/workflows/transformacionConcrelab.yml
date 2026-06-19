@@ -1,0 +1,99 @@
+name: 🔄 Transformación Concrelab
+
+on:
+  workflow_dispatch:
+
+jobs:
+  transformar-concrelab:
+    name: Transformar archivos Concrelab
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Instalar dependencias
+        run: |
+          pip install openpyxl pillow
+
+      - name: 🔄 Transformar archivos Concrelab
+        run: |
+          python << 'EOF'
+          import os
+          from pathlib import Path
+          from openpyxl import load_workbook
+          from openpyxl.drawing.image import Image as XLImage
+
+          datos_dir = Path('datos')
+
+          # Buscar archivos de Concrelab
+          archivos = list(datos_dir.glob('reporte_concrelab_*.xlsx'))
+
+          if not archivos:
+              print('[!] No se encontraron archivos reporte_concrelab_*.xlsx')
+              exit(0)
+
+          print(f'[*] Se encontraron {len(archivos)} archivo(s) a transformar')
+
+          for archivo in archivos:
+              print(f'\n[*] Procesando: {archivo.name}')
+
+              try:
+                  # Cargar el workbook
+                  wb = load_workbook(archivo)
+
+                  for sheet_name in wb.sheetnames:
+                      ws = wb[sheet_name]
+                      print(f'  [*] Hoja: {sheet_name}')
+
+                      # Eliminar las 3 primeras filas
+                      print(f'    [*] Eliminando 3 primeras filas...')
+                      ws.delete_rows(1, 3)
+
+                      # Eliminar todas las imágenes
+                      if hasattr(ws, '_images') and ws._images:
+                          print(f'    [*] Eliminando {len(ws._images)} imagen(es)...')
+                          ws._images.clear()
+
+                      # También eliminar imágenes del objeto _drawing
+                      if hasattr(ws, '_drawing'):
+                          if hasattr(ws._drawing, '_images'):
+                              ws._drawing._images.clear()
+
+                  # Guardar el archivo modificado
+                  wb.save(archivo)
+                  print(f'  [+] ✅ {archivo.name} transformado correctamente')
+
+              except Exception as e:
+                  print(f'  [!] Error al procesar {archivo.name}: {str(e)}')
+                  raise
+
+          print('\n[+] ✅ Transformación completada')
+
+          EOF
+
+      - name: 🔧 Configurar Git
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action Bot"
+
+      - name: 📤 Commit y Push
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git add datos/reporte_concrelab_*.xlsx
+          if git diff --quiet --cached; then
+            echo "[*] Sin cambios"
+          else
+            git commit -m "[AUTO] Transformación Concrelab - $(date '+%Y-%m-%d %H:%M:%S')"
+            git pull --rebase origin main
+            git push origin main
+            echo "[+] Push completado"
+          fi
