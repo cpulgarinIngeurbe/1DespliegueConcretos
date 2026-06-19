@@ -69,14 +69,19 @@ jobs:
                   print(f'[!] Advertencia: Campo "tipoMaterial" no encontrado')
                   print(f'[*] Columnas disponibles: {list(df.columns)}')
 
-              # Organizar: agrupar por "label" y ordenar por "fechaMuestreo" (Z-A = más reciente a más antiguo)
-              if 'label' in df.columns:
-                  print(f'[+] Agrupando por "label" y ordenando por fechaMuestreo (Z-A)...')
-                  # Ordenar por label y luego por fechaMuestreo (descendente = Z-A, más reciente primero)
-                  df = df.sort_values(['label', 'fechaMuestreo'], ascending=[True, False])
-                  print(f'[+] ✅ Datos agrupados y ordenados correctamente')
+              # Organizar: ordenar por "fechaMuestreo" (Z-A = más reciente primero) y luego agrupar por "label"
+              if 'label' in df.columns and 'fechaMuestreo' in df.columns:
+                  print(f'[+] Ordenando por fechaMuestreo (más reciente primero) y agrupando por label...')
+                  # Ordenar primero por fechaMuestreo (descendente = Z-A, más reciente primero) y luego por label (ascendente = A-Z)
+                  df = df.sort_values(['fechaMuestreo', 'label'], ascending=[False, True])
+                  print(f'[+] ✅ Datos ordenados y agrupados correctamente')
               else:
-                  print(f'[!] Advertencia: Campo "label" no encontrado')
+                  campos_faltantes = []
+                  if 'label' not in df.columns:
+                      campos_faltantes.append('"label"')
+                  if 'fechaMuestreo' not in df.columns:
+                      campos_faltantes.append('"fechaMuestreo"')
+                  print(f'[!] Advertencia: Campos no encontrados: {", ".join(campos_faltantes)}')
 
               # Eliminar columnas especificadas
               columnas_eliminar = [
