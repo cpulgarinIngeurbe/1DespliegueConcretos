@@ -1,11 +1,10 @@
-name: 🔄 Transformación Concrelab
+name: 📊 Transformación Concrelab
 
 on:
   workflow_dispatch:
 
 jobs:
-  transformar-concrelab:
-    name: Transformar archivos Concrelab
+  transformar-datos:
     runs-on: ubuntu-latest
 
     steps:
@@ -14,68 +13,74 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: 🐍 Configurar Python
+      - name: 🐍 Configurar Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
       - name: 📦 Instalar dependencias
         run: |
-          pip install openpyxl pillow
+          pip install pandas openpyxl
 
-      - name: 🔄 Transformar archivos Concrelab
+      - name: 📁 Crear carpeta DatosTransformados
+        run: |
+          mkdir -p DatosTransformados
+          echo "[+] ✓ Carpeta DatosTransformados creada"
+
+      - name: 🗑️ Limpiar DatosTransformados
+        run: |
+          rm -rf DatosTransformados/reporte_concrelab_*.xlsx
+          echo "[+] ✓ DatosTransformados limpiada"
+
+      - name: 📈 Transformar archivos Concrelab
         run: |
           python << 'EOF'
+          import pandas as pd
           import os
-          from pathlib import Path
           from openpyxl import load_workbook
-          from openpyxl.drawing.image import Image as XLImage
 
-          datos_dir = Path('datos')
+          ruta_datos = "datos"
+          ruta_transformados = "DatosTransformados"
 
-          # Buscar archivos de Concrelab
-          archivos = list(datos_dir.glob('reporte_concrelab_*.xlsx'))
+          # Buscar solo archivos de Concrelab
+          archivos_excel = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_concrelab_') and f.endswith('.xlsx')]
+          print(f'[*] Archivos Concrelab encontrados: {archivos_excel}')
 
-          if not archivos:
+          if not archivos_excel:
               print('[!] No se encontraron archivos reporte_concrelab_*.xlsx')
               exit(0)
 
-          print(f'[*] Se encontraron {len(archivos)} archivo(s) a transformar')
+          for archivo in archivos_excel:
+              ruta_origen = os.path.join(ruta_datos, archivo)
+              ruta_destino = os.path.join(ruta_transformados, archivo)
 
-          for archivo in archivos:
-              print(f'\n[*] Procesando: {archivo.name}')
+              print(f'\n[*] Procesando: {archivo}')
 
-              try:
-                  # Cargar el workbook
-                  wb = load_workbook(archivo)
+              # Leer el archivo saltando las 3 primeras filas
+              df = pd.read_excel(ruta_origen, skiprows=3)
+              print(f'[+] Filas innecesarias eliminadas. Forma: {df.shape}')
 
-                  for sheet_name in wb.sheetnames:
-                      ws = wb[sheet_name]
-                      print(f'  [*] Hoja: {sheet_name}')
+              # Guardar el archivo sin imágenes
+              df.to_excel(ruta_destino, index=False)
 
-                      # Eliminar las 3 primeras filas
-                      print(f'    [*] Eliminando 3 primeras filas...')
-                      ws.delete_rows(1, 3)
+              # Ahora remover imágenes usando openpyxl
+              wb = load_workbook(ruta_destino)
+              for sheet_name in wb.sheetnames:
+                  ws = wb[sheet_name]
 
-                      # Eliminar todas las imágenes
-                      if hasattr(ws, '_images') and ws._images:
-                          print(f'    [*] Eliminando {len(ws._images)} imagen(es)...')
-                          ws._images.clear()
+                  # Eliminar imágenes si existen
+                  if hasattr(ws, '_images'):
+                      ws._images = []
 
-                      # También eliminar imágenes del objeto _drawing
-                      if hasattr(ws, '_drawing'):
-                          if hasattr(ws._drawing, '_images'):
-                              ws._drawing._images.clear()
+                  # Eliminar del drawing si existe
+                  if hasattr(ws, '_drawing') and ws._drawing:
+                      if hasattr(ws._drawing, '_images'):
+                          ws._drawing._images = []
 
-                  # Guardar el archivo modificado
-                  wb.save(archivo)
-                  print(f'  [+] ✅ {archivo.name} transformado correctamente')
+              wb.save(ruta_destino)
+              print(f'[+] Imágenes eliminadas y guardado en DatosTransformados/')
 
-              except Exception as e:
-                  print(f'  [!] Error al procesar {archivo.name}: {str(e)}')
-                  raise
-
-          print('\n[+] ✅ Transformación completada')
+          print('\n[+] ✓ Limpieza completada')
 
           EOF
 
@@ -84,16 +89,25 @@ jobs:
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action Bot"
 
-      - name: 📤 Commit y Push
+      - name: 🤖 Commit y Push
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          git add datos/reporte_concrelab_*.xlsx
+          git add datos/ DatosTransformados/
+
           if git diff --quiet --cached; then
-            echo "[*] Sin cambios"
+            echo "[*] Sin cambios nuevos"
           else
             git commit -m "[AUTO] Transformación Concrelab - $(date '+%Y-%m-%d %H:%M:%S')"
             git pull --rebase origin main
             git push origin main
-            echo "[+] Push completado"
+            echo "[+] ✓ Push completado"
           fi
+
+      - name: 📊 Reporte final
+        if: always()
+        run: |
+          echo "=== TRANSFORMACIÓN CONCRELAB COMPLETADA ==="
+          echo ""
+          echo "📤 Archivos transformados:"
+          ls -lh DatosTransformados/ 2>/dev/null || echo "No hay archivos"
