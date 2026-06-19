@@ -72,7 +72,10 @@ jobs:
                   .selector-label {{ font-size: 12px; color: #4B4F1D; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 8px; display: block; }}
                   .selector-dropdown {{ width: 100%; padding: 12px 16px; border: 2px solid #A3C610; background-color: #ffffff; color: #141311; border-radius: 4px; font-size: 16px; cursor: pointer; font-family: 'Inter', sans-serif; }}
                   .selector-dropdown:hover {{ background-color: #f8f8f7; }}
-                  .selector-dropdown:focus {{ outline: none; background-color: #4B4F1D; color: #A3C610; }}
+                  .selector-dropdown:focus {{ outline: none; border-color: #4B4F1D; background-color: #fffdf8; }}
+                  .filters-row {{ display: flex; gap: 24px; margin-bottom: 32px; }}
+                  .filters-row .selector-section {{ margin-bottom: 0; flex: 1; }}
+                  .filters-row .selector-dropdown {{ width: 100%; }}
                   .table-section {{ display: none; }}
                   .table-section.active {{ display: block; }}
                   table {{ border-collapse: collapse; width: 100%; }}
@@ -90,20 +93,22 @@ jobs:
                           {opciones_html}
                       </datalist>
                   </div>
-                  <div id="cilindroSection" class="selector-section" style="display: none; opacity: 0;">
-                      <label class="selector-label">Cilindro N°</label>
-                      <select id="cilindroSelector" class="selector-dropdown">
-                      </select>
-                  </div>
-                  <div id="localizacionSection" class="selector-section" style="display: none; opacity: 0;">
-                      <label class="selector-label">Localización</label>
-                      <select id="localizacionSelector" class="selector-dropdown">
-                      </select>
-                  </div>
-                  <div id="tomaSection" class="selector-section" style="display: none; opacity: 0;">
-                      <label class="selector-label">Toma</label>
-                      <select id="tomaSelector" class="selector-dropdown">
-                      </select>
+                  <div id="filtersRow" class="filters-row" style="display: none; opacity: 0;">
+                      <div id="cilindroSection" class="selector-section">
+                          <label class="selector-label">Cilindro N°</label>
+                          <select id="cilindroSelector" class="selector-dropdown">
+                          </select>
+                      </div>
+                      <div id="localizacionSection" class="selector-section">
+                          <label class="selector-label">Localización</label>
+                          <select id="localizacionSelector" class="selector-dropdown">
+                          </select>
+                      </div>
+                      <div id="tomaSection" class="selector-section">
+                          <label class="selector-label">Toma</label>
+                          <select id="tomaSelector" class="selector-dropdown">
+                          </select>
+                      </div>
                   </div>
                   <div id="tableSection" class="table-section">
                       <table id="dataTable">
@@ -119,9 +124,7 @@ jobs:
                   const selectorCilindro = document.getElementById('cilindroSelector');
                   const selectorLocalizacion = document.getElementById('localizacionSelector');
                   const selectorToma = document.getElementById('tomaSelector');
-                  const cilindroSection = document.getElementById('cilindroSection');
-                  const localizacionSection = document.getElementById('localizacionSection');
-                  const tomaSection = document.getElementById('tomaSection');
+                  const filtersRow = document.getElementById('filtersRow');
                   const tableSection = document.getElementById('tableSection');
                   const dataTable = document.getElementById('dataTable');
 
@@ -221,35 +224,13 @@ jobs:
                   }}
 
                   function mostrarFiltrosConDelay() {{
-                      // Mostrar Cilindro N° con delay 0ms
+                      // Mostrar fila de filtros con fade-in
+                      filtersRow.style.opacity = '0';
+                      filtersRow.style.display = 'flex';
                       setTimeout(() => {{
-                          cilindroSection.style.opacity = '0';
-                          cilindroSection.style.display = 'block';
-                          setTimeout(() => {{
-                              cilindroSection.style.transition = 'opacity 1500ms ease-in-out';
-                              cilindroSection.style.opacity = '1';
-                          }}, 0);
+                          filtersRow.style.transition = 'opacity 1500ms ease-in-out';
+                          filtersRow.style.opacity = '1';
                       }}, 0);
-
-                      // Mostrar Localización con delay 300ms
-                      setTimeout(() => {{
-                          localizacionSection.style.opacity = '0';
-                          localizacionSection.style.display = 'block';
-                          setTimeout(() => {{
-                              localizacionSection.style.transition = 'opacity 1500ms ease-in-out';
-                              localizacionSection.style.opacity = '1';
-                          }}, 0);
-                      }}, 300);
-
-                      // Mostrar Toma con delay 600ms
-                      setTimeout(() => {{
-                          tomaSection.style.opacity = '0';
-                          tomaSection.style.display = 'block';
-                          setTimeout(() => {{
-                              tomaSection.style.transition = 'opacity 1500ms ease-in-out';
-                              tomaSection.style.opacity = '1';
-                          }}, 0);
-                      }}, 600);
                   }}
 
                   proyectoInput.addEventListener('input', function() {{
@@ -257,9 +238,7 @@ jobs:
 
                       if (!valor || !proyectos.includes(valor)) {{
                           tableSection.classList.remove('active');
-                          cilindroSection.style.display = 'none';
-                          localizacionSection.style.display = 'none';
-                          tomaSection.style.display = 'none';
+                          filtersRow.style.display = 'none';
                           return;
                       }}
 
