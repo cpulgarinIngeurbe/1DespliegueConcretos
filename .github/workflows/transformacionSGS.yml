@@ -1,0 +1,148 @@
+name: 📊 Transformación SGS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  transformar-datos:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: 🐍 Configurar Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Instalar dependencias
+        run: |
+          pip install pandas openpyxl
+
+      - name: 📁 Crear carpeta DatosTransformados
+        run: |
+          mkdir -p DatosTransformados
+          echo "[+] ✓ Carpeta DatosTransformados creada"
+
+      - name: 🗑️ Limpiar DatosTransformados
+        run: |
+          rm -rf DatosTransformados/reporte_sgs_*.xlsx
+          echo "[+] ✓ DatosTransformados limpiada"
+
+      - name: 📈 Transformar archivos SGS
+        run: |
+          python << 'EOF'
+          import pandas as pd
+          import os
+
+          ruta_datos = "datos"
+          ruta_transformados = "DatosTransformados"
+
+          # Buscar solo archivos de SGS
+          archivos_excel = [f for f in os.listdir(ruta_datos) if f.startswith('reporte_sgs_') and f.endswith('.xlsx')]
+          print(f'[*] Archivos SGS encontrados: {archivos_excel}')
+
+          if not archivos_excel:
+              print('[!] No se encontraron archivos reporte_sgs_*.xlsx')
+              exit(0)
+
+          for archivo in archivos_excel:
+              ruta_origen = os.path.join(ruta_datos, archivo)
+              ruta_destino = os.path.join(ruta_transformados, archivo)
+
+              print(f'\n[*] Procesando: {archivo}')
+
+              # Leer el archivo saltando las 3 primeras filas
+              df = pd.read_excel(ruta_origen, skiprows=3)
+              print(f'[+] Filas iniciales: {len(df)}')
+
+              # Filtrar solo registros donde "tipoMaterial" contiene "Concreto"
+              if 'tipoMaterial' in df.columns:
+                  df_original = len(df)
+                  df = df[df['tipoMaterial'].str.contains('Concreto', case=False, na=False)]
+                  filas_filtradas = df_original - len(df)
+                  print(f'[+] Filtrados por "Concreto": {len(df)} filas (eliminadas {filas_filtradas})')
+              else:
+                  print(f'[!] Advertencia: Campo "tipoMaterial" no encontrado')
+                  print(f'[*] Columnas disponibles: {list(df.columns)}')
+
+              # Organizar: agrupar por "label" y ordenar por "fechaMuestreo" (fecha)
+              if 'label' in df.columns and 'fechaMuestreo' in df.columns:
+                  print(f'[+] Agrupando por "label" y ordenando por "fechaMuestreo"...')
+                  # Convertir "fechaMuestreo" a datetime si no lo es
+                  df['fechaMuestreo'] = pd.to_datetime(df['fechaMuestreo'], errors='coerce')
+                  # Ordenar por label y luego por fechaMuestreo (menor a mayor = ascendente)
+                  df = df.sort_values(['label', 'fechaMuestreo'])
+                  print(f'[+] ✅ Datos organizados correctamente')
+              else:
+                  campos_faltantes = []
+                  if 'label' not in df.columns:
+                      campos_faltantes.append('"label"')
+                  if 'fechaMuestreo' not in df.columns:
+                      campos_faltantes.append('"fechaMuestreo"')
+                  print(f'[!] Advertencia: Campos no encontrados: {", ".join(campos_faltantes)}')
+
+              # Eliminar columnas especificadas
+              columnas_eliminar = [
+                  'Densidad',
+                  'ContenidoAire',
+                  'Temperatura',
+                  'Relación de Poisson',
+                  'Módulo de elasticidad Mpa',
+                  'Fecha de ensayo',
+                  'falla',
+                  'Resistencia Kg/Cm2',
+                  'Resistencia Psi',
+                  'hora de falla',
+                  'dimension',
+                  'asentamiento'
+              ]
+
+              columnas_encontradas = [col for col in columnas_eliminar if col in df.columns]
+              columnas_no_encontradas = [col for col in columnas_eliminar if col not in df.columns]
+
+              if columnas_encontradas:
+                  df = df.drop(columns=columnas_encontradas)
+                  print(f'[+] Columnas eliminadas ({len(columnas_encontradas)}): {", ".join(columnas_encontradas)}')
+
+              if columnas_no_encontradas:
+                  print(f'[!] Columnas no encontradas: {", ".join(columnas_no_encontradas)}')
+
+              # Guardar el archivo transformado
+              df.to_excel(ruta_destino, index=False)
+              print(f'[+] ✅ {archivo} transformado y guardado en DatosTransformados/')
+
+          print('\n[+] ✓ Transformación completada')
+
+          EOF
+
+      - name: 🔧 Configurar Git
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action Bot"
+
+      - name: 🤖 Commit y Push
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git add datos/ DatosTransformados/
+
+          if git diff --quiet --cached; then
+            echo "[*] Sin cambios nuevos"
+          else
+            git commit -m "[AUTO] Transformación SGS - $(date '+%Y-%m-%d %H:%M:%S')"
+            git pull --rebase origin main
+            git push origin main
+            echo "[+] ✓ Push completado"
+          fi
+
+      - name: 📊 Reporte final
+        if: always()
+        run: |
+          echo "=== TRANSFORMACIÓN SGS COMPLETADA ==="
+          echo ""
+          echo "📤 Archivos transformados:"
+          ls -lh DatosTransformados/ 2>/dev/null || echo "No hay archivos"
