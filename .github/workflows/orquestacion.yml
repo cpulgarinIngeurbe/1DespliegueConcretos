@@ -1,0 +1,196 @@
+name: 🔄 Orquestación Completa
+
+on:
+  schedule:
+    # 7:00 am COT = 12:00 UTC
+    - cron: '0 12 * * *'
+    # 9:00 am COT = 14:00 UTC
+    - cron: '0 14 * * *'
+    # 11:00 am COT = 16:00 UTC
+    - cron: '0 16 * * *'
+    # 1:00 pm COT = 18:00 UTC
+    - cron: '0 18 * * *'
+    # 3:00 pm COT = 20:00 UTC
+    - cron: '0 20 * * *'
+    # 5:00 pm COT = 22:00 UTC
+    - cron: '0 22 * * *'
+    # 7:00 pm COT = 00:00 UTC (medianoche)
+    - cron: '0 0 * * *'
+    # 9:00 pm COT = 02:00 UTC (madrugada)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  orquestacion:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: 📋 Información del run
+        run: |
+          echo "=== ORQUESTACIÓN INICIADA ==="
+          echo "Fecha y hora UTC: $(date -u)"
+          echo "Timezone: UTC"
+          echo ""
+          echo "Horarios programados (Bogotá COT):"
+          echo "  - 7:00 am"
+          echo "  - 9:00 am"
+          echo "  - 11:00 am"
+          echo "  - 1:00 pm"
+          echo "  - 3:00 pm"
+          echo "  - 5:00 pm"
+          echo "  - 7:00 pm"
+          echo "  - 9:00 pm"
+
+      - name: 🔧 Configurar Git
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action Bot"
+
+      - name: 1️⃣ Ejecutar: Descarga Diaria Concrelab
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "[*] Iniciando: Descarga Diaria Concrelab"
+          gh workflow run "descarga-concrelab.yml" --ref main
+
+          # Esperar a que el workflow termine
+          for i in {1..180}; do
+            RUNS=$(gh run list --workflow descarga-concrelab.yml --limit 1 --json status -q ".[0].status")
+            if [ "$RUNS" = "completed" ]; then
+              echo "[+] ✓ Descarga Diaria Concrelab completada"
+              break
+            fi
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "[*] Esperando... ($i segundos)"
+            fi
+            sleep 3
+          done
+
+      - name: 2️⃣ Ejecutar: Descarga Diaria SGS
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "[*] Iniciando: Descarga Diaria SGS"
+          gh workflow run "descarga-sgs.yml" --ref main
+
+          # Esperar a que el workflow termine
+          for i in {1..180}; do
+            RUNS=$(gh run list --workflow descarga-sgs.yml --limit 1 --json status -q ".[0].status")
+            if [ "$RUNS" = "completed" ]; then
+              echo "[+] ✓ Descarga Diaria SGS completada"
+              break
+            fi
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "[*] Esperando... ($i segundos)"
+            fi
+            sleep 3
+          done
+
+      - name: 3️⃣ Ejecutar: Transformación Concrelab
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "[*] Iniciando: Transformación Concrelab"
+          gh workflow run "transformacionConcrelab.yml" --ref main
+
+          # Esperar a que el workflow termine
+          for i in {1..180}; do
+            RUNS=$(gh run list --workflow transformacionConcrelab.yml --limit 1 --json status -q ".[0].status")
+            if [ "$RUNS" = "completed" ]; then
+              echo "[+] ✓ Transformación Concrelab completada"
+              break
+            fi
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "[*] Esperando... ($i segundos)"
+            fi
+            sleep 3
+          done
+
+      - name: 4️⃣ Ejecutar: Transformación SGS
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "[*] Iniciando: Transformación SGS"
+          gh workflow run "transformacionSGS.yml" --ref main
+
+          # Esperar a que el workflow termine
+          for i in {1..180}; do
+            RUNS=$(gh run list --workflow transformacionSGS.yml --limit 1 --json status -q ".[0].status")
+            if [ "$RUNS" = "completed" ]; then
+              echo "[+] ✓ Transformación SGS completada"
+              break
+            fi
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "[*] Esperando... ($i segundos)"
+            fi
+            sleep 3
+          done
+
+      - name: 5️⃣ Ejecutar: Unificación
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "[*] Iniciando: Unificación"
+          gh workflow run "unificacion.yml" --ref main
+
+          # Esperar a que el workflow termine
+          for i in {1..180}; do
+            RUNS=$(gh run list --workflow unificacion.yml --limit 1 --json status -q ".[0].status")
+            if [ "$RUNS" = "completed" ]; then
+              echo "[+] ✓ Unificación completada"
+              break
+            fi
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "[*] Esperando... ($i segundos)"
+            fi
+            sleep 3
+          done
+
+      - name: 6️⃣ Ejecutar: Generar Dashboard
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "[*] Iniciando: Generar Dashboard"
+          gh workflow run "generarDashboard.yml" --ref main
+
+          # Esperar a que el workflow termine
+          for i in {1..180}; do
+            RUNS=$(gh run list --workflow generarDashboard.yml --limit 1 --json status -q ".[0].status")
+            if [ "$RUNS" = "completed" ]; then
+              echo "[+] ✓ Generar Dashboard completada"
+              break
+            fi
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "[*] Esperando... ($i segundos)"
+            fi
+            sleep 3
+          done
+
+      - name: 7️⃣ Ejecutar: Pages Build Deployment
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "[*] Iniciando: Pages Build Deployment"
+          echo "[+] Este workflow se ejecuta automáticamente cuando hay cambios en la rama principal"
+          echo "[+] El index.html ya ha sido actualizado por el paso anterior"
+
+      - name: ✅ Reporte final
+        if: always()
+        run: |
+          echo "=== ORQUESTACIÓN COMPLETADA ==="
+          echo ""
+          echo "Resumen de ejecución:"
+          echo "  1. ✓ Descarga Diaria Concrelab"
+          echo "  2. ✓ Descarga Diaria SGS"
+          echo "  3. ✓ Transformación Concrelab"
+          echo "  4. ✓ Transformación SGS"
+          echo "  5. ✓ Unificación"
+          echo "  6. ✓ Generar Dashboard"
+          echo "  7. ✓ Pages Build Deployment (automático)"
+          echo ""
+          echo "Próxima ejecución programada según cronograma de Bogotá (COT)"
