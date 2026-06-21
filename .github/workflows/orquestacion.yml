@@ -51,127 +51,271 @@ jobs:
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action Bot"
 
-      - name: 1️⃣ Ejecutar: Descarga Diaria Concrelab
+      - name: "1️⃣ Ejecutar: Descarga Diaria Concrelab"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           echo "[*] Iniciando: Descarga Diaria Concrelab"
           gh workflow run "descarga-concrelab.yml" --ref main
 
+          # Esperar a que aparezca el run
+          sleep 5
+
+          # Obtener el ID del último run
+          RUN_ID=$(gh run list --workflow descarga-concrelab.yml --limit 1 --json databaseId -q '.[0].databaseId')
+          echo "[*] Run ID: $RUN_ID"
+
           # Esperar a que el workflow termine
-          for i in {1..180}; do
-            RUNS=$(gh run list --workflow descarga-concrelab.yml --limit 1 --json status -q ".[0].status")
-            if [ "$RUNS" = "completed" ]; then
-              echo "[+] ✓ Descarga Diaria Concrelab completada"
-              break
+          MAX_ATTEMPTS=360
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            STATUS=$(gh run view $RUN_ID --json status -q '.status')
+            CONCLUSION=$(gh run view $RUN_ID --json conclusion -q '.conclusion')
+
+            if [ "$STATUS" = "completed" ]; then
+              if [ "$CONCLUSION" = "success" ]; then
+                echo "[+] ✓ Descarga Diaria Concrelab completada exitosamente"
+                break
+              else
+                echo "[!] ✗ Descarga Diaria Concrelab falló con conclusión: $CONCLUSION"
+                exit 1
+              fi
             fi
-            if [ $((i % 10)) -eq 0 ]; then
-              echo "[*] Esperando... ($i segundos)"
+
+            if [ $((ATTEMPT % 20)) -eq 0 ]; then
+              echo "[*] Esperando... Estado: $STATUS (intento $ATTEMPT/$MAX_ATTEMPTS)"
             fi
+
             sleep 3
+            ATTEMPT=$((ATTEMPT + 1))
           done
 
-      - name: 2️⃣ Ejecutar: Descarga Diaria SGS
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "[!] ✗ Timeout: Descarga Diaria Concrelab no completó en tiempo"
+            exit 1
+          fi
+
+      - name: "2️⃣ Ejecutar: Descarga Diaria SGS"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           echo "[*] Iniciando: Descarga Diaria SGS"
           gh workflow run "descarga-sgs.yml" --ref main
 
+          # Esperar a que aparezca el run
+          sleep 5
+
+          # Obtener el ID del último run
+          RUN_ID=$(gh run list --workflow descarga-sgs.yml --limit 1 --json databaseId -q '.[0].databaseId')
+          echo "[*] Run ID: $RUN_ID"
+
           # Esperar a que el workflow termine
-          for i in {1..180}; do
-            RUNS=$(gh run list --workflow descarga-sgs.yml --limit 1 --json status -q ".[0].status")
-            if [ "$RUNS" = "completed" ]; then
-              echo "[+] ✓ Descarga Diaria SGS completada"
-              break
+          MAX_ATTEMPTS=360
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            STATUS=$(gh run view $RUN_ID --json status -q '.status')
+            CONCLUSION=$(gh run view $RUN_ID --json conclusion -q '.conclusion')
+
+            if [ "$STATUS" = "completed" ]; then
+              if [ "$CONCLUSION" = "success" ]; then
+                echo "[+] ✓ Descarga Diaria SGS completada exitosamente"
+                break
+              else
+                echo "[!] ✗ Descarga Diaria SGS falló con conclusión: $CONCLUSION"
+                exit 1
+              fi
             fi
-            if [ $((i % 10)) -eq 0 ]; then
-              echo "[*] Esperando... ($i segundos)"
+
+            if [ $((ATTEMPT % 20)) -eq 0 ]; then
+              echo "[*] Esperando... Estado: $STATUS (intento $ATTEMPT/$MAX_ATTEMPTS)"
             fi
+
             sleep 3
+            ATTEMPT=$((ATTEMPT + 1))
           done
 
-      - name: 3️⃣ Ejecutar: Transformación Concrelab
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "[!] ✗ Timeout: Descarga Diaria SGS no completó en tiempo"
+            exit 1
+          fi
+
+      - name: "3️⃣ Ejecutar: Transformación Concrelab"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           echo "[*] Iniciando: Transformación Concrelab"
           gh workflow run "transformacionConcrelab.yml" --ref main
 
+          # Esperar a que aparezca el run
+          sleep 5
+
+          # Obtener el ID del último run
+          RUN_ID=$(gh run list --workflow transformacionConcrelab.yml --limit 1 --json databaseId -q '.[0].databaseId')
+          echo "[*] Run ID: $RUN_ID"
+
           # Esperar a que el workflow termine
-          for i in {1..180}; do
-            RUNS=$(gh run list --workflow transformacionConcrelab.yml --limit 1 --json status -q ".[0].status")
-            if [ "$RUNS" = "completed" ]; then
-              echo "[+] ✓ Transformación Concrelab completada"
-              break
+          MAX_ATTEMPTS=360
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            STATUS=$(gh run view $RUN_ID --json status -q '.status')
+            CONCLUSION=$(gh run view $RUN_ID --json conclusion -q '.conclusion')
+
+            if [ "$STATUS" = "completed" ]; then
+              if [ "$CONCLUSION" = "success" ]; then
+                echo "[+] ✓ Transformación Concrelab completada exitosamente"
+                break
+              else
+                echo "[!] ✗ Transformación Concrelab falló con conclusión: $CONCLUSION"
+                exit 1
+              fi
             fi
-            if [ $((i % 10)) -eq 0 ]; then
-              echo "[*] Esperando... ($i segundos)"
+
+            if [ $((ATTEMPT % 20)) -eq 0 ]; then
+              echo "[*] Esperando... Estado: $STATUS (intento $ATTEMPT/$MAX_ATTEMPTS)"
             fi
+
             sleep 3
+            ATTEMPT=$((ATTEMPT + 1))
           done
 
-      - name: 4️⃣ Ejecutar: Transformación SGS
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "[!] ✗ Timeout: Transformación Concrelab no completó en tiempo"
+            exit 1
+          fi
+
+      - name: "4️⃣ Ejecutar: Transformación SGS"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           echo "[*] Iniciando: Transformación SGS"
           gh workflow run "transformacionSGS.yml" --ref main
 
+          # Esperar a que aparezca el run
+          sleep 5
+
+          # Obtener el ID del último run
+          RUN_ID=$(gh run list --workflow transformacionSGS.yml --limit 1 --json databaseId -q '.[0].databaseId')
+          echo "[*] Run ID: $RUN_ID"
+
           # Esperar a que el workflow termine
-          for i in {1..180}; do
-            RUNS=$(gh run list --workflow transformacionSGS.yml --limit 1 --json status -q ".[0].status")
-            if [ "$RUNS" = "completed" ]; then
-              echo "[+] ✓ Transformación SGS completada"
-              break
+          MAX_ATTEMPTS=360
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            STATUS=$(gh run view $RUN_ID --json status -q '.status')
+            CONCLUSION=$(gh run view $RUN_ID --json conclusion -q '.conclusion')
+
+            if [ "$STATUS" = "completed" ]; then
+              if [ "$CONCLUSION" = "success" ]; then
+                echo "[+] ✓ Transformación SGS completada exitosamente"
+                break
+              else
+                echo "[!] ✗ Transformación SGS falló con conclusión: $CONCLUSION"
+                exit 1
+              fi
             fi
-            if [ $((i % 10)) -eq 0 ]; then
-              echo "[*] Esperando... ($i segundos)"
+
+            if [ $((ATTEMPT % 20)) -eq 0 ]; then
+              echo "[*] Esperando... Estado: $STATUS (intento $ATTEMPT/$MAX_ATTEMPTS)"
             fi
+
             sleep 3
+            ATTEMPT=$((ATTEMPT + 1))
           done
 
-      - name: 5️⃣ Ejecutar: Unificación
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "[!] ✗ Timeout: Transformación SGS no completó en tiempo"
+            exit 1
+          fi
+
+      - name: "5️⃣ Ejecutar: Unificación"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           echo "[*] Iniciando: Unificación"
           gh workflow run "unificacion.yml" --ref main
 
+          # Esperar a que aparezca el run
+          sleep 5
+
+          # Obtener el ID del último run
+          RUN_ID=$(gh run list --workflow unificacion.yml --limit 1 --json databaseId -q '.[0].databaseId')
+          echo "[*] Run ID: $RUN_ID"
+
           # Esperar a que el workflow termine
-          for i in {1..180}; do
-            RUNS=$(gh run list --workflow unificacion.yml --limit 1 --json status -q ".[0].status")
-            if [ "$RUNS" = "completed" ]; then
-              echo "[+] ✓ Unificación completada"
-              break
+          MAX_ATTEMPTS=360
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            STATUS=$(gh run view $RUN_ID --json status -q '.status')
+            CONCLUSION=$(gh run view $RUN_ID --json conclusion -q '.conclusion')
+
+            if [ "$STATUS" = "completed" ]; then
+              if [ "$CONCLUSION" = "success" ]; then
+                echo "[+] ✓ Unificación completada exitosamente"
+                break
+              else
+                echo "[!] ✗ Unificación falló con conclusión: $CONCLUSION"
+                exit 1
+              fi
             fi
-            if [ $((i % 10)) -eq 0 ]; then
-              echo "[*] Esperando... ($i segundos)"
+
+            if [ $((ATTEMPT % 20)) -eq 0 ]; then
+              echo "[*] Esperando... Estado: $STATUS (intento $ATTEMPT/$MAX_ATTEMPTS)"
             fi
+
             sleep 3
+            ATTEMPT=$((ATTEMPT + 1))
           done
 
-      - name: 6️⃣ Ejecutar: Generar Dashboard
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "[!] ✗ Timeout: Unificación no completó en tiempo"
+            exit 1
+          fi
+
+      - name: "6️⃣ Ejecutar: Generar Dashboard"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           echo "[*] Iniciando: Generar Dashboard"
           gh workflow run "generarDashboard.yml" --ref main
 
+          # Esperar a que aparezca el run
+          sleep 5
+
+          # Obtener el ID del último run
+          RUN_ID=$(gh run list --workflow generarDashboard.yml --limit 1 --json databaseId -q '.[0].databaseId')
+          echo "[*] Run ID: $RUN_ID"
+
           # Esperar a que el workflow termine
-          for i in {1..180}; do
-            RUNS=$(gh run list --workflow generarDashboard.yml --limit 1 --json status -q ".[0].status")
-            if [ "$RUNS" = "completed" ]; then
-              echo "[+] ✓ Generar Dashboard completada"
-              break
+          MAX_ATTEMPTS=360
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            STATUS=$(gh run view $RUN_ID --json status -q '.status')
+            CONCLUSION=$(gh run view $RUN_ID --json conclusion -q '.conclusion')
+
+            if [ "$STATUS" = "completed" ]; then
+              if [ "$CONCLUSION" = "success" ]; then
+                echo "[+] ✓ Generar Dashboard completada exitosamente"
+                break
+              else
+                echo "[!] ✗ Generar Dashboard falló con conclusión: $CONCLUSION"
+                exit 1
+              fi
             fi
-            if [ $((i % 10)) -eq 0 ]; then
-              echo "[*] Esperando... ($i segundos)"
+
+            if [ $((ATTEMPT % 20)) -eq 0 ]; then
+              echo "[*] Esperando... Estado: $STATUS (intento $ATTEMPT/$MAX_ATTEMPTS)"
             fi
+
             sleep 3
+            ATTEMPT=$((ATTEMPT + 1))
           done
 
-      - name: 7️⃣ Ejecutar: Pages Build Deployment
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "[!] ✗ Timeout: Generar Dashboard no completó en tiempo"
+            exit 1
+          fi
+
+      - name: "7️⃣ Ejecutar: Pages Build Deployment"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
