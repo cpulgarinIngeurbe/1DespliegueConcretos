@@ -31,6 +31,7 @@ jobs:
         run: |
           python << 'EOF'
           import pandas as pd
+          import numpy as np
           import os
           from pathlib import Path
 
@@ -307,7 +308,6 @@ jobs:
                   print(f'  [!] Advertencia: No se pudieron crear las columnas (columnas faltantes)')
 
               # Crear columna "Promedio Móvil (MPa)" - Ventana móvil de 9 registros que avanza cada 3
-              import numpy as np
               print(f'\n[*] Calculando Promedio Móvil (MPa)...')
               df_alertas['Promedio Móvil (MPa)'] = np.nan
 
