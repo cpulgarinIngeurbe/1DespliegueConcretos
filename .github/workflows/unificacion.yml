@@ -194,16 +194,30 @@ jobs:
                   df_unificado['TIPO ELEMENTO'] = df_unificado['TIPO ELEMENTO'].replace('Pilotaje', 'TREMIE')
                   print(f'  [+] Reemplazado "Pilotaje" → "TREMIE": {cantidad_pilotaje} registros')
 
-              # Crear columna "Resistencia nominal (MPa) llave" copiando y redondeando hacia arriba datos de "Resistencia nominal (MPa)"
-              import math
+              # Crear columna "Resistencia nominal (MPa) llave" acotando a valores predefinidos
               print(f'\n[*] Creando columna "Resistencia nominal (MPa) llave"...')
               if 'Resistencia nominal (MPa)' in df_unificado.columns:
-                  df_unificado['Resistencia nominal (MPa) llave'] = df_unificado['Resistencia nominal (MPa)'].apply(
-                      lambda x: int(math.ceil(x)) if pd.notna(x) else x
-                  )
+                  # Valores posibles para acotamiento
+                  valores_acotamiento = [21, 28, 34, 41, 48]
+
+                  def acotar_a_valor_superior(valor):
+                      if pd.isna(valor):
+                          return valor
+                      # Buscar el primer valor en la lista que sea >= al valor dado
+                      for v in valores_acotamiento:
+                          if v >= valor:
+                              return v
+                      # Si el valor es mayor que todos, retornar el máximo
+                      return valores_acotamiento[-1]
+
+                  df_unificado['Resistencia nominal (MPa) llave'] = df_unificado['Resistencia nominal (MPa)'].apply(acotar_a_valor_superior)
                   print(f'  [+] ✅ Columna "Resistencia nominal (MPa) llave" creada exitosamente')
-                  print(f'  [+] Redondeados hacia arriba a enteros: {len(df_unificado)} registros')
-                  print(f'  [+] Ejemplo: 20.4 → {int(math.ceil(20.4))}, 24.5 → {int(math.ceil(24.5))}, 41.4 → {int(math.ceil(41.4))}')
+                  print(f'  [+] Valores posibles de acotamiento: {valores_acotamiento}')
+                  print(f'  [+] Registros procesados: {len(df_unificado)}')
+                  print(f'  [+] Ejemplos:')
+                  print(f'      - 19 → {acotar_a_valor_superior(19)}')
+                  print(f'      - 26.5 → {acotar_a_valor_superior(26.5)}')
+                  print(f'      - 41.2 → {acotar_a_valor_superior(41.2)}')
               else:
                   print(f'  [!] Advertencia: Columna "Resistencia nominal (MPa)" no encontrada')
 
