@@ -120,22 +120,63 @@ jobs:
                   texto = str(localizacion).lower()
 
                   # Mapeo de palabras clave a valores de TIPO ELEMENTO
-                  if 'muros' in texto or 'muro' in texto:
-                      return 'MURO'
-                  elif 'placa' in texto:
+                  # PLACA
+                  if 'placa' in texto or 'plca' in texto:
                       return 'PLACA'
-                  elif 'cimentación' in texto:
-                      return 'AUTOCOMPAC'
+
+                  # MURO
+                  elif 'muros' in texto or 'muro' in texto:
+                      return 'MURO'
                   elif 'columnas' in texto or 'columna' in texto:
                       return 'MURO'
-                  elif 'escaleras' in texto or 'escalera' in texto:
-                      return 'AUTOCOMPAC'
-                  elif 'viga' in texto or 'vigas' in texto:
-                      return 'AUTOCOMPAC'
+                  elif 'antepechos' in texto or 'antepecho' in texto:
+                      return 'MURO'
+                  elif 'dinteles' in texto or 'dintel' in texto:
+                      return 'MURO'
+
+                  # PILOTAJE
                   elif 'barrete' in texto:
                       return 'Pilotaje'
                   elif 'pilote' in texto:
                       return 'Pilotaje'
+                  elif 'polote' in texto:
+                      return 'Pilotaje'
+                  elif 'pantalla' in texto:
+                      return 'Pilotaje'
+
+                  # AUTOCOMPAC (mayoría de casos)
+                  elif 'cimentación' in texto or 'cimentacion' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'plataforma' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'tanque' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'base' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'losa' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'bordillos' in texto or 'bordillo' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'grouting' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'rampa' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'matera' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'foso' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'mamposteria' in texto or 'mampostería' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'ménsulas' in texto or 'mensula' in texto or 'mensulas' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'cubierta' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'escaleras' in texto or 'escalera' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'viga' in texto or 'vigas' in texto:
+                      return 'AUTOCOMPAC'
+
+                  # Default
                   else:
                       return 'OTRO'
 
