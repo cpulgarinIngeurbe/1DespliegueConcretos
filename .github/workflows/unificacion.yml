@@ -316,7 +316,10 @@ jobs:
                       indices_grupo = grupo_resistencia.index.tolist()
                       cantidad_registros = len(indices_grupo)
 
-                      # Los primeros 6 registros quedan vacíos
+                      # ASEGURAR que los primeros 6 registros de ESTE grupo estén vacíos
+                      primeros_6 = indices_grupo[:6]
+                      df_alertas.loc[primeros_6, 'Promedio Móvil (MPa)'] = pd.NA
+
                       # A partir del registro 7 (índice 6), procesar ventanas móviles
                       if cantidad_registros >= 9:
                           # Primera ventana: registros 0-8, mostrar en últimos 3 (6-8)
