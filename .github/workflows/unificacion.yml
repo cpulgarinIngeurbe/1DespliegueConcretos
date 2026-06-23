@@ -315,20 +315,20 @@ jobs:
                   for valor_resistencia, grupo_resistencia in df_alertas.groupby('Resistencia nominal (MPa) llave', dropna=False):
                       indices_grupo_resistencia = grupo_resistencia.index.tolist()
 
-                      # Procesar ventanas móviles: primera ventana comienza en posición 6 (registros 7-9)
-                      # Luego avanza cada 3 registros
-                      i = 6  # Comienza en posición 6 para tener 9 registros desde el inicio
+                      # Procesar ventanas móviles dentro del grupo
+                      # Primera ventana comienza en posición 6 (registros 7-9 del grupo)
+                      posicion_en_grupo = 6
 
-                      while i < len(indices_grupo_resistencia):
-                          # Ventana de 9 registros: desde i-6 hasta i+2
-                          inicio_ventana = i - 6
-                          fin_ventana = i + 3
+                      while posicion_en_grupo < len(indices_grupo_resistencia):
+                          # Ventana de 9 registros
+                          inicio_ventana = posicion_en_grupo - 6
+                          fin_ventana = posicion_en_grupo + 3
 
                           if fin_ventana <= len(indices_grupo_resistencia):
-                              # Índices de los 9 registros
+                              # Índices absolutos de los 9 registros en la ventana
                               ventana_indices = indices_grupo_resistencia[inicio_ventana:fin_ventana]
 
-                              # Últimos 3 registros de la ventana (posiciones 6, 7, 8 de la ventana)
+                              # Últimos 3 registros de la ventana (posiciones 6, 7, 8 de la ventana de 9)
                               ultimos_3_indices = ventana_indices[6:9]
 
                               # Calcular el promedio de Resistencia Promedio de estos 9 registros
@@ -340,7 +340,7 @@ jobs:
                                   # Asignar el promedio móvil solo a los últimos 3 registros
                                   df_alertas.loc[ultimos_3_indices, 'Promedio Móvil (MPa)'] = promedio_movil
 
-                          i += 3  # Avanzar 3 registros
+                          posicion_en_grupo += 3  # Avanzar 3 registros dentro del grupo
 
                   print(f'  [+] ✅ Columna "Promedio Móvil (MPa)" creada')
                   registros_con_movil = df_alertas['Promedio Móvil (MPa)'].notna().sum()
