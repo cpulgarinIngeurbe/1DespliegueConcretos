@@ -277,6 +277,41 @@ jobs:
               print(f'  [!] Primera ejecución: todos los registros marcados como NUEVO')
               print(f'  [+] Registros NUEVOS: {len(df_unificado)}')
 
+          # Inner Join con Curvas.xlsx para agregar "Resistencia Teórica (MPa)"
+          print(f'\n[*] Realizando Inner Join con Curvas.xlsx...')
+          archivo_curvas = os.path.join("Estandar", "Curvas.xlsx")
+
+          if os.path.exists(archivo_curvas):
+              try:
+                  df_curvas = pd.read_excel(archivo_curvas)
+
+                  if 'Llave' in df_curvas.columns and 'Llave' in df_unificado.columns:
+                      # Verificar si existe la columna "Resistencia Teórica (MPa)" en Curvas
+                      if 'Resistencia Teórica (MPa)' in df_curvas.columns:
+                          # Seleccionar solo las columnas necesarias de Curvas
+                          df_curvas_join = df_curvas[['Llave', 'Resistencia Teórica (MPa)']].copy()
+
+                          # Realizar el merge (inner join)
+                          registros_antes = len(df_unificado)
+                          df_unificado = df_unificado.merge(
+                              df_curvas_join,
+                              on='Llave',
+                              how='left'
+                          )
+
+                          coincidencias = df_unificado['Resistencia Teórica (MPa)'].notna().sum()
+                          print(f'  [+] ✅ Join completado exitosamente')
+                          print(f'  [+] Registros totales: {registros_antes}')
+                          print(f'  [+] Registros con coincidencia: {coincidencias}')
+                      else:
+                          print(f'  [!] Advertencia: Columna "Resistencia Teórica (MPa)" no encontrada en Curvas.xlsx')
+                  else:
+                      print(f'  [!] Advertencia: Columna "Llave" no encontrada en uno de los archivos')
+              except Exception as e:
+                  print(f'  [!] Error al procesar Curvas.xlsx: {str(e)}')
+          else:
+              print(f'  [!] Advertencia: Archivo Curvas.xlsx no encontrado en carpeta Estandar')
+
           # Guardar el archivo unificado
           df_unificado.to_excel(archivo_unificado, index=False)
           print(f'\n[+] ✅ Archivo unificado guardado en: {archivo_unificado}')
