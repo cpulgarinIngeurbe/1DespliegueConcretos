@@ -252,6 +252,12 @@ jobs:
           print(f'\n[+] ✅ Archivo unificado guardado en: {archivo_unificado}')
           print(f'  [+] Tamaño: {len(df_unificado)} registros x {len(df_unificado.columns)} columnas')
 
+          # Crear copia del archivo consolidado como ConsolidadoAlertas.xlsx
+          import shutil
+          archivo_alertas = os.path.join(ruta_desplegable, "ConsolidadoAlertas.xlsx")
+          shutil.copy(archivo_unificado, archivo_alertas)
+          print(f'\n[+] ✅ Copia de archivo creada: {archivo_alertas}')
+
           EOF
 
       - name: 🔧 Configurar Git
