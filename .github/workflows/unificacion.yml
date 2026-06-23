@@ -271,6 +271,34 @@ jobs:
               else:
                   print(f'  [!] Advertencia: Columnas de ordenamiento no encontradas')
 
+              # Crear columna "Resistencia Promedio (MPa)" para grupos de 3 registros iguales
+              print(f'\n[*] Calculando Resistencia Promedio (MPa) para grupos de 3 registros...')
+              columnas_grupo = ['Cilindro N°', 'Localización', 'Toma']
+              columnas_disponibles = [col for col in columnas_grupo if col in df_alertas.columns]
+
+              if len(columnas_disponibles) == 3 and 'Resistencia (MPa)' in df_alertas.columns:
+                  # Crear columna de promedio inicializada con NaN
+                  df_alertas['Resistencia Promedio (MPa)'] = pd.NA
+
+                  # Agrupar por Cilindro N°, Localización y Toma
+                  for grupo, datos_grupo in df_alertas.groupby(columnas_grupo, dropna=False):
+                      indices_grupo = datos_grupo.index.tolist()
+
+                      # Si el grupo tiene exactamente 3 registros
+                      if len(indices_grupo) == 3:
+                          # Calcular el promedio de Resistencia (MPa)
+                          promedio = datos_grupo['Resistencia (MPa)'].mean()
+
+                          # Asignar el promedio a todos los registros del grupo
+                          df_alertas.loc[indices_grupo, 'Resistencia Promedio (MPa)'] = promedio
+
+                  # Contar grupos de 3 registros
+                  grupos_con_promedio = df_alertas['Resistencia Promedio (MPa)'].notna().sum()
+                  print(f'  [+] ✅ Columna "Resistencia Promedio (MPa)" creada')
+                  print(f'  [+] Registros con promedio calculado: {grupos_con_promedio}')
+              else:
+                  print(f'  [!] Advertencia: No se pudieron crear los promedios (columnas faltantes)')
+
               # Guardar archivo de alertas
               df_alertas.to_excel(archivo_alertas, index=False)
               print(f'  [+] ✅ Archivo de alertas creado: {archivo_alertas}')
