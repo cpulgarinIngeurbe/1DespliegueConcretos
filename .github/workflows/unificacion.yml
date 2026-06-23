@@ -188,9 +188,15 @@ jobs:
 
               df_unificado['TIPO ELEMENTO'] = df_unificado['Localización'].apply(determinar_tipo_elemento)
 
+              # Reemplazar "Pilotaje" por "TREMIE"
+              cantidad_pilotaje = (df_unificado['TIPO ELEMENTO'] == 'Pilotaje').sum()
+              if cantidad_pilotaje > 0:
+                  df_unificado['TIPO ELEMENTO'] = df_unificado['TIPO ELEMENTO'].replace('Pilotaje', 'TREMIE')
+                  print(f'  [+] Reemplazado "Pilotaje" → "TREMIE": {cantidad_pilotaje} registros')
+
               # Mostrar resumen de tipos de elemento
               tipos_resumen = df_unificado['TIPO ELEMENTO'].value_counts()
-              print(f'  [+] Distribución de TIPO ELEMENTO:')
+              print(f'  [+] Distribución final de TIPO ELEMENTO:')
               for tipo, cantidad in tipos_resumen.items():
                   print(f'      - {tipo}: {cantidad} registros')
           else:
