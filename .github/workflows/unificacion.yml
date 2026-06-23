@@ -248,10 +248,46 @@ jobs:
           else:
               print(f'\n[!] Advertencia: Columna "Localización" no encontrada')
 
+          # Crear columna "Estado" comparando con ejecución anterior
+          print(f'\n[*] Creando columna "Estado" (comparando con ejecución anterior)...')
+          archivo_anterior = os.path.join(ruta_desplegable, "ConsolidadoAnterior.xlsx")
+          df_unificado['Estado'] = 'NUEVO'
+
+          if os.path.exists(archivo_anterior):
+              try:
+                  df_anterior = pd.read_excel(archivo_anterior)
+                  if 'Llave' in df_anterior.columns and 'Llave' in df_unificado.columns:
+                      # Obtener las llaves del archivo anterior
+                      llaves_anteriores = set(df_anterior['Llave'].dropna().unique())
+
+                      # Marcar como EXISTENTE los registros que ya estaban
+                      df_unificado.loc[df_unificado['Llave'].isin(llaves_anteriores), 'Estado'] = 'EXISTENTE'
+
+                      registros_nuevos = (df_unificado['Estado'] == 'NUEVO').sum()
+                      registros_existentes = (df_unificado['Estado'] == 'EXISTENTE').sum()
+
+                      print(f'  [+] ✅ Comparación completada')
+                      print(f'  [+] Registros NUEVOS: {registros_nuevos}')
+                      print(f'  [+] Registros EXISTENTES: {registros_existentes}')
+                  else:
+                      print(f'  [!] Advertencia: Columna "Llave" no encontrada para comparación')
+              except Exception as e:
+                  print(f'  [!] Error al leer archivo anterior: {str(e)}')
+          else:
+              print(f'  [!] Primera ejecución: todos los registros marcados como NUEVO')
+              print(f'  [+] Registros NUEVOS: {len(df_unificado)}')
+
           # Guardar el archivo unificado
           df_unificado.to_excel(archivo_unificado, index=False)
           print(f'\n[+] ✅ Archivo unificado guardado en: {archivo_unificado}')
           print(f'  [+] Tamaño: {len(df_unificado)} registros x {len(df_unificado.columns)} columnas')
+
+          # Guardar copia para próxima ejecución y eliminar anterior
+          import shutil
+          if os.path.exists(archivo_anterior):
+              os.remove(archivo_anterior)
+          shutil.copy(archivo_unificado, archivo_anterior)
+          print(f'  [+] Copia guardada para próxima ejecución')
 
           # Crear archivo ConsolidadoAlertas.xlsx con solo registros donde Edad (días) == 28
           print(f'\n[*] Creando archivo ConsolidadoAlertas.xlsx...')
