@@ -306,6 +306,38 @@ jobs:
               else:
                   print(f'  [!] Advertencia: No se pudieron crear las columnas (columnas faltantes)')
 
+              # Crear columna "Promedio Móvil (MPa)" - Promedio de los últimos 3 promedios (9 registros)
+              print(f'\n[*] Calculando Promedio Móvil (MPa)...')
+              df_alertas['Promedio Móvil (MPa)'] = pd.NA
+
+              if 'Resistencia nominal (MPa) llave' in df_alertas.columns and 'Resistencia Promedio (MPa)' in df_alertas.columns:
+                  # Agrupar por Resistencia nominal (MPa) llave para reiniciar en cada cambio
+                  for valor_resistencia, grupo_resistencia in df_alertas.groupby('Resistencia nominal (MPa) llave', dropna=False):
+                      indices_grupo_resistencia = grupo_resistencia.index.tolist()
+
+                      # Dentro de cada grupo de Resistencia nominal, procesar por ventanas de 9 registros
+                      for i in range(0, len(indices_grupo_resistencia), 9):
+                          ventana_indices = indices_grupo_resistencia[i:i+9]
+
+                          if len(ventana_indices) >= 9:
+                              # Tomar los últimos 3 registros de la ventana de 9
+                              ultimos_3_indices = ventana_indices[6:9]
+
+                              # Calcular el promedio de Resistencia Promedio de estos 9 registros
+                              valores_promedio = df_alertas.loc[ventana_indices, 'Resistencia Promedio (MPa)'].dropna()
+
+                              if len(valores_promedio) >= 3:
+                                  promedio_movil = valores_promedio.mean()
+
+                                  # Asignar el promedio móvil solo a los últimos 3 registros
+                                  df_alertas.loc[ultimos_3_indices, 'Promedio Móvil (MPa)'] = promedio_movil
+
+                  print(f'  [+] ✅ Columna "Promedio Móvil (MPa)" creada')
+                  registros_con_movil = df_alertas['Promedio Móvil (MPa)'].notna().sum()
+                  print(f'  [+] Registros con Promedio Móvil: {registros_con_movil}')
+              else:
+                  print(f'  [!] Advertencia: No se pudo crear Promedio Móvil (columnas faltantes)')
+
               # Guardar archivo de alertas
               df_alertas.to_excel(archivo_alertas, index=False)
               print(f'  [+] ✅ Archivo de alertas creado: {archivo_alertas}')
