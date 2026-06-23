@@ -194,6 +194,15 @@ jobs:
                   df_unificado['TIPO ELEMENTO'] = df_unificado['TIPO ELEMENTO'].replace('Pilotaje', 'TREMIE')
                   print(f'  [+] Reemplazado "Pilotaje" → "TREMIE": {cantidad_pilotaje} registros')
 
+              # Crear columna "Resistencia nominal (MPa) llave" copiando datos de "Resistencia nominal (MPa)"
+              print(f'\n[*] Creando columna "Resistencia nominal (MPa) llave"...')
+              if 'Resistencia nominal (MPa)' in df_unificado.columns:
+                  df_unificado['Resistencia nominal (MPa) llave'] = df_unificado['Resistencia nominal (MPa)'].copy()
+                  print(f'  [+] ✅ Columna "Resistencia nominal (MPa) llave" creada exitosamente')
+                  print(f'  [+] Copiados {len(df_unificado)} registros')
+              else:
+                  print(f'  [!] Advertencia: Columna "Resistencia nominal (MPa)" no encontrada')
+
               # Crear columna "Llave" concatenando TIPO ELEMENTO, Resistencia nominal (MPa) y Edad (días)
               print(f'\n[*] Creando columna "Llave"...')
               columnas_requeridas = ['TIPO ELEMENTO', 'Resistencia nominal (MPa)', 'Edad (días)']
