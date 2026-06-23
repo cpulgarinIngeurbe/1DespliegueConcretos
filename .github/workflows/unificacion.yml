@@ -261,6 +261,16 @@ jobs:
               df_alertas = df_unificado[df_unificado['Edad (días)'] == 28].copy()
               cantidad_registros_alertas = len(df_alertas)
 
+              # Ordenar por Proyecto y luego por Resistencia nominal (MPa) de menor a mayor
+              if 'Proyecto' in df_alertas.columns and 'Resistencia nominal (MPa)' in df_alertas.columns:
+                  df_alertas = df_alertas.sort_values(
+                      by=['Proyecto', 'Resistencia nominal (MPa)'],
+                      ascending=[True, True]
+                  ).reset_index(drop=True)
+                  print(f'  [+] Registros ordenados por Proyecto y Resistencia nominal (MPa)')
+              else:
+                  print(f'  [!] Advertencia: Columnas de ordenamiento no encontradas')
+
               # Guardar archivo de alertas
               df_alertas.to_excel(archivo_alertas, index=False)
               print(f'  [+] ✅ Archivo de alertas creado: {archivo_alertas}')
