@@ -252,11 +252,22 @@ jobs:
           print(f'\n[+] ✅ Archivo unificado guardado en: {archivo_unificado}')
           print(f'  [+] Tamaño: {len(df_unificado)} registros x {len(df_unificado.columns)} columnas')
 
-          # Crear copia del archivo consolidado como ConsolidadoAlertas.xlsx
-          import shutil
+          # Crear archivo ConsolidadoAlertas.xlsx con solo registros donde Edad (días) == 28
+          print(f'\n[*] Creando archivo ConsolidadoAlertas.xlsx...')
           archivo_alertas = os.path.join(ruta_desplegable, "ConsolidadoAlertas.xlsx")
-          shutil.copy(archivo_unificado, archivo_alertas)
-          print(f'\n[+] ✅ Copia de archivo creada: {archivo_alertas}')
+
+          if 'Edad (días)' in df_unificado.columns:
+              # Filtrar registros donde Edad (días) == 28
+              df_alertas = df_unificado[df_unificado['Edad (días)'] == 28].copy()
+              cantidad_registros_alertas = len(df_alertas)
+
+              # Guardar archivo de alertas
+              df_alertas.to_excel(archivo_alertas, index=False)
+              print(f'  [+] ✅ Archivo de alertas creado: {archivo_alertas}')
+              print(f'  [+] Registros filtrados (Edad = 28): {cantidad_registros_alertas}')
+              print(f'  [+] Tamaño: {cantidad_registros_alertas} registros x {len(df_alertas.columns)} columnas')
+          else:
+              print(f'  [!] Advertencia: Columna "Edad (días)" no encontrada')
 
           EOF
 
