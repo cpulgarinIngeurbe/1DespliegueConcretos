@@ -109,6 +109,46 @@ jobs:
               valores_despues = df_unificado['Proyecto'].nunique()
               print(f'  [+] Valores únicos: {valores_antes} → {valores_despues}')
 
+          # Crear columna "TIPO ELEMENTO" basada en "Localización"
+          if 'Localización' in df_unificado.columns:
+              print(f'\n[*] Creando columna "TIPO ELEMENTO" basada en "Localización"...')
+
+              def determinar_tipo_elemento(localizacion):
+                  if pd.isna(localizacion):
+                      return ''
+
+                  texto = str(localizacion).lower()
+
+                  # Mapeo de palabras clave a valores de TIPO ELEMENTO
+                  if 'muros' in texto or 'muro' in texto:
+                      return 'MURO'
+                  elif 'placa' in texto:
+                      return 'PLACA'
+                  elif 'cimentación' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'columnas' in texto or 'columna' in texto:
+                      return 'MURO'
+                  elif 'escaleras' in texto or 'escalera' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'viga' in texto or 'vigas' in texto:
+                      return 'AUTOCOMPAC'
+                  elif 'barrete' in texto:
+                      return 'Pilotaje'
+                  elif 'pilote' in texto:
+                      return 'Pilotaje'
+                  else:
+                      return 'OTRO'
+
+              df_unificado['TIPO ELEMENTO'] = df_unificado['Localización'].apply(determinar_tipo_elemento)
+
+              # Mostrar resumen de tipos de elemento
+              tipos_resumen = df_unificado['TIPO ELEMENTO'].value_counts()
+              print(f'  [+] Distribución de TIPO ELEMENTO:')
+              for tipo, cantidad in tipos_resumen.items():
+                  print(f'      - {tipo}: {cantidad} registros')
+          else:
+              print(f'\n[!] Advertencia: Columna "Localización" no encontrada')
+
           # Guardar el archivo unificado
           df_unificado.to_excel(archivo_unificado, index=False)
           print(f'\n[+] ✅ Archivo unificado guardado en: {archivo_unificado}')
