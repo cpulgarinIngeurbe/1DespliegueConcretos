@@ -194,19 +194,19 @@ jobs:
                   df_unificado['TIPO ELEMENTO'] = df_unificado['TIPO ELEMENTO'].replace('Pilotaje', 'TREMIE')
                   print(f'  [+] Reemplazado "Pilotaje" → "TREMIE": {cantidad_pilotaje} registros')
 
-              # Crear columna "Llave" concatenando TIPO ELEMENTO, Resistencia (MPa) y Edad (días)
+              # Crear columna "Llave" concatenando TIPO ELEMENTO, Resistencia nominal (MPa) y Edad (días)
               print(f'\n[*] Creando columna "Llave"...')
-              columnas_requeridas = ['TIPO ELEMENTO', 'Resistencia (MPa)', 'Edad (días)']
+              columnas_requeridas = ['TIPO ELEMENTO', 'Resistencia nominal (MPa)', 'Edad (días)']
               columnas_faltantes = [col for col in columnas_requeridas if col not in df_unificado.columns]
 
               if not columnas_faltantes:
                   df_unificado['Llave'] = (
                       df_unificado['TIPO ELEMENTO'].astype(str) + '-' +
-                      df_unificado['Resistencia (MPa)'].astype(str) + '-' +
+                      df_unificado['Resistencia nominal (MPa)'].astype(str) + '-' +
                       df_unificado['Edad (días)'].astype(str)
                   )
                   print(f'  [+] ✅ Columna "Llave" creada exitosamente')
-                  print(f'  [+] Formato: TIPO ELEMENTO-Resistencia (MPa)-Edad (días)')
+                  print(f'  [+] Formato: TIPO ELEMENTO-Resistencia nominal (MPa)-Edad (días)')
                   print(f'  [+] Ejemplo: {df_unificado["Llave"].iloc[0] if len(df_unificado) > 0 else "N/A"}')
               else:
                   print(f'  [!] Advertencia: Columnas no encontradas: {", ".join(columnas_faltantes)}')
