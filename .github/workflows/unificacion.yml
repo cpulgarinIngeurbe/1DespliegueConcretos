@@ -215,8 +215,8 @@ jobs:
               if not columnas_faltantes:
                   df_unificado['Llave'] = (
                       df_unificado['TIPO ELEMENTO'].astype(str) + '-' +
-                      df_unificado['Resistencia nominal (MPa) llave'].astype(int).astype(str) + '-' +
-                      df_unificado['Edad (días)'].astype(int).astype(str)
+                      df_unificado['Resistencia nominal (MPa) llave'].fillna(0).astype(int).astype(str) + '-' +
+                      df_unificado['Edad (días)'].fillna(0).astype(int).astype(str)
                   )
                   print(f'  [+] ✅ Columna "Llave" creada exitosamente')
                   print(f'  [+] Formato: TIPO ELEMENTO-Resistencia nominal (MPa) llave (entero)-Edad (días) (entero)')
