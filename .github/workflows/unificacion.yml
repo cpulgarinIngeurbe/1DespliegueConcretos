@@ -194,15 +194,16 @@ jobs:
                   df_unificado['TIPO ELEMENTO'] = df_unificado['TIPO ELEMENTO'].replace('Pilotaje', 'TREMIE')
                   print(f'  [+] Reemplazado "Pilotaje" → "TREMIE": {cantidad_pilotaje} registros')
 
-              # Crear columna "Resistencia nominal (MPa) llave" copiando y redondeando datos de "Resistencia nominal (MPa)"
+              # Crear columna "Resistencia nominal (MPa) llave" copiando y redondeando hacia arriba datos de "Resistencia nominal (MPa)"
+              import math
               print(f'\n[*] Creando columna "Resistencia nominal (MPa) llave"...')
               if 'Resistencia nominal (MPa)' in df_unificado.columns:
                   df_unificado['Resistencia nominal (MPa) llave'] = df_unificado['Resistencia nominal (MPa)'].apply(
-                      lambda x: int(round(x)) if pd.notna(x) else x
+                      lambda x: int(math.ceil(x)) if pd.notna(x) else x
                   )
                   print(f'  [+] ✅ Columna "Resistencia nominal (MPa) llave" creada exitosamente')
-                  print(f'  [+] Redondeados a enteros: {len(df_unificado)} registros')
-                  print(f'  [+] Ejemplo: 20.4 → {int(round(20.4))}, 24.5 → {int(round(24.5))}')
+                  print(f'  [+] Redondeados hacia arriba a enteros: {len(df_unificado)} registros')
+                  print(f'  [+] Ejemplo: 20.4 → {int(math.ceil(20.4))}, 24.5 → {int(math.ceil(24.5))}, 41.4 → {int(math.ceil(41.4))}')
               else:
                   print(f'  [!] Advertencia: Columna "Resistencia nominal (MPa)" no encontrada')
 
