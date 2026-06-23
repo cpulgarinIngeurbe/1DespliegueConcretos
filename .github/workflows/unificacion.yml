@@ -313,34 +313,34 @@ jobs:
               if 'Resistencia nominal (MPa) llave' in df_alertas.columns and 'Resistencia Promedio (MPa)' in df_alertas.columns:
                   # Agrupar por Resistencia nominal (MPa) llave para reiniciar en cada cambio
                   for valor_resistencia, grupo_resistencia in df_alertas.groupby('Resistencia nominal (MPa) llave', dropna=False):
-                      indices_grupo_resistencia = grupo_resistencia.index.tolist()
+                      indices_grupo = grupo_resistencia.index.tolist()
+                      cantidad_registros = len(indices_grupo)
 
-                      # Procesar ventanas móviles dentro del grupo
-                      # Primera ventana comienza en posición 6 (registros 7-9 del grupo)
-                      posicion_en_grupo = 6
+                      # Los primeros 6 registros quedan vacíos
+                      # A partir del registro 7 (índice 6), procesar ventanas móviles
+                      if cantidad_registros >= 9:
+                          # Primera ventana: registros 0-8, mostrar en últimos 3 (6-8)
+                          inicio = 0
+                          fin = 9
+                          paso = 3
 
-                      while posicion_en_grupo < len(indices_grupo_resistencia):
-                          # Ventana de 9 registros
-                          inicio_ventana = posicion_en_grupo - 6
-                          fin_ventana = posicion_en_grupo + 3
+                          while fin <= cantidad_registros:
+                              # Índices de los 9 registros en esta ventana
+                              ventana_indices = indices_grupo[inicio:fin]
 
-                          if fin_ventana <= len(indices_grupo_resistencia):
-                              # Índices absolutos de los 9 registros en la ventana
-                              ventana_indices = indices_grupo_resistencia[inicio_ventana:fin_ventana]
+                              # Últimos 3 registros de la ventana
+                              ultimos_3 = ventana_indices[6:9]
 
-                              # Últimos 3 registros de la ventana (posiciones 6, 7, 8 de la ventana de 9)
-                              ultimos_3_indices = ventana_indices[6:9]
+                              # Calcular promedio de Resistencia Promedio
+                              valores = df_alertas.loc[ventana_indices, 'Resistencia Promedio (MPa)'].dropna()
 
-                              # Calcular el promedio de Resistencia Promedio de estos 9 registros
-                              valores_promedio = df_alertas.loc[ventana_indices, 'Resistencia Promedio (MPa)'].dropna()
+                              if len(valores) >= 3:
+                                  promedio = valores.mean()
+                                  df_alertas.loc[ultimos_3, 'Promedio Móvil (MPa)'] = promedio
 
-                              if len(valores_promedio) >= 3:
-                                  promedio_movil = valores_promedio.mean()
-
-                                  # Asignar el promedio móvil solo a los últimos 3 registros
-                                  df_alertas.loc[ultimos_3_indices, 'Promedio Móvil (MPa)'] = promedio_movil
-
-                          posicion_en_grupo += 3  # Avanzar 3 registros dentro del grupo
+                              # Avanzar a la siguiente ventana
+                              inicio += paso
+                              fin += paso
 
                   print(f'  [+] ✅ Columna "Promedio Móvil (MPa)" creada')
                   registros_con_movil = df_alertas['Promedio Móvil (MPa)'].notna().sum()
