@@ -709,10 +709,12 @@ jobs:
                       selectorCilindroAlertas.value = '';
                       selectorLocalizacionAlertas.value = '';
                       selectorTomaAlertas.value = '';
+                      selectorResistenciaNominalAlertas.value = '';
 
                       const cilindros = [...new Set(datosFiltradosAlertas.map(row => row['Cilindro N°']))].filter(c => c).sort();
                       const localizaciones = [...new Set(datosFiltradosAlertas.map(row => row['Localización']))].filter(l => l).sort();
                       const tomas = [...new Set(datosFiltradosAlertas.map(row => row['Toma']))].filter(t => t).sort();
+                      const resistenciasNominales = [...new Set(datosFiltradosAlertas.map(row => row['Resistencia nominal (MPa)']))].filter(r => r !== null && r !== undefined).sort((a,b) => a - b);
 
                       selectorCilindroAlertas.innerHTML = '<option value="">-- Todos los cilindros --</option>';
                       cilindros.forEach(cilindro => {{
@@ -736,6 +738,14 @@ jobs:
                           option.value = toma;
                           option.textContent = toma;
                           selectorTomaAlertas.appendChild(option);
+                      }});
+
+                      selectorResistenciaNominalAlertas.innerHTML = '<option value="">-- Todas las resistencias --</option>';
+                      resistenciasNominales.forEach(resistencia => {{
+                          const option = document.createElement('option');
+                          option.value = resistencia;
+                          option.textContent = resistencia;
+                          selectorResistenciaNominalAlertas.appendChild(option);
                       }});
 
                       filtersRowAlertas.style.opacity = '0';
