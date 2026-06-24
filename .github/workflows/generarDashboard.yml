@@ -428,7 +428,7 @@ jobs:
                                   }}
 
                                   // Formatear valores numéricos a 2 decimales para columnas específicas
-                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)'];
+                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)'];
                                   if (columnasDecimales.includes(header) && valor !== '') {{
                                       if (typeof valor === 'number' && !isNaN(valor)) {{
                                           valor = valor.toFixed(2);
@@ -503,7 +503,7 @@ jobs:
                                   }}
 
                                   // Formatear valores numéricos a 2 decimales para columnas específicas
-                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)'];
+                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)'];
                                   if (columnasDecimales.includes(header) && valor !== '') {{
                                       if (typeof valor === 'number' && !isNaN(valor)) {{
                                           valor = valor.toFixed(2);
@@ -759,7 +759,7 @@ jobs:
                                   }}
 
                                   // Formatear valores numéricos a 2 decimales para columnas específicas
-                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)'];
+                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)'];
                                   if (columnasDecimales.includes(header) && valor !== '') {{
                                       if (typeof valor === 'number' && !isNaN(valor)) {{
                                           valor = valor.toFixed(2);
@@ -1007,7 +1007,7 @@ jobs:
                                   }}
 
                                   // Formatear valores numéricos a 2 decimales para columnas específicas
-                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)'];
+                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)'];
                                   if (columnasDecimales.includes(header) && valor !== '') {{
                                       if (typeof valor === 'number' && !isNaN(valor)) {{
                                           valor = valor.toFixed(2);
