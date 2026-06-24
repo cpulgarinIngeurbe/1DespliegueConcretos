@@ -533,9 +533,12 @@ jobs:
           print(f'\n[*] Creando archivo Incumplimientos.xlsx...')
           archivo_incumplimientos = os.path.join(ruta_desplegable, "Incumplimientos.xlsx")
 
-          if 'Diferencia (MPa)' in df_unificado.columns:
-              # Filtrar registros donde Diferencia (MPa) < 0 (en ROJO)
-              df_incumplimientos = df_unificado[df_unificado['Diferencia (MPa)'] < 0].copy()
+          if 'Diferencia (MPa)' in df_unificado.columns and 'Cilindro N°' in df_unificado.columns:
+              # Paso 1: Identificar cilindros con Diferencia (MPa) < 0
+              cilindros_incumplimiento = df_unificado[df_unificado['Diferencia (MPa)'] < 0]['Cilindro N°'].unique()
+
+              # Paso 2: Incluir TODOS los registros de esos cilindros (sin importar si su diferencia es negativa o positiva)
+              df_incumplimientos = df_unificado[df_unificado['Cilindro N°'].isin(cilindros_incumplimiento)].copy()
               cantidad_incumplimientos = len(df_incumplimientos)
 
               if cantidad_incumplimientos > 0:
@@ -548,12 +551,13 @@ jobs:
                   # Guardar archivo de incumplimientos
                   df_incumplimientos.to_excel(archivo_incumplimientos, index=False)
                   print(f'  [+] ✅ Archivo de incumplimientos creado: {archivo_incumplimientos}')
-                  print(f'  [+] Registros con incumplimiento (Diferencia < 0): {cantidad_incumplimientos}')
+                  print(f'  [+] Cilindros con incumplimiento (Diferencia < 0): {len(cilindros_incumplimiento)}')
+                  print(f'  [+] Registros totales de esos cilindros: {cantidad_incumplimientos}')
                   print(f'  [+] Tamaño: {cantidad_incumplimientos} registros x {len(df_incumplimientos.columns)} columnas')
               else:
                   print(f'  [+] ℹ️ No hay registros con incumplimiento (Diferencia < 0)')
           else:
-              print(f'  [!] Advertencia: Columna "Diferencia (MPa)" no encontrada')
+              print(f'  [!] Advertencia: Columnas "Diferencia (MPa)" o "Cilindro N°" no encontradas')
 
           EOF
 
