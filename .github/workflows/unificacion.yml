@@ -542,9 +542,9 @@ jobs:
               # Paso 2: Incluir TODOS los registros de esos cilindros (sin importar si su diferencia es negativa o positiva)
               df_incumplimientos = df_unificado[df_unificado['Cilindro N°'].isin(cilindros_incumplimiento)].copy()
 
-              # Paso 3: Filtrar solo registros con Edad (días) = 28
+              # Paso 3: Filtrar solo registros con Edad (días) > 28
               if 'Edad (días)' in df_incumplimientos.columns:
-                  df_incumplimientos = df_incumplimientos[df_incumplimientos['Edad (días)'] == 28].copy()
+                  df_incumplimientos = df_incumplimientos[df_incumplimientos['Edad (días)'] > 28].copy()
 
               cantidad_incumplimientos = len(df_incumplimientos)
               print(f'  [DEBUG] Registros totales encontrados para esos cilindros (Edad = 28): {cantidad_incumplimientos}')
