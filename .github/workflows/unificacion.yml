@@ -34,6 +34,7 @@ jobs:
           import numpy as np
           import os
           from pathlib import Path
+          from datetime import datetime, timedelta
 
           ruta_datos_transformados = "DatosTransformados"
           ruta_desplegable = "desplegable"
@@ -248,31 +249,53 @@ jobs:
           else:
               print(f'\n[!] Advertencia: Columna "Localización" no encontrada')
 
-          # Crear columna "Estado" comparando con ejecución anterior
-          print(f'\n[*] Creando columna "Estado" (comparando con ejecución anterior)...')
+          # Agregar columna "Fecha Descarga" con la fecha actual
+          print(f'\n[*] Agregando columna "Fecha Descarga"...')
+          fecha_hoy = datetime.now().date()
+          df_unificado['Fecha Descarga'] = fecha_hoy
+          print(f'  [+] ✅ Fecha actual agregada: {fecha_hoy}')
+
+          # Crear columna "Estado" comparando con registros del día anterior
+          print(f'\n[*] Creando columna "Estado" (comparando con registros de ayer)...')
           archivo_anterior = os.path.join(ruta_desplegable, "ConsolidadoAnterior.xlsx")
           df_unificado['Estado'] = 'NUEVO'
+
+          fecha_ayer = fecha_hoy - timedelta(days=1)
 
           if os.path.exists(archivo_anterior):
               try:
                   df_anterior = pd.read_excel(archivo_anterior)
-                  if 'Llave' in df_anterior.columns and 'Llave' in df_unificado.columns:
-                      # Obtener las llaves del archivo anterior
-                      llaves_anteriores = set(df_anterior['Llave'].dropna().unique())
 
-                      # Marcar como EXISTENTE los registros que ya estaban
-                      df_unificado.loc[df_unificado['Llave'].isin(llaves_anteriores), 'Estado'] = 'EXISTENTE'
+                  # Convertir columna de fecha a datetime si existe
+                  if 'Fecha Descarga' in df_anterior.columns:
+                      df_anterior['Fecha Descarga'] = pd.to_datetime(df_anterior['Fecha Descarga']).dt.date
 
-                      registros_nuevos = (df_unificado['Estado'] == 'NUEVO').sum()
-                      registros_existentes = (df_unificado['Estado'] == 'EXISTENTE').sum()
+                      # Filtrar registros del día anterior
+                      df_ayer = df_anterior[df_anterior['Fecha Descarga'] == fecha_ayer].copy()
+                      cantidad_ayer = len(df_ayer)
+                      print(f'  [+] Registros encontrados del día anterior ({fecha_ayer}): {cantidad_ayer}')
 
-                      print(f'  [+] ✅ Comparación completada')
-                      print(f'  [+] Registros NUEVOS: {registros_nuevos}')
-                      print(f'  [+] Registros EXISTENTES: {registros_existentes}')
+                      if 'Llave' in df_ayer.columns and 'Llave' in df_unificado.columns:
+                          # Obtener las llaves del día anterior
+                          llaves_ayer = set(df_ayer['Llave'].dropna().unique())
+
+                          # Marcar como EXISTENTE los registros que ya estaban ayer
+                          df_unificado.loc[df_unificado['Llave'].isin(llaves_ayer), 'Estado'] = 'EXISTENTE'
+
+                          registros_nuevos = (df_unificado['Estado'] == 'NUEVO').sum()
+                          registros_existentes = (df_unificado['Estado'] == 'EXISTENTE').sum()
+
+                          print(f'  [+] ✅ Comparación completada')
+                          print(f'  [+] Registros NUEVOS (hoy): {registros_nuevos}')
+                          print(f'  [+] Registros EXISTENTES (desde ayer): {registros_existentes}')
+                      else:
+                          print(f'  [!] Advertencia: Columna "Llave" no encontrada para comparación')
                   else:
-                      print(f'  [!] Advertencia: Columna "Llave" no encontrada para comparación')
+                      print(f'  [!] Advertencia: Columna "Fecha Descarga" no encontrada en archivo anterior')
+                      print(f'  [!] Todos los registros marcados como NUEVO')
               except Exception as e:
                   print(f'  [!] Error al leer archivo anterior: {str(e)}')
+                  print(f'  [!] Todos los registros marcados como NUEVO')
           else:
               print(f'  [!] Primera ejecución: todos los registros marcados como NUEVO')
               print(f'  [+] Registros NUEVOS: {len(df_unificado)}')
