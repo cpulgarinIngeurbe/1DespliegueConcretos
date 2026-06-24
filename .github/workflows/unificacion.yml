@@ -544,6 +544,7 @@ jobs:
 
               # Paso 3: Filtrar solo registros con Edad (días) >= 28
               if 'Edad (días)' in df_incumplimientos.columns:
+                  df_incumplimientos['Edad (días)'] = pd.to_numeric(df_incumplimientos['Edad (días)'], errors='coerce')
                   df_incumplimientos = df_incumplimientos[df_incumplimientos['Edad (días)'] >= 28].copy()
 
               cantidad_incumplimientos = len(df_incumplimientos)
