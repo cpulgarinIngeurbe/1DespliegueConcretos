@@ -33,7 +33,7 @@ jobs:
           archivo_incumplimientos = "desplegable/Incumplimientos.xlsx"
           archivo_html = "index.html"
 
-          datos_tabs = {{}}
+          datos_tabs = {}
           proyectos_consolidado = []
 
           # Leer Consolidado.xlsx
