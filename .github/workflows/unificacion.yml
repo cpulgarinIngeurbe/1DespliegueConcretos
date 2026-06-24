@@ -321,7 +321,8 @@ jobs:
               print(f'  [DEBUG] Valores en "Resistencia Teórica (MPa)": {df_unificado["Resistencia Teórica (MPa)"].value_counts()}')
 
           if 'Resistencia (MPa)' in df_unificado.columns:
-              df_unificado['Diferencia (MPa)'] = ''
+              df_unificado['Diferencia (MPa)'] = np.nan
+              df_unificado['Diferencia (MPa)'] = df_unificado['Diferencia (MPa)'].astype(object)
 
               contador_falta = 0
               contador_calculado = 0
