@@ -551,6 +551,15 @@ jobs:
                       ascending=[True, True]
                   ).reset_index(drop=True)
 
+                  # Hacer merge con df_alertas para obtener Promedio Móvil (MPa)
+                  columnas_originales = list(df_incumplimientos.columns)
+                  if 'Promedio Móvil (MPa)' in df_alertas.columns:
+                      df_incumplimientos = df_incumplimientos.merge(
+                          df_alertas[columnas_originales + ['Promedio Móvil (MPa)']],
+                          on=columnas_originales,
+                          how='left'
+                      )
+
                   # Guardar archivo de incumplimientos
                   df_incumplimientos.to_excel(archivo_incumplimientos, index=False)
                   print(f'  [+] ✅ Archivo de incumplimientos creado: {archivo_incumplimientos}')
