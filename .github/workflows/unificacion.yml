@@ -259,6 +259,7 @@ jobs:
           print(f'\n[*] Creando columna "Estado" (comparando con registros de ayer)...')
           archivo_anterior = os.path.join(ruta_desplegable, "ConsolidadoAnterior.xlsx")
           df_unificado['Estado'] = 'NUEVO'
+          df_unificado['Fecha Primera Aparición'] = fecha_hoy
 
           fecha_ayer = fecha_hoy - timedelta(days=1)
 
@@ -276,11 +277,30 @@ jobs:
                       print(f'  [+] Registros encontrados del día anterior ({fecha_ayer}): {cantidad_ayer}')
 
                       if 'Llave' in df_ayer.columns and 'Llave' in df_unificado.columns:
+                          # Crear mapeo de Llave → Fecha Primera Aparición del archivo anterior
+                          fecha_primera_aparicion_map = {}
+                          if 'Fecha Primera Aparición' in df_anterior.columns:
+                              for _, row in df_anterior.iterrows():
+                                  llave = row['Llave']
+                                  if pd.notna(llave):
+                                      fecha_primera_aparicion_map[llave] = pd.to_datetime(row['Fecha Primera Aparición']).date()
+                          else:
+                              # Si no existe la columna, asumir que su primera aparición fue ayer
+                              for _, row in df_ayer.iterrows():
+                                  llave = row['Llave']
+                                  if pd.notna(llave):
+                                      fecha_primera_aparicion_map[llave] = fecha_ayer
+
                           # Obtener las llaves del día anterior
                           llaves_ayer = set(df_ayer['Llave'].dropna().unique())
 
-                          # Marcar como EXISTENTE los registros que ya estaban ayer
-                          df_unificado.loc[df_unificado['Llave'].isin(llaves_ayer), 'Estado'] = 'EXISTENTE'
+                          # Marcar como EXISTENTE y asignar Fecha Primera Aparición
+                          for idx, row in df_unificado.iterrows():
+                              llave = row['Llave']
+                              if pd.notna(llave) and llave in llaves_ayer:
+                                  df_unificado.at[idx, 'Estado'] = 'EXISTENTE'
+                                  if llave in fecha_primera_aparicion_map:
+                                      df_unificado.at[idx, 'Fecha Primera Aparición'] = fecha_primera_aparicion_map[llave]
 
                           registros_nuevos = (df_unificado['Estado'] == 'NUEVO').sum()
                           registros_existentes = (df_unificado['Estado'] == 'EXISTENTE').sum()
