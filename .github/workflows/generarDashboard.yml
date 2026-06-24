@@ -219,6 +219,24 @@ jobs:
                           </div>
                           <button id="btnResetIncumplimientos" class="btn-reset">Restaurar</button>
                       </div>
+                      <div id="filtersRowIncumplimientos" class="filters-row" style="display: none; opacity: 0;">
+                          <div id="cilindroSectionIncumplimientos" class="selector-section">
+                              <label class="selector-label">Cilindro N°</label>
+                              <select id="cilindroSelectorIncumplimientos" class="selector-dropdown"></select>
+                          </div>
+                          <div id="localizacionSectionIncumplimientos" class="selector-section">
+                              <label class="selector-label">Localización</label>
+                              <select id="localizacionSelectorIncumplimientos" class="selector-dropdown"></select>
+                          </div>
+                          <div id="tomaSectionIncumplimientos" class="selector-section">
+                              <label class="selector-label">Toma</label>
+                              <select id="tomaSelectorIncumplimientos" class="selector-dropdown"></select>
+                          </div>
+                          <div id="resistenciaNominalSectionIncumplimientos" class="selector-section">
+                              <label class="selector-label">Resistencia nominal (MPa)</label>
+                              <select id="resistenciaNominalSelectorIncumplimientos" class="selector-dropdown"></select>
+                          </div>
+                      </div>
                       <div id="tableSectionIncumplimientos" class="table-section">
                           <table id="dataTableIncumplimientos">
                               <thead></thead>
@@ -805,11 +823,110 @@ jobs:
 
                   // ========== PESTAÑA INCUMPLIMIENTOS ==========
                   const proyectoInputIncumplimientos = document.getElementById('proyectoInputIncumplimientos');
+                  const selectorCilindroIncumplimientos = document.getElementById('cilindroSelectorIncumplimientos');
+                  const selectorLocalizacionIncumplimientos = document.getElementById('localizacionSelectorIncumplimientos');
+                  const selectorTomaIncumplimientos = document.getElementById('tomaSelectorIncumplimientos');
+                  const selectorResistenciaNominalIncumplimientos = document.getElementById('resistenciaNominalSelectorIncumplimientos');
+                  const filtersRowIncumplimientos = document.getElementById('filtersRowIncumplimientos');
                   const tableSectionIncumplimientos = document.getElementById('tableSectionIncumplimientos');
                   const dataTableIncumplimientos = document.getElementById('dataTableIncumplimientos');
                   const btnResetIncumplimientos = document.getElementById('btnResetIncumplimientos');
 
+                  let datosFiltradosIncumplimientos = [];
                   const proyectosIncumplimientos = [...new Set(datosIncumplimientos.map(row => row['Proyecto']))].filter(p => p).sort();
+
+                  function recalcularOpcionesIncumplimientos() {{
+                      const cilindroSeleccionado = selectorCilindroIncumplimientos.value;
+                      const localizacionSeleccionada = selectorLocalizacionIncumplimientos.value;
+                      const tomaSeleccionada = selectorTomaIncumplimientos.value;
+                      const resistenciaNominalSeleccionada = selectorResistenciaNominalIncumplimientos.value;
+
+                      let datosTemp = datosFiltradosIncumplimientos;
+
+                      if (cilindroSeleccionado) {{
+                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindroSeleccionado);
+                      }}
+                      if (localizacionSeleccionada) {{
+                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacionSeleccionada);
+                      }}
+                      if (tomaSeleccionada) {{
+                          datosTemp = datosTemp.filter(row => row['Toma'] === tomaSeleccionada);
+                      }}
+                      if (resistenciaNominalSeleccionada) {{
+                          datosTemp = datosTemp.filter(row => row['Resistencia nominal (MPa)'] == resistenciaNominalSeleccionada);
+                      }}
+
+                      const cilindrosDisponibles = [...new Set(datosTemp.map(row => row['Cilindro N°']))].filter(c => c).sort();
+                      const localizacionesDisponibles = [...new Set(datosTemp.map(row => row['Localización']))].filter(l => l).sort();
+                      const tomasDisponibles = [...new Set(datosTemp.map(row => row['Toma']))].filter(t => t).sort();
+                      const resistenciasNominalesDisponibles = [...new Set(datosTemp.map(row => row['Resistencia nominal (MPa)']))].filter(r => r !== null && r !== undefined).sort((a,b) => a - b);
+
+                      const cilindroActual = selectorCilindroIncumplimientos.value;
+                      selectorCilindroIncumplimientos.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      cilindrosDisponibles.forEach(cilindro => {{
+                          const option = document.createElement('option');
+                          option.value = cilindro;
+                          option.textContent = cilindro;
+                          selectorCilindroIncumplimientos.appendChild(option);
+                      }});
+                      selectorCilindroIncumplimientos.value = cilindroActual;
+
+                      const localizacionActual = selectorLocalizacionIncumplimientos.value;
+                      selectorLocalizacionIncumplimientos.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
+                      localizacionesDisponibles.forEach(localizacion => {{
+                          const option = document.createElement('option');
+                          option.value = localizacion;
+                          option.textContent = localizacion;
+                          selectorLocalizacionIncumplimientos.appendChild(option);
+                      }});
+                      selectorLocalizacionIncumplimientos.value = localizacionActual;
+
+                      const tomaActual = selectorTomaIncumplimientos.value;
+                      selectorTomaIncumplimientos.innerHTML = '<option value="">-- Todas las tomas --</option>';
+                      tomasDisponibles.forEach(toma => {{
+                          const option = document.createElement('option');
+                          option.value = toma;
+                          option.textContent = toma;
+                          selectorTomaIncumplimientos.appendChild(option);
+                      }});
+                      selectorTomaIncumplimientos.value = tomaActual;
+
+                      const resistenciaNominalActual = selectorResistenciaNominalIncumplimientos.value;
+                      selectorResistenciaNominalIncumplimientos.innerHTML = '<option value="">-- Todas las resistencias --</option>';
+                      resistenciasNominalesDisponibles.forEach(resistencia => {{
+                          const option = document.createElement('option');
+                          option.value = resistencia;
+                          option.textContent = resistencia;
+                          selectorResistenciaNominalIncumplimientos.appendChild(option);
+                      }});
+                      selectorResistenciaNominalIncumplimientos.value = resistenciaNominalActual;
+
+                      actualizarTablaIncumplimientos();
+                  }}
+
+                  function actualizarTablaIncumplimientos() {{
+                      const cilindro = selectorCilindroIncumplimientos.value;
+                      const localizacion = selectorLocalizacionIncumplimientos.value;
+                      const toma = selectorTomaIncumplimientos.value;
+                      const resistenciaNominal = selectorResistenciaNominalIncumplimientos.value;
+
+                      let datosTemp = datosFiltradosIncumplimientos;
+
+                      if (cilindro) {{
+                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindro);
+                      }}
+                      if (localizacion) {{
+                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacion);
+                      }}
+                      if (toma) {{
+                          datosTemp = datosTemp.filter(row => row['Toma'] === toma);
+                      }}
+                      if (resistenciaNominal) {{
+                          datosTemp = datosTemp.filter(row => row['Resistencia nominal (MPa)'] == resistenciaNominal);
+                      }}
+
+                      generarTablaIncumplimientos(datosTemp);
+                  }}
 
                   function generarTablaIncumplimientos(datos) {{
                       if (datos.length > 0) {{
@@ -865,15 +982,76 @@ jobs:
 
                       if (!valor || !proyectosIncumplimientos.includes(valor)) {{
                           tableSectionIncumplimientos.classList.remove('active');
+                          filtersRowIncumplimientos.style.display = 'none';
                           return;
                       }}
 
-                      const datosFiltradosIncumplimientos = datosIncumplimientos.filter(row => row['Proyecto'] === valor);
+                      datosFiltradosIncumplimientos = datosIncumplimientos.filter(row => row['Proyecto'] === valor);
+
+                      selectorCilindroIncumplimientos.value = '';
+                      selectorLocalizacionIncumplimientos.value = '';
+                      selectorTomaIncumplimientos.value = '';
+                      selectorResistenciaNominalIncumplimientos.value = '';
+
+                      const cilindros = [...new Set(datosFiltradosIncumplimientos.map(row => row['Cilindro N°']))].filter(c => c).sort();
+                      const localizaciones = [...new Set(datosFiltradosIncumplimientos.map(row => row['Localización']))].filter(l => l).sort();
+                      const tomas = [...new Set(datosFiltradosIncumplimientos.map(row => row['Toma']))].filter(t => t).sort();
+                      const resistenciasNominales = [...new Set(datosFiltradosIncumplimientos.map(row => row['Resistencia nominal (MPa)']))].filter(r => r !== null && r !== undefined).sort((a,b) => a - b);
+
+                      selectorCilindroIncumplimientos.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      cilindros.forEach(cilindro => {{
+                          const option = document.createElement('option');
+                          option.value = cilindro;
+                          option.textContent = cilindro;
+                          selectorCilindroIncumplimientos.appendChild(option);
+                      }});
+
+                      selectorLocalizacionIncumplimientos.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
+                      localizaciones.forEach(localizacion => {{
+                          const option = document.createElement('option');
+                          option.value = localizacion;
+                          option.textContent = localizacion;
+                          selectorLocalizacionIncumplimientos.appendChild(option);
+                      }});
+
+                      selectorTomaIncumplimientos.innerHTML = '<option value="">-- Todas las tomas --</option>';
+                      tomas.forEach(toma => {{
+                          const option = document.createElement('option');
+                          option.value = toma;
+                          option.textContent = toma;
+                          selectorTomaIncumplimientos.appendChild(option);
+                      }});
+
+                      selectorResistenciaNominalIncumplimientos.innerHTML = '<option value="">-- Todas las resistencias --</option>';
+                      resistenciasNominales.forEach(resistencia => {{
+                          const option = document.createElement('option');
+                          option.value = resistencia;
+                          option.textContent = resistencia;
+                          selectorResistenciaNominalIncumplimientos.appendChild(option);
+                      }});
+
+                      filtersRowIncumplimientos.style.opacity = '0';
+                      filtersRowIncumplimientos.style.display = 'flex';
+                      setTimeout(() => {{
+                          filtersRowIncumplimientos.style.transition = 'opacity 1500ms ease-in-out';
+                          filtersRowIncumplimientos.style.opacity = '1';
+                      }}, 0);
+
                       generarTablaIncumplimientos(datosFiltradosIncumplimientos);
                   }});
 
+                  selectorCilindroIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
+                  selectorLocalizacionIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
+                  selectorTomaIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
+                  selectorResistenciaNominalIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
+
                   btnResetIncumplimientos.addEventListener('click', function() {{
                       proyectoInputIncumplimientos.value = '';
+                      selectorCilindroIncumplimientos.value = '';
+                      selectorLocalizacionIncumplimientos.value = '';
+                      selectorTomaIncumplimientos.value = '';
+                      selectorResistenciaNominalIncumplimientos.value = '';
+                      filtersRowIncumplimientos.style.display = 'none';
                       tableSectionIncumplimientos.classList.remove('active');
                       proyectoInputIncumplimientos.focus();
                   }});
