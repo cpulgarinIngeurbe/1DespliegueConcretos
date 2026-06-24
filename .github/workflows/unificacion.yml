@@ -575,6 +575,48 @@ jobs:
                   print(f'  [+] Registros eliminados (sin negativos): {registros_eliminados}')
                   df_incumplimientos = df_incumplimientos_validado
 
+                  # Crear columnas "Resistencia Promedio (MPa)" y "No. Registros Promedio"
+                  print(f'\n[*] Calculando Resistencia Promedio (MPa) para Incumplimientos...')
+                  columnas_grupo = ['Cilindro N°', 'Localización', 'Toma']
+                  df_incumplimientos['Resistencia Promedio (MPa)'] = np.nan
+                  df_incumplimientos['No. Registros Promedio'] = np.nan
+
+                  for grupo, datos_grupo in df_incumplimientos.groupby(columnas_grupo, dropna=False):
+                      indices_grupo = datos_grupo.index.tolist()
+                      cantidad_grupo = len(indices_grupo)
+                      if cantidad_grupo == 3:
+                          promedio = datos_grupo['Resistencia (MPa)'].mean()
+                          df_incumplimientos.loc[indices_grupo, 'Resistencia Promedio (MPa)'] = promedio
+                          df_incumplimientos.loc[indices_grupo, 'No. Registros Promedio'] = cantidad_grupo
+                      else:
+                          df_incumplimientos.loc[indices_grupo, 'No. Registros Promedio'] = cantidad_grupo
+
+                  # Crear columna "Promedio Móvil (MPa)"
+                  print(f'\n[*] Calculando Promedio Móvil (MPa) para Incumplimientos...')
+                  df_incumplimientos['Promedio Móvil (MPa)'] = np.nan
+
+                  if 'Resistencia nominal (MPa) llave' in df_incumplimientos.columns:
+                      for valor_resistencia, grupo_resistencia in df_incumplimientos.groupby('Resistencia nominal (MPa) llave', dropna=False):
+                          indices_grupo = grupo_resistencia.index.tolist()
+                          cantidad_registros = len(indices_grupo)
+                          primeros_6 = indices_grupo[:6]
+                          df_incumplimientos.loc[primeros_6, 'Promedio Móvil (MPa)'] = np.nan
+
+                          if cantidad_registros >= 9:
+                              inicio = 0
+                              fin = 9
+                              paso = 3
+                              while fin <= cantidad_registros:
+                                  ventana_indices = indices_grupo[inicio:fin]
+                                  ultimos_3 = ventana_indices[6:9]
+                                  valores = df_incumplimientos.loc[ventana_indices, 'Resistencia Promedio (MPa)'].dropna()
+                                  if len(valores) >= 3:
+                                      promedio = valores.mean()
+                                      df_incumplimientos.loc[ultimos_3, 'Promedio Móvil (MPa)'] = promedio
+                                  inicio += paso
+                                  fin += paso
+                      print(f'  [+] ✅ Columna "Promedio Móvil (MPa)" creada para Incumplimientos')
+
                   # Guardar archivo de incumplimientos
                   df_incumplimientos.to_excel(archivo_incumplimientos, index=False)
                   print(f'  [+] ✅ Archivo de incumplimientos creado: {archivo_incumplimientos}')
