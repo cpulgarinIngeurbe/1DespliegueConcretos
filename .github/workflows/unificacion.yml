@@ -322,8 +322,10 @@ jobs:
                       df_unificado.at[idx, 'Diferencia (MPa)'] = 'Falta Teorico'
                   else:
                       try:
-                          resistencia_real = float(row['Resistencia (MPa)'])
-                          resistencia_teorica = float(row['Resistencia Teórica (MPa)'])
+                          resistencia_real_str = str(row['Resistencia (MPa)']).replace(',', '.')
+                          resistencia_teorica_str = str(row['Resistencia Teórica (MPa)']).replace(',', '.')
+                          resistencia_real = float(resistencia_real_str)
+                          resistencia_teorica = float(resistencia_teorica_str)
                           diferencia = resistencia_real - resistencia_teorica
 
                           if diferencia > 0:
