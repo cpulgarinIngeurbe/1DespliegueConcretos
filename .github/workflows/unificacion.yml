@@ -277,31 +277,6 @@ jobs:
               print(f'  [!] Primera ejecución: todos los registros marcados como NUEVO')
               print(f'  [+] Registros NUEVOS: {len(df_unificado)}')
 
-          # Crear columna "Diferencia (MPa)" comparando Resistencia Real vs Teórica
-          print(f'\n[*] Creando columna "Diferencia (MPa)"...')
-          if 'Resistencia (MPa)' in df_unificado.columns:
-              df_unificado['Diferencia (MPa)'] = ''
-
-              for idx, row in df_unificado.iterrows():
-                  if pd.isna(row.get('Resistencia Teórica (MPa)')) or row.get('Resistencia Teórica (MPa)') == '':
-                      df_unificado.at[idx, 'Diferencia (MPa)'] = 'Falta Teorico'
-                  else:
-                      try:
-                          resistencia_real = float(row['Resistencia (MPa)'])
-                          resistencia_teorica = float(row['Resistencia Teórica (MPa)'])
-                          diferencia = resistencia_real - resistencia_teorica
-
-                          if diferencia > 0:
-                              df_unificado.at[idx, 'Diferencia (MPa)'] = -diferencia
-                          else:
-                              df_unificado.at[idx, 'Diferencia (MPa)'] = diferencia
-                      except (ValueError, TypeError):
-                          df_unificado.at[idx, 'Diferencia (MPa)'] = 'Falta Teorico'
-
-              print(f'  [+] ✅ Columna "Diferencia (MPa)" creada exitosamente')
-          else:
-              print(f'  [!] Advertencia: Columna "Resistencia (MPa)" no encontrada')
-
           # Inner Join con Curvas.xlsx para agregar "Resistencia Teórica (MPa)"
           print(f'\n[*] Realizando Inner Join con Curvas.xlsx...')
           archivo_curvas = os.path.join("Estandar", "Curvas.xlsx")
@@ -336,6 +311,31 @@ jobs:
                   print(f'  [!] Error al procesar Curvas.xlsx: {str(e)}')
           else:
               print(f'  [!] Advertencia: Archivo Curvas.xlsx no encontrado en carpeta Estandar')
+
+          # Crear columna "Diferencia (MPa)" comparando Resistencia Real vs Teórica (DESPUÉS del Inner Join)
+          print(f'\n[*] Creando columna "Diferencia (MPa)"...')
+          if 'Resistencia (MPa)' in df_unificado.columns:
+              df_unificado['Diferencia (MPa)'] = ''
+
+              for idx, row in df_unificado.iterrows():
+                  if pd.isna(row.get('Resistencia Teórica (MPa)')) or row.get('Resistencia Teórica (MPa)') == '':
+                      df_unificado.at[idx, 'Diferencia (MPa)'] = 'Falta Teorico'
+                  else:
+                      try:
+                          resistencia_real = float(row['Resistencia (MPa)'])
+                          resistencia_teorica = float(row['Resistencia Teórica (MPa)'])
+                          diferencia = resistencia_real - resistencia_teorica
+
+                          if diferencia > 0:
+                              df_unificado.at[idx, 'Diferencia (MPa)'] = -diferencia
+                          else:
+                              df_unificado.at[idx, 'Diferencia (MPa)'] = diferencia
+                      except (ValueError, TypeError):
+                          df_unificado.at[idx, 'Diferencia (MPa)'] = 'Falta Teorico'
+
+              print(f'  [+] ✅ Columna "Diferencia (MPa)" creada exitosamente')
+          else:
+              print(f'  [!] Advertencia: Columna "Resistencia (MPa)" no encontrada')
 
           # Guardar el archivo unificado
           df_unificado.to_excel(archivo_unificado, index=False)
