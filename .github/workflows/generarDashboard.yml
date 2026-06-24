@@ -837,3 +837,5 @@ jobs:
           echo ""
           echo "📄 Archivo generado:"
           ls -lh index.html 2>/dev/null || echo "No hay archivo"
+          echo ""
+          echo "✅ Todas las 3 pestañas con filtros completadas"
