@@ -124,7 +124,7 @@ jobs:
                   .table-section {{ display: none; opacity: 0; }}
                   .table-section.active {{ display: block; transition: opacity 1500ms ease-in-out; opacity: 1; }}
                   table {{ border-collapse: collapse; width: 100%; }}
-                  table th {{ background-color: #4B4F1D; color: #ffffff; padding: 12px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; }}
+                  table th {{ background-color: #4B4F1D; color: #ffffff; padding: 12px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; position: sticky; top: 0; z-index: 10; }}
                   table td {{ padding: 12px; border-bottom: 1px solid #e5e2dd; }}
                   table tr:hover {{ background-color: #f8f8f7; }}
               </style>
