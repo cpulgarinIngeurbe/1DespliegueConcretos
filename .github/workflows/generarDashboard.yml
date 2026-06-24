@@ -98,34 +98,34 @@ jobs:
               <title>Dashboard de Resistencias</title>
               <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
               <style>
-                  body {{ background-color: #ffffff; color: #141311; margin: 0; padding: 24px; font-family: 'Inter', sans-serif; }}
-                  .container {{ max-width: 1440px; margin: 0 auto; }}
-                  .tabs-container {{ display: flex; gap: 8px; margin-bottom: 32px; border-bottom: 2px solid #A3C610; }}
-                  .tab-button {{ padding: 12px 24px; background-color: transparent; border: none; color: #4B4F1D; font-weight: 600; font-size: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 3px solid transparent; transition: all 0.3s ease; }}
+                  body {{ background-color: #ffffff; color: #141311; margin: 0; padding: 12px; font-family: 'Inter', sans-serif; font-size: 12px; }}
+                  .container {{ max-width: 100%; margin: 0 auto; }}
+                  .tabs-container {{ display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid #A3C610; }}
+                  .tab-button {{ padding: 8px 16px; background-color: transparent; border: none; color: #4B4F1D; font-weight: 600; font-size: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 3px solid transparent; transition: all 0.3s ease; }}
                   .tab-button:hover {{ color: #A3C610; }}
                   .tab-button.active {{ color: #A3C610; border-bottom-color: #A3C610; }}
                   .tab-content {{ display: none; }}
                   .tab-content.active {{ display: block; }}
-                  .selector-section {{ margin-bottom: 32px; }}
-                  .selector-label {{ font-size: 10px; color: #4B4F1D; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 8px; display: block; }}
-                  .selector-dropdown {{ width: 100%; padding: 12px 16px; border: 2px solid #A3C610; background-color: #ffffff; color: #141311; border-radius: 4px; font-size: 14px; cursor: pointer; font-family: 'Inter', sans-serif; }}
+                  .selector-section {{ margin-bottom: 16px; }}
+                  .selector-label {{ font-size: 9px; color: #4B4F1D; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 4px; display: block; }}
+                  .selector-dropdown {{ width: 100%; padding: 8px 10px; border: 2px solid #A3C610; background-color: #ffffff; color: #141311; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: 'Inter', sans-serif; }}
                   .selector-dropdown:hover {{ background-color: #f8f8f7; }}
                   .selector-dropdown:focus {{ outline: none; border-color: #4B4F1D; background-color: #fffdf8; }}
-                  .proyecto-input-row {{ display: flex; gap: 12px; align-items: flex-end; margin-bottom: 32px; justify-content: space-between; }}
+                  .proyecto-input-row {{ display: flex; gap: 8px; align-items: flex-end; margin-bottom: 16px; justify-content: space-between; }}
                   .proyecto-input-wrapper {{ flex: 0 1 auto; width: 65%; }}
-                  .proyecto-input-wrapper .selector-label {{ margin-bottom: 8px; }}
+                  .proyecto-input-wrapper .selector-label {{ margin-bottom: 4px; }}
                   .proyecto-input-wrapper input {{ width: 100%; }}
-                  .btn-reset {{ padding: 12px 24px; border: 2px solid #A3C610; background-color: #4B4F1D; color: #A3C610; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s ease; }}
+                  .btn-reset {{ padding: 8px 16px; border: 2px solid #A3C610; background-color: #4B4F1D; color: #A3C610; border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s ease; }}
                   .btn-reset:hover {{ background-color: #3d401a; border-color: #A3C610; }}
                   .btn-reset:active {{ background-color: #2f3215; }}
-                  .filters-row {{ display: flex; gap: 24px; margin-bottom: 32px; }}
+                  .filters-row {{ display: flex; gap: 12px; margin-bottom: 16px; }}
                   .filters-row .selector-section {{ margin-bottom: 0; flex: 1; }}
                   .filters-row .selector-dropdown {{ width: 100%; }}
                   .table-section {{ display: none; opacity: 0; }}
                   .table-section.active {{ display: block; transition: opacity 1500ms ease-in-out; opacity: 1; }}
                   table {{ border-collapse: collapse; width: 100%; }}
-                  table th {{ background-color: #4B4F1D; color: #ffffff; padding: 10px 8px; text-align: left; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; position: sticky; top: 0; z-index: 10; }}
-                  table td {{ padding: 10px 8px; border-bottom: 1px solid #e5e2dd; font-size: 13px; }}
+                  table th {{ background-color: #4B4F1D; color: #ffffff; padding: 6px 5px; text-align: left; font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10; }}
+                  table td {{ padding: 6px 5px; border-bottom: 1px solid #e5e2dd; font-size: 11px; }}
                   table tr:hover {{ background-color: #f8f8f7; }}
               </style>
           </head>
