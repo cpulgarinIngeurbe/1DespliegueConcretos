@@ -536,10 +536,13 @@ jobs:
           if 'Diferencia (MPa)' in df_unificado.columns and 'Cilindro N°' in df_unificado.columns:
               # Paso 1: Identificar cilindros con Diferencia (MPa) < 0
               cilindros_incumplimiento = df_unificado[df_unificado['Diferencia (MPa)'] < 0]['Cilindro N°'].unique()
+              print(f'  [DEBUG] Cilindros identificados con diferencia negativa: {len(cilindros_incumplimiento)}')
+              print(f'  [DEBUG] Cilindros: {cilindros_incumplimiento[:10]}')  # Mostrar primeros 10
 
               # Paso 2: Incluir TODOS los registros de esos cilindros (sin importar si su diferencia es negativa o positiva)
               df_incumplimientos = df_unificado[df_unificado['Cilindro N°'].isin(cilindros_incumplimiento)].copy()
               cantidad_incumplimientos = len(df_incumplimientos)
+              print(f'  [DEBUG] Registros totales encontrados para esos cilindros: {cantidad_incumplimientos}')
 
               if cantidad_incumplimientos > 0:
                   # Ordenar por Proyecto y Diferencia (MPa)
