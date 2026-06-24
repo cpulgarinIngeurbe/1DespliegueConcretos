@@ -577,7 +577,7 @@ jobs:
                           datosTemp = datosTemp.filter(row => row['Toma'] === tomaSeleccionada);
                       }}
                       if (resistenciaNominalSeleccionada) {{
-                          datosTemp = datosTemp.filter(row => row['Resistencia nominal (MPa)'] === parseFloat(resistenciaNominalSeleccionada));
+                          datosTemp = datosTemp.filter(row => row['Resistencia nominal (MPa)'] == resistenciaNominalSeleccionada);
                       }}
 
                       const cilindrosDisponibles = [...new Set(datosTemp.map(row => row['Cilindro N°']))].filter(c => c).sort();
@@ -646,7 +646,7 @@ jobs:
                           datosTemp = datosTemp.filter(row => row['Toma'] === toma);
                       }}
                       if (resistenciaNominal) {{
-                          datosTemp = datosTemp.filter(row => row['Resistencia nominal (MPa)'] === parseFloat(resistenciaNominal));
+                          datosTemp = datosTemp.filter(row => row['Resistencia nominal (MPa)'] == resistenciaNominal);
                       }}
 
                       generarTablaAlertas(datosTemp);
