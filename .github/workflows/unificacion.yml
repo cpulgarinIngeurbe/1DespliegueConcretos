@@ -560,6 +560,7 @@ jobs:
 
                   # Validar que cada cilindro tenga al menos un valor negativo
                   print(f'\n[*] Validando cilindros con diferencia negativa...')
+                  df_incumplimientos['Diferencia (MPa)'] = pd.to_numeric(df_incumplimientos['Diferencia (MPa)'], errors='coerce')
                   cilindros_validos = []
                   for cilindro, grupo in df_incumplimientos.groupby('Cilindro N°'):
                       tiene_negativo = (grupo['Diferencia (MPa)'] < 0).any()
