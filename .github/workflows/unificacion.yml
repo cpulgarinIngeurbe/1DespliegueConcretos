@@ -545,9 +545,9 @@ jobs:
               print(f'  [DEBUG] Registros totales encontrados para esos cilindros: {cantidad_incumplimientos}')
 
               if cantidad_incumplimientos > 0:
-                  # Ordenar por Proyecto y Diferencia (MPa)
+                  # Ordenar por Proyecto y Cilindro N° para agrupar registros del mismo cilindro
                   df_incumplimientos = df_incumplimientos.sort_values(
-                      by=['Proyecto', 'Diferencia (MPa)'],
+                      by=['Proyecto', 'Cilindro N°'],
                       ascending=[True, True]
                   ).reset_index(drop=True)
 
