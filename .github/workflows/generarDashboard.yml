@@ -490,6 +490,316 @@ jobs:
                       tablaVisible = false;
                       proyectoInput.focus();
                   }});
+
+                  // ========== PESTAÑA ALERTAS ==========
+                  const proyectoInputAlertas = document.getElementById('proyectoInputAlertas');
+                  const selectorCilindroAlertas = document.getElementById('cilindroSelectorAlertas');
+                  const selectorLocalizacionAlertas = document.getElementById('localizacionSelectorAlertas');
+                  const selectorTomaAlertas = document.getElementById('tomaSelectorAlertas');
+                  const filtersRowAlertas = document.getElementById('filtersRowAlertas');
+                  const tableSectionAlertas = document.getElementById('tableSectionAlertas');
+                  const dataTableAlertas = document.getElementById('dataTableAlertas');
+                  const btnResetAlertas = document.getElementById('btnResetAlertas');
+
+                  let datosFiltradosAlertas = [];
+                  let tablaVisibleAlertas = false;
+                  const proyectosAlertas = [...new Set(datosAlertas.map(row => row['Proyecto']))].filter(p => p).sort();
+
+                  function recalcularOpcionesAlertas() {{
+                      const cilindroSeleccionado = selectorCilindroAlertas.value;
+                      const localizacionSeleccionada = selectorLocalizacionAlertas.value;
+                      const tomaSeleccionada = selectorTomaAlertas.value;
+
+                      let datosTemp = datosFiltradosAlertas;
+
+                      if (cilindroSeleccionado) {{
+                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindroSeleccionado);
+                      }}
+                      if (localizacionSeleccionada) {{
+                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacionSeleccionada);
+                      }}
+                      if (tomaSeleccionada) {{
+                          datosTemp = datosTemp.filter(row => row['Toma'] === tomaSeleccionada);
+                      }}
+
+                      const cilindrosDisponibles = [...new Set(datosTemp.map(row => row['Cilindro N°']))].filter(c => c).sort();
+                      const localizacionesDisponibles = [...new Set(datosTemp.map(row => row['Localización']))].filter(l => l).sort();
+                      const tomasDisponibles = [...new Set(datosTemp.map(row => row['Toma']))].filter(t => t).sort();
+
+                      const cilindroActual = selectorCilindroAlertas.value;
+                      selectorCilindroAlertas.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      cilindrosDisponibles.forEach(cilindro => {{
+                          const option = document.createElement('option');
+                          option.value = cilindro;
+                          option.textContent = cilindro;
+                          selectorCilindroAlertas.appendChild(option);
+                      }});
+                      selectorCilindroAlertas.value = cilindroActual;
+
+                      const localizacionActual = selectorLocalizacionAlertas.value;
+                      selectorLocalizacionAlertas.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
+                      localizacionesDisponibles.forEach(localizacion => {{
+                          const option = document.createElement('option');
+                          option.value = localizacion;
+                          option.textContent = localizacion;
+                          selectorLocalizacionAlertas.appendChild(option);
+                      }});
+                      selectorLocalizacionAlertas.value = localizacionActual;
+
+                      const tomaActual = selectorTomaAlertas.value;
+                      selectorTomaAlertas.innerHTML = '<option value="">-- Todas las tomas --</option>';
+                      tomasDisponibles.forEach(toma => {{
+                          const option = document.createElement('option');
+                          option.value = toma;
+                          option.textContent = toma;
+                          selectorTomaAlertas.appendChild(option);
+                      }});
+                      selectorTomaAlertas.value = tomaActual;
+
+                      actualizarFiltrosAlertas();
+                  }}
+
+                  function actualizarFiltrosAlertas() {{
+                      const cilindro = selectorCilindroAlertas.value;
+                      const localizacion = selectorLocalizacionAlertas.value;
+                      const toma = selectorTomaAlertas.value;
+
+                      let datosTemp = datosFiltradosAlertas;
+
+                      if (cilindro) {{
+                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindro);
+                      }}
+                      if (localizacion) {{
+                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacion);
+                      }}
+                      if (toma) {{
+                          datosTemp = datosTemp.filter(row => row['Toma'] === toma);
+                      }}
+
+                      generarTablaSimple(datosTemp, dataTableAlertas);
+                  }}
+
+                  proyectoInputAlertas.addEventListener('input', function() {{
+                      const valor = this.value.trim();
+
+                      if (!valor || !proyectosAlertas.includes(valor)) {{
+                          tableSectionAlertas.classList.remove('active');
+                          filtersRowAlertas.style.display = 'none';
+                          return;
+                      }}
+
+                      datosFiltradosAlertas = datosAlertas.filter(row => row['Proyecto'] === valor);
+
+                      selectorCilindroAlertas.value = '';
+                      selectorLocalizacionAlertas.value = '';
+                      selectorTomaAlertas.value = '';
+
+                      const cilindros = [...new Set(datosFiltradosAlertas.map(row => row['Cilindro N°']))].filter(c => c).sort();
+                      const localizaciones = [...new Set(datosFiltradosAlertas.map(row => row['Localización']))].filter(l => l).sort();
+                      const tomas = [...new Set(datosFiltradosAlertas.map(row => row['Toma']))].filter(t => t).sort();
+
+                      selectorCilindroAlertas.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      cilindros.forEach(cilindro => {{
+                          const option = document.createElement('option');
+                          option.value = cilindro;
+                          option.textContent = cilindro;
+                          selectorCilindroAlertas.appendChild(option);
+                      }});
+
+                      selectorLocalizacionAlertas.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
+                      localizaciones.forEach(localizacion => {{
+                          const option = document.createElement('option');
+                          option.value = localizacion;
+                          option.textContent = localizacion;
+                          selectorLocalizacionAlertas.appendChild(option);
+                      }});
+
+                      selectorTomaAlertas.innerHTML = '<option value="">-- Todas las tomas --</option>';
+                      tomas.forEach(toma => {{
+                          const option = document.createElement('option');
+                          option.value = toma;
+                          option.textContent = toma;
+                          selectorTomaAlertas.appendChild(option);
+                      }});
+
+                      filtersRowAlertas.style.opacity = '0';
+                      filtersRowAlertas.style.display = 'flex';
+                      setTimeout(() => {{
+                          filtersRowAlertas.style.transition = 'opacity 1500ms ease-in-out';
+                          filtersRowAlertas.style.opacity = '1';
+                      }}, 0);
+
+                      generarTablaSimple(datosFiltradosAlertas, dataTableAlertas);
+                  }});
+
+                  selectorCilindroAlertas.addEventListener('change', recalcularOpcionesAlertas);
+                  selectorLocalizacionAlertas.addEventListener('change', recalcularOpcionesAlertas);
+                  selectorTomaAlertas.addEventListener('change', recalcularOpcionesAlertas);
+
+                  btnResetAlertas.addEventListener('click', function() {{
+                      proyectoInputAlertas.value = '';
+                      selectorCilindroAlertas.value = '';
+                      selectorLocalizacionAlertas.value = '';
+                      selectorTomaAlertas.value = '';
+                      filtersRowAlertas.style.display = 'none';
+                      tableSectionAlertas.classList.remove('active');
+                      proyectoInputAlertas.focus();
+                  }});
+
+                  // ========== PESTAÑA INCUMPLIMIENTOS ==========
+                  const proyectoInputIncumplimientos = document.getElementById('proyectoInputIncumplimientos');
+                  const selectorCilindroIncumplimientos = document.getElementById('cilindroSelectorIncumplimientos');
+                  const selectorLocalizacionIncumplimientos = document.getElementById('localizacionSelectorIncumplimientos');
+                  const selectorTomaIncumplimientos = document.getElementById('tomaSelectorIncumplimientos');
+                  const filtersRowIncumplimientos = document.getElementById('filtersRowIncumplimientos');
+                  const tableSectionIncumplimientos = document.getElementById('tableSectionIncumplimientos');
+                  const dataTableIncumplimientos = document.getElementById('dataTableIncumplimientos');
+                  const btnResetIncumplimientos = document.getElementById('btnResetIncumplimientos');
+
+                  let datosFiltradosIncumplimientos = [];
+                  let tablaVisibleIncumplimientos = false;
+                  const proyectosIncumplimientos = [...new Set(datosIncumplimientos.map(row => row['Proyecto']))].filter(p => p).sort();
+
+                  function recalcularOpcionesIncumplimientos() {{
+                      const cilindroSeleccionado = selectorCilindroIncumplimientos.value;
+                      const localizacionSeleccionada = selectorLocalizacionIncumplimientos.value;
+                      const tomaSeleccionada = selectorTomaIncumplimientos.value;
+
+                      let datosTemp = datosFiltradosIncumplimientos;
+
+                      if (cilindroSeleccionado) {{
+                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindroSeleccionado);
+                      }}
+                      if (localizacionSeleccionada) {{
+                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacionSeleccionada);
+                      }}
+                      if (tomaSeleccionada) {{
+                          datosTemp = datosTemp.filter(row => row['Toma'] === tomaSeleccionada);
+                      }}
+
+                      const cilindrosDisponibles = [...new Set(datosTemp.map(row => row['Cilindro N°']))].filter(c => c).sort();
+                      const localizacionesDisponibles = [...new Set(datosTemp.map(row => row['Localización']))].filter(l => l).sort();
+                      const tomasDisponibles = [...new Set(datosTemp.map(row => row['Toma']))].filter(t => t).sort();
+
+                      const cilindroActual = selectorCilindroIncumplimientos.value;
+                      selectorCilindroIncumplimientos.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      cilindrosDisponibles.forEach(cilindro => {{
+                          const option = document.createElement('option');
+                          option.value = cilindro;
+                          option.textContent = cilindro;
+                          selectorCilindroIncumplimientos.appendChild(option);
+                      }});
+                      selectorCilindroIncumplimientos.value = cilindroActual;
+
+                      const localizacionActual = selectorLocalizacionIncumplimientos.value;
+                      selectorLocalizacionIncumplimientos.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
+                      localizacionesDisponibles.forEach(localizacion => {{
+                          const option = document.createElement('option');
+                          option.value = localizacion;
+                          option.textContent = localizacion;
+                          selectorLocalizacionIncumplimientos.appendChild(option);
+                      }});
+                      selectorLocalizacionIncumplimientos.value = localizacionActual;
+
+                      const tomaActual = selectorTomaIncumplimientos.value;
+                      selectorTomaIncumplimientos.innerHTML = '<option value="">-- Todas las tomas --</option>';
+                      tomasDisponibles.forEach(toma => {{
+                          const option = document.createElement('option');
+                          option.value = toma;
+                          option.textContent = toma;
+                          selectorTomaIncumplimientos.appendChild(option);
+                      }});
+                      selectorTomaIncumplimientos.value = tomaActual;
+
+                      actualizarFiltrosIncumplimientos();
+                  }}
+
+                  function actualizarFiltrosIncumplimientos() {{
+                      const cilindro = selectorCilindroIncumplimientos.value;
+                      const localizacion = selectorLocalizacionIncumplimientos.value;
+                      const toma = selectorTomaIncumplimientos.value;
+
+                      let datosTemp = datosFiltradosIncumplimientos;
+
+                      if (cilindro) {{
+                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindro);
+                      }}
+                      if (localizacion) {{
+                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacion);
+                      }}
+                      if (toma) {{
+                          datosTemp = datosTemp.filter(row => row['Toma'] === toma);
+                      }}
+
+                      generarTablaSimple(datosTemp, dataTableIncumplimientos);
+                  }}
+
+                  proyectoInputIncumplimientos.addEventListener('input', function() {{
+                      const valor = this.value.trim();
+
+                      if (!valor || !proyectosIncumplimientos.includes(valor)) {{
+                          tableSectionIncumplimientos.classList.remove('active');
+                          filtersRowIncumplimientos.style.display = 'none';
+                          return;
+                      }}
+
+                      datosFiltradosIncumplimientos = datosIncumplimientos.filter(row => row['Proyecto'] === valor);
+
+                      selectorCilindroIncumplimientos.value = '';
+                      selectorLocalizacionIncumplimientos.value = '';
+                      selectorTomaIncumplimientos.value = '';
+
+                      const cilindros = [...new Set(datosFiltradosIncumplimientos.map(row => row['Cilindro N°']))].filter(c => c).sort();
+                      const localizaciones = [...new Set(datosFiltradosIncumplimientos.map(row => row['Localización']))].filter(l => l).sort();
+                      const tomas = [...new Set(datosFiltradosIncumplimientos.map(row => row['Toma']))].filter(t => t).sort();
+
+                      selectorCilindroIncumplimientos.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      cilindros.forEach(cilindro => {{
+                          const option = document.createElement('option');
+                          option.value = cilindro;
+                          option.textContent = cilindro;
+                          selectorCilindroIncumplimientos.appendChild(option);
+                      }});
+
+                      selectorLocalizacionIncumplimientos.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
+                      localizaciones.forEach(localizacion => {{
+                          const option = document.createElement('option');
+                          option.value = localizacion;
+                          option.textContent = localizacion;
+                          selectorLocalizacionIncumplimientos.appendChild(option);
+                      }});
+
+                      selectorTomaIncumplimientos.innerHTML = '<option value="">-- Todas las tomas --</option>';
+                      tomas.forEach(toma => {{
+                          const option = document.createElement('option');
+                          option.value = toma;
+                          option.textContent = toma;
+                          selectorTomaIncumplimientos.appendChild(option);
+                      }});
+
+                      filtersRowIncumplimientos.style.opacity = '0';
+                      filtersRowIncumplimientos.style.display = 'flex';
+                      setTimeout(() => {{
+                          filtersRowIncumplimientos.style.transition = 'opacity 1500ms ease-in-out';
+                          filtersRowIncumplimientos.style.opacity = '1';
+                      }}, 0);
+
+                      generarTablaSimple(datosFiltradosIncumplimientos, dataTableIncumplimientos);
+                  }});
+
+                  selectorCilindroIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
+                  selectorLocalizacionIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
+                  selectorTomaIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
+
+                  btnResetIncumplimientos.addEventListener('click', function() {{
+                      proyectoInputIncumplimientos.value = '';
+                      selectorCilindroIncumplimientos.value = '';
+                      selectorLocalizacionIncumplimientos.value = '';
+                      selectorTomaIncumplimientos.value = '';
+                      filtersRowIncumplimientos.style.display = 'none';
+                      tableSectionIncumplimientos.classList.remove('active');
+                      proyectoInputIncumplimientos.focus();
+                  }});
               </script>
           </body>
           </html>"""
