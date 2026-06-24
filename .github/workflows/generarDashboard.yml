@@ -127,6 +127,7 @@ jobs:
                   table th {{ background-color: #4B4F1D; color: #ffffff; padding: 3px 2px; text-align: left; font-weight: 600; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10; }}
                   table td {{ padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; }}
                   table tr:hover {{ background-color: #f8f8f7; }}
+                  .red-negative {{ background-color: rgba(255, 0, 0, 0.15); }}
               </style>
           </head>
           <body>
@@ -387,6 +388,12 @@ jobs:
                                   }}
 
                                   td.textContent = valor;
+
+                                  // Colorear celdas negativas o cero en columna "Diferencia (MPa)"
+                                  if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) {{
+                                      td.classList.add('red-negative');
+                                  }}
+
                                   tr.appendChild(td);
                               }});
                               tbody.appendChild(tr);
@@ -686,6 +693,12 @@ jobs:
                                   }}
 
                                   td.textContent = valor;
+
+                                  // Colorear celdas negativas o cero en columna "Diferencia (MPa)"
+                                  if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) {{
+                                      td.classList.add('red-negative');
+                                  }}
+
                                   tr.appendChild(td);
                               }});
                               tbody.appendChild(tr);
