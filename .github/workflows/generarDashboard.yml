@@ -128,6 +128,7 @@ jobs:
                   table td {{ padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; }}
                   table tr:hover {{ background-color: #f8f8f7; }}
                   .red-negative {{ background-color: rgba(255, 0, 0, 0.15); }}
+                  .green-bg {{ background-color: #f0f8f0; }}
               </style>
           </head>
           <body>
@@ -426,6 +427,12 @@ jobs:
                                   // Colorear celdas negativas o cero en columna "Diferencia (MPa)"
                                   if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) {{
                                       td.classList.add('red-negative');
+                                  }}
+
+                                  // Colorear con fondo verde claro columnas específicas
+                                  const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia Teórica (MPa)'];
+                                  if (columnasVerdes.includes(header)) {{
+                                      td.classList.add('green-bg');
                                   }}
 
                                   tr.appendChild(td);
@@ -733,6 +740,12 @@ jobs:
                                       td.classList.add('red-negative');
                                   }}
 
+                                  // Colorear con fondo verde claro columnas específicas
+                                  const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia Teórica (MPa)'];
+                                  if (columnasVerdes.includes(header)) {{
+                                      td.classList.add('green-bg');
+                                  }}
+
                                   tr.appendChild(td);
                               }});
                               tbody.appendChild(tr);
@@ -966,6 +979,12 @@ jobs:
                                   // Colorear celdas negativas o cero en columna "Diferencia (MPa)"
                                   if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) {{
                                       td.classList.add('red-negative');
+                                  }}
+
+                                  // Colorear con fondo verde claro columnas específicas
+                                  const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia Teórica (MPa)'];
+                                  if (columnasVerdes.includes(header)) {{
+                                      td.classList.add('green-bg');
                                   }}
 
                                   tr.appendChild(td);
