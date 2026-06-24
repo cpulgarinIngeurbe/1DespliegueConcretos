@@ -163,6 +163,20 @@ jobs:
                           </div>
                           <button id="btnResetAlertas" class="btn-reset">Restaurar</button>
                       </div>
+                      <div id="filtersRowAlertas" class="filters-row" style="display: none; opacity: 0;">
+                          <div id="cilindroSectionAlertas" class="selector-section">
+                              <label class="selector-label">Cilindro N°</label>
+                              <select id="cilindroSelectorAlertas" class="selector-dropdown"></select>
+                          </div>
+                          <div id="localizacionSectionAlertas" class="selector-section">
+                              <label class="selector-label">Localización</label>
+                              <select id="localizacionSelectorAlertas" class="selector-dropdown"></select>
+                          </div>
+                          <div id="tomaSectionAlertas" class="selector-section">
+                              <label class="selector-label">Toma</label>
+                              <select id="tomaSelectorAlertas" class="selector-dropdown"></select>
+                          </div>
+                      </div>
                       <div id="tableSectionAlertas" class="table-section">
                           <table id="dataTableAlertas">
                               <thead></thead>
@@ -497,34 +511,100 @@ jobs:
 
                   // ========== PESTAÑA ALERTAS ==========
                   const proyectoInputAlertas = document.getElementById('proyectoInputAlertas');
+                  const selectorCilindroAlertas = document.getElementById('cilindroSelectorAlertas');
+                  const selectorLocalizacionAlertas = document.getElementById('localizacionSelectorAlertas');
+                  const selectorTomaAlertas = document.getElementById('tomaSelectorAlertas');
+                  const filtersRowAlertas = document.getElementById('filtersRowAlertas');
                   const tableSectionAlertas = document.getElementById('tableSectionAlertas');
                   const dataTableAlertas = document.getElementById('dataTableAlertas');
                   const btnResetAlertas = document.getElementById('btnResetAlertas');
 
+                  let datosFiltradosAlertas = [];
                   const proyectosAlertas = [...new Set(datosAlertas.map(row => row['Proyecto']))].filter(p => p).sort();
 
-                  proyectoInputAlertas.addEventListener('input', function() {{
-                      const valor = this.value.trim();
+                  function recalcularOpcionesAlertas() {{
+                      const cilindroSeleccionado = selectorCilindroAlertas.value;
+                      const localizacionSeleccionada = selectorLocalizacionAlertas.value;
+                      const tomaSeleccionada = selectorTomaAlertas.value;
 
-                      if (!valor || !proyectosAlertas.includes(valor)) {{
-                          tableSectionAlertas.classList.remove('active');
-                          return;
+                      let datosTemp = datosFiltradosAlertas;
+
+                      if (cilindroSeleccionado) {{
+                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindroSeleccionado);
+                      }}
+                      if (localizacionSeleccionada) {{
+                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacionSeleccionada);
+                      }}
+                      if (tomaSeleccionada) {{
+                          datosTemp = datosTemp.filter(row => row['Toma'] === tomaSeleccionada);
                       }}
 
-                      // Filtrar por proyecto
-                      const datosFiltradosAlertas = datosAlertas.filter(row => row['Proyecto'] === valor);
+                      const cilindrosDisponibles = [...new Set(datosTemp.map(row => row['Cilindro N°']))].filter(c => c).sort();
+                      const localizacionesDisponibles = [...new Set(datosTemp.map(row => row['Localización']))].filter(l => l).sort();
+                      const tomasDisponibles = [...new Set(datosTemp.map(row => row['Toma']))].filter(t => t).sort();
 
-                      // Generar tabla
-                      if (datosFiltradosAlertas.length > 0) {{
+                      const cilindroActual = selectorCilindroAlertas.value;
+                      selectorCilindroAlertas.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      cilindrosDisponibles.forEach(cilindro => {{
+                          const option = document.createElement('option');
+                          option.value = cilindro;
+                          option.textContent = cilindro;
+                          selectorCilindroAlertas.appendChild(option);
+                      }});
+                      selectorCilindroAlertas.value = cilindroActual;
+
+                      const localizacionActual = selectorLocalizacionAlertas.value;
+                      selectorLocalizacionAlertas.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
+                      localizacionesDisponibles.forEach(localizacion => {{
+                          const option = document.createElement('option');
+                          option.value = localizacion;
+                          option.textContent = localizacion;
+                          selectorLocalizacionAlertas.appendChild(option);
+                      }});
+                      selectorLocalizacionAlertas.value = localizacionActual;
+
+                      const tomaActual = selectorTomaAlertas.value;
+                      selectorTomaAlertas.innerHTML = '<option value="">-- Todas las tomas --</option>';
+                      tomasDisponibles.forEach(toma => {{
+                          const option = document.createElement('option');
+                          option.value = toma;
+                          option.textContent = toma;
+                          selectorTomaAlertas.appendChild(option);
+                      }});
+                      selectorTomaAlertas.value = tomaActual;
+
+                      actualizarTablaAlertas();
+                  }}
+
+                  function actualizarTablaAlertas() {{
+                      const cilindro = selectorCilindroAlertas.value;
+                      const localizacion = selectorLocalizacionAlertas.value;
+                      const toma = selectorTomaAlertas.value;
+
+                      let datosTemp = datosFiltradosAlertas;
+
+                      if (cilindro) {{
+                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindro);
+                      }}
+                      if (localizacion) {{
+                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacion);
+                      }}
+                      if (toma) {{
+                          datosTemp = datosTemp.filter(row => row['Toma'] === toma);
+                      }}
+
+                      generarTablaAlertas(datosTemp);
+                  }}
+
+                  function generarTablaAlertas(datos) {{
+                      if (datos.length > 0) {{
                           const thead = dataTableAlertas.querySelector('thead');
                           const tbody = dataTableAlertas.querySelector('tbody');
 
-                          // Limpiar tabla
                           thead.innerHTML = '';
                           tbody.innerHTML = '';
 
-                          // Generar encabezados
-                          const headers = Object.keys(datosFiltradosAlertas[0]);
+                          const headers = Object.keys(datos[0]);
                           const headerRow = document.createElement('tr');
                           headers.forEach(header => {{
                               const th = document.createElement('th');
@@ -533,14 +613,12 @@ jobs:
                           }});
                           thead.appendChild(headerRow);
 
-                          // Generar filas de datos
-                          datosFiltradosAlertas.forEach(row => {{
+                          datos.forEach(row => {{
                               const tr = document.createElement('tr');
                               headers.forEach(header => {{
                                   const td = document.createElement('td');
                                   let valor = row[header] !== null ? row[header] : '';
 
-                                  // Formatear fechas para columnas específicas
                                   if ((header === 'Rotura' || header === 'Toma') && valor !== '') {{
                                       if (typeof valor === 'number') {{
                                           const fecha = new Date(valor);
@@ -559,10 +637,71 @@ jobs:
 
                           tableSectionAlertas.classList.add('active');
                       }}
+                  }}
+
+                  proyectoInputAlertas.addEventListener('input', function() {{
+                      const valor = this.value.trim();
+
+                      if (!valor || !proyectosAlertas.includes(valor)) {{
+                          tableSectionAlertas.classList.remove('active');
+                          filtersRowAlertas.style.display = 'none';
+                          return;
+                      }}
+
+                      datosFiltradosAlertas = datosAlertas.filter(row => row['Proyecto'] === valor);
+
+                      selectorCilindroAlertas.value = '';
+                      selectorLocalizacionAlertas.value = '';
+                      selectorTomaAlertas.value = '';
+
+                      const cilindros = [...new Set(datosFiltradosAlertas.map(row => row['Cilindro N°']))].filter(c => c).sort();
+                      const localizaciones = [...new Set(datosFiltradosAlertas.map(row => row['Localización']))].filter(l => l).sort();
+                      const tomas = [...new Set(datosFiltradosAlertas.map(row => row['Toma']))].filter(t => t).sort();
+
+                      selectorCilindroAlertas.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      cilindros.forEach(cilindro => {{
+                          const option = document.createElement('option');
+                          option.value = cilindro;
+                          option.textContent = cilindro;
+                          selectorCilindroAlertas.appendChild(option);
+                      }});
+
+                      selectorLocalizacionAlertas.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
+                      localizaciones.forEach(localizacion => {{
+                          const option = document.createElement('option');
+                          option.value = localizacion;
+                          option.textContent = localizacion;
+                          selectorLocalizacionAlertas.appendChild(option);
+                      }});
+
+                      selectorTomaAlertas.innerHTML = '<option value="">-- Todas las tomas --</option>';
+                      tomas.forEach(toma => {{
+                          const option = document.createElement('option');
+                          option.value = toma;
+                          option.textContent = toma;
+                          selectorTomaAlertas.appendChild(option);
+                      }});
+
+                      filtersRowAlertas.style.opacity = '0';
+                      filtersRowAlertas.style.display = 'flex';
+                      setTimeout(() => {{
+                          filtersRowAlertas.style.transition = 'opacity 1500ms ease-in-out';
+                          filtersRowAlertas.style.opacity = '1';
+                      }}, 0);
+
+                      generarTablaAlertas(datosFiltradosAlertas);
                   }});
+
+                  selectorCilindroAlertas.addEventListener('change', recalcularOpcionesAlertas);
+                  selectorLocalizacionAlertas.addEventListener('change', recalcularOpcionesAlertas);
+                  selectorTomaAlertas.addEventListener('change', recalcularOpcionesAlertas);
 
                   btnResetAlertas.addEventListener('click', function() {{
                       proyectoInputAlertas.value = '';
+                      selectorCilindroAlertas.value = '';
+                      selectorLocalizacionAlertas.value = '';
+                      selectorTomaAlertas.value = '';
+                      filtersRowAlertas.style.display = 'none';
                       tableSectionAlertas.classList.remove('active');
                       proyectoInputAlertas.focus();
                   }});
