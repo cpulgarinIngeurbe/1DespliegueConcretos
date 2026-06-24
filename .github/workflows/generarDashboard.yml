@@ -290,17 +290,62 @@ jobs:
 
                   // Función para cambiar pestañas
                   let pestanaActual = 'consolidado';
-                  let proyectoSeleccionadoGlobal = '';
+                  let filtrosGlobales = {{
+                      proyecto: '',
+                      cilindro: '',
+                      localizacion: '',
+                      toma: '',
+                      resistenciaNominal: ''
+                  }};
+
+                  function guardarFiltros(pestana) {{
+                      if (pestana === 'consolidado') {{
+                          filtrosGlobales.proyecto = document.getElementById('proyectoInputConsolidado').value;
+                          filtrosGlobales.cilindro = document.getElementById('cilindroSelectorConsolidado').value || '';
+                          filtrosGlobales.localizacion = document.getElementById('localizacionSelectorConsolidado').value || '';
+                          filtrosGlobales.toma = document.getElementById('tomaSelectorConsolidado').value || '';
+                      }} else if (pestana === 'alertas') {{
+                          filtrosGlobales.proyecto = document.getElementById('proyectoInputAlertas').value;
+                          filtrosGlobales.cilindro = document.getElementById('cilindroSelectorAlertas').value || '';
+                          filtrosGlobales.localizacion = document.getElementById('localizacionSelectorAlertas').value || '';
+                          filtrosGlobales.toma = document.getElementById('tomaSelectorAlertas').value || '';
+                          filtrosGlobales.resistenciaNominal = document.getElementById('resistenciaNominalSelectorAlertas').value || '';
+                      }} else if (pestana === 'incumplimientos') {{
+                          filtrosGlobales.proyecto = document.getElementById('proyectoInputIncumplimientos').value;
+                          filtrosGlobales.cilindro = document.getElementById('cilindroSelectorIncumplimientos').value || '';
+                          filtrosGlobales.localizacion = document.getElementById('localizacionSelectorIncumplimientos').value || '';
+                          filtrosGlobales.toma = document.getElementById('tomaSelectorIncumplimientos').value || '';
+                          filtrosGlobales.resistenciaNominal = document.getElementById('resistenciaNominalSelectorIncumplimientos').value || '';
+                      }}
+                  }}
+
+                  function aplicarFiltros(pestana) {{
+                      if (pestana === 'consolidado') {{
+                          document.getElementById('proyectoInputConsolidado').value = filtrosGlobales.proyecto;
+                          if (filtrosGlobales.cilindro) document.getElementById('cilindroSelectorConsolidado').value = filtrosGlobales.cilindro;
+                          if (filtrosGlobales.localizacion) document.getElementById('localizacionSelectorConsolidado').value = filtrosGlobales.localizacion;
+                          if (filtrosGlobales.toma) document.getElementById('tomaSelectorConsolidado').value = filtrosGlobales.toma;
+                          if (filtrosGlobales.proyecto) document.getElementById('proyectoInputConsolidado').dispatchEvent(new Event('input', {{ bubbles: true }}));
+                      }} else if (pestana === 'alertas') {{
+                          document.getElementById('proyectoInputAlertas').value = filtrosGlobales.proyecto;
+                          if (filtrosGlobales.cilindro) document.getElementById('cilindroSelectorAlertas').value = filtrosGlobales.cilindro;
+                          if (filtrosGlobales.localizacion) document.getElementById('localizacionSelectorAlertas').value = filtrosGlobales.localizacion;
+                          if (filtrosGlobales.toma) document.getElementById('tomaSelectorAlertas').value = filtrosGlobales.toma;
+                          if (filtrosGlobales.resistenciaNominal) document.getElementById('resistenciaNominalSelectorAlertas').value = filtrosGlobales.resistenciaNominal;
+                          if (filtrosGlobales.proyecto) document.getElementById('proyectoInputAlertas').dispatchEvent(new Event('input', {{ bubbles: true }}));
+                      }} else if (pestana === 'incumplimientos') {{
+                          document.getElementById('proyectoInputIncumplimientos').value = filtrosGlobales.proyecto;
+                          if (filtrosGlobales.cilindro) document.getElementById('cilindroSelectorIncumplimientos').value = filtrosGlobales.cilindro;
+                          if (filtrosGlobales.localizacion) document.getElementById('localizacionSelectorIncumplimientos').value = filtrosGlobales.localizacion;
+                          if (filtrosGlobales.toma) document.getElementById('tomaSelectorIncumplimientos').value = filtrosGlobales.toma;
+                          if (filtrosGlobales.resistenciaNominal) document.getElementById('resistenciaNominalSelectorIncumplimientos').value = filtrosGlobales.resistenciaNominal;
+                          if (filtrosGlobales.proyecto) document.getElementById('proyectoInputIncumplimientos').dispatchEvent(new Event('input', {{ bubbles: true }}));
+                      }}
+                  }}
 
                   function cambiarPestana(nombrePestana) {{
-                      // Guardar proyecto seleccionado
-                      if (pestanaActual === 'consolidado') {{
-                          proyectoSeleccionadoGlobal = document.getElementById('proyectoInputConsolidado').value;
-                      }} else if (pestanaActual === 'alertas') {{
-                          proyectoSeleccionadoGlobal = document.getElementById('proyectoInputAlertas').value;
-                      }} else if (pestanaActual === 'incumplimientos') {{
-                          proyectoSeleccionadoGlobal = document.getElementById('proyectoInputIncumplimientos').value;
-                      }}
+                      // Guardar filtros de la pestaña actual
+                      guardarFiltros(pestanaActual);
 
                       // Cambiar a la nueva pestaña
                       tabContents.forEach(tab => tab.classList.remove('active'));
@@ -309,23 +354,8 @@ jobs:
                       document.getElementById(nombrePestana).classList.add('active');
                       document.querySelector('[data-tab="' + nombrePestana + '"]').classList.add('active');
 
-                      // Aplicar proyecto guardado a la nueva pestaña
-                      if (nombrePestana === 'alertas') {{
-                          document.getElementById('proyectoInputAlertas').value = proyectoSeleccionadoGlobal;
-                          if (proyectoSeleccionadoGlobal) {{
-                              document.getElementById('proyectoInputAlertas').dispatchEvent(new Event('input', {{ bubbles: true }}));
-                          }}
-                      }} else if (nombrePestana === 'incumplimientos') {{
-                          document.getElementById('proyectoInputIncumplimientos').value = proyectoSeleccionadoGlobal;
-                          if (proyectoSeleccionadoGlobal) {{
-                              document.getElementById('proyectoInputIncumplimientos').dispatchEvent(new Event('input', {{ bubbles: true }}));
-                          }}
-                      }} else if (nombrePestana === 'consolidado') {{
-                          document.getElementById('proyectoInputConsolidado').value = proyectoSeleccionadoGlobal;
-                          if (proyectoSeleccionadoGlobal) {{
-                              document.getElementById('proyectoInputConsolidado').dispatchEvent(new Event('input', {{ bubbles: true }}));
-                          }}
-                      }}
+                      // Aplicar filtros guardados a la nueva pestaña
+                      aplicarFiltros(nombrePestana);
 
                       pestanaActual = nombrePestana;
                   }}
