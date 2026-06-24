@@ -423,8 +423,18 @@ jobs:
                                   let valor = row[header] !== null ? row[header] : '';
 
                                   // Formatear fechas para columnas específicas
-                                  if ((header === 'Rotura' || header === 'Toma') && valor !== '') {{
+                                  if ((header === 'Rotura' || header === 'Toma' || header === 'Fecha Descarga') && valor !== '') {{
                                       valor = formatearFecha(valor);
+                                  }}
+
+                                  // Formatear valores numéricos a 2 decimales
+                                  if (typeof valor === 'number' && !isNaN(valor)) {{
+                                      valor = valor.toFixed(2);
+                                  }} else if (typeof valor === 'string' && valor !== '') {{
+                                      const numValue = parseFloat(valor);
+                                      if (!isNaN(numValue) && isFinite(numValue)) {{
+                                          valor = numValue.toFixed(2);
+                                      }}
                                   }}
 
                                   td.textContent = valor;
@@ -485,8 +495,18 @@ jobs:
                                   let valor = row[header] !== null ? row[header] : '';
 
                                   // Formatear fechas para columnas específicas
-                                  if ((header === 'Rotura' || header === 'Toma') && valor !== '') {{
+                                  if ((header === 'Rotura' || header === 'Toma' || header === 'Fecha Descarga') && valor !== '') {{
                                       valor = formatearFecha(valor);
+                                  }}
+
+                                  // Formatear valores numéricos a 2 decimales
+                                  if (typeof valor === 'number' && !isNaN(valor)) {{
+                                      valor = valor.toFixed(2);
+                                  }} else if (typeof valor === 'string' && valor !== '') {{
+                                      const numValue = parseFloat(valor);
+                                      if (!isNaN(numValue) && isFinite(numValue)) {{
+                                          valor = numValue.toFixed(2);
+                                      }}
                                   }}
 
                                   td.textContent = valor;
