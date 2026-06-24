@@ -366,7 +366,12 @@ jobs:
 
                       // Si es un timestamp de pandas (número)
                       if (typeof valor === 'number') {{
-                          const fecha = new Date(valor);
+                          let timestamp = valor;
+                          // Si es timestamp en nanosegundos (muy grande), convertir a milisegundos
+                          if (timestamp > 253402300799999) {{
+                              timestamp = Math.floor(timestamp / 1000000);
+                          }}
+                          const fecha = new Date(timestamp);
                           const d = String(fecha.getDate()).padStart(2, '0');
                           const m = String(fecha.getMonth() + 1).padStart(2, '0');
                           const y = fecha.getFullYear();
