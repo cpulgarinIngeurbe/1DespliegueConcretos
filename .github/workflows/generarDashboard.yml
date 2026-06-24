@@ -153,7 +153,31 @@ jobs:
                   </div>
 
                   <div id="alertas" class="tab-content">
-                      <div id="tableAlertas" class="table-section active">
+                      <div class="proyecto-input-row">
+                          <div class="proyecto-input-wrapper">
+                              <label class="selector-label">Seleccione el proyecto</label>
+                              <input type="text" id="proyectoInputAlertas" class="selector-dropdown" placeholder="Buscar proyecto..." list="proyectoListAlertas" autocomplete="off" />
+                              <datalist id="proyectoListAlertas">
+                                  {opciones_html}
+                              </datalist>
+                          </div>
+                          <button id="btnResetAlertas" class="btn-reset">Restaurar</button>
+                      </div>
+                      <div id="filtersRowAlertas" class="filters-row" style="display: none; opacity: 0;">
+                          <div id="cilindroSectionAlertas" class="selector-section">
+                              <label class="selector-label">Cilindro N°</label>
+                              <select id="cilindroSelectorAlertas" class="selector-dropdown"></select>
+                          </div>
+                          <div id="localizacionSectionAlertas" class="selector-section">
+                              <label class="selector-label">Localización</label>
+                              <select id="localizacionSelectorAlertas" class="selector-dropdown"></select>
+                          </div>
+                          <div id="tomaSectionAlertas" class="selector-section">
+                              <label class="selector-label">Toma</label>
+                              <select id="tomaSelectorAlertas" class="selector-dropdown"></select>
+                          </div>
+                      </div>
+                      <div id="tableSectionAlertas" class="table-section">
                           <table id="dataTableAlertas">
                               <thead></thead>
                               <tbody></tbody>
@@ -162,7 +186,31 @@ jobs:
                   </div>
 
                   <div id="incumplimientos" class="tab-content">
-                      <div id="tableIncumplimientos" class="table-section active">
+                      <div class="proyecto-input-row">
+                          <div class="proyecto-input-wrapper">
+                              <label class="selector-label">Seleccione el proyecto</label>
+                              <input type="text" id="proyectoInputIncumplimientos" class="selector-dropdown" placeholder="Buscar proyecto..." list="proyectoListIncumplimientos" autocomplete="off" />
+                              <datalist id="proyectoListIncumplimientos">
+                                  {opciones_html}
+                              </datalist>
+                          </div>
+                          <button id="btnResetIncumplimientos" class="btn-reset">Restaurar</button>
+                      </div>
+                      <div id="filtersRowIncumplimientos" class="filters-row" style="display: none; opacity: 0;">
+                          <div id="cilindroSectionIncumplimientos" class="selector-section">
+                              <label class="selector-label">Cilindro N°</label>
+                              <select id="cilindroSelectorIncumplimientos" class="selector-dropdown"></select>
+                          </div>
+                          <div id="localizacionSectionIncumplimientos" class="selector-section">
+                              <label class="selector-label">Localización</label>
+                              <select id="localizacionSelectorIncumplimientos" class="selector-dropdown"></select>
+                          </div>
+                          <div id="tomaSectionIncumplimientos" class="selector-section">
+                              <label class="selector-label">Toma</label>
+                              <select id="tomaSelectorIncumplimientos" class="selector-dropdown"></select>
+                          </div>
+                      </div>
+                      <div id="tableSectionIncumplimientos" class="table-section">
                           <table id="dataTableIncumplimientos">
                               <thead></thead>
                               <tbody></tbody>
