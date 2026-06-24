@@ -293,16 +293,13 @@ jobs:
                   let proyectoSeleccionadoGlobal = '';
 
                   function cambiarPestana(nombrePestana) {{
-                      // Guardar proyecto seleccionado antes del reset
+                      // Guardar proyecto seleccionado
                       if (pestanaActual === 'consolidado') {{
                           proyectoSeleccionadoGlobal = document.getElementById('proyectoInputConsolidado').value;
-                          btnReset.click();
                       }} else if (pestanaActual === 'alertas') {{
                           proyectoSeleccionadoGlobal = document.getElementById('proyectoInputAlertas').value;
-                          btnResetAlertas.click();
                       }} else if (pestanaActual === 'incumplimientos') {{
                           proyectoSeleccionadoGlobal = document.getElementById('proyectoInputIncumplimientos').value;
-                          btnResetIncumplimientos.click();
                       }}
 
                       // Cambiar a la nueva pestaña
@@ -312,24 +309,20 @@ jobs:
                       document.getElementById(nombrePestana).classList.add('active');
                       document.querySelector('[data-tab="' + nombrePestana + '"]').classList.add('active');
 
+                      // Aplicar proyecto guardado a la nueva pestaña
                       if (nombrePestana === 'alertas') {{
-                          generarTablaSimple(datosAlertas, document.getElementById('dataTableAlertas'), true);
-                          // Aplicar proyecto guardado a la nueva pestaña
+                          document.getElementById('proyectoInputAlertas').value = proyectoSeleccionadoGlobal;
                           if (proyectoSeleccionadoGlobal) {{
-                              document.getElementById('proyectoInputAlertas').value = proyectoSeleccionadoGlobal;
                               document.getElementById('proyectoInputAlertas').dispatchEvent(new Event('input', {{ bubbles: true }}));
                           }}
                       }} else if (nombrePestana === 'incumplimientos') {{
-                          generarTablaSimple(datosIncumplimientos, document.getElementById('dataTableIncumplimientos'), true);
-                          // Aplicar proyecto guardado a la nueva pestaña
+                          document.getElementById('proyectoInputIncumplimientos').value = proyectoSeleccionadoGlobal;
                           if (proyectoSeleccionadoGlobal) {{
-                              document.getElementById('proyectoInputIncumplimientos').value = proyectoSeleccionadoGlobal;
                               document.getElementById('proyectoInputIncumplimientos').dispatchEvent(new Event('input', {{ bubbles: true }}));
                           }}
                       }} else if (nombrePestana === 'consolidado') {{
-                          // Aplicar proyecto guardado si volvemos a consolidado
+                          document.getElementById('proyectoInputConsolidado').value = proyectoSeleccionadoGlobal;
                           if (proyectoSeleccionadoGlobal) {{
-                              document.getElementById('proyectoInputConsolidado').value = proyectoSeleccionadoGlobal;
                               document.getElementById('proyectoInputConsolidado').dispatchEvent(new Event('input', {{ bubbles: true }}));
                           }}
                       }}
