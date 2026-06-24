@@ -194,6 +194,10 @@ jobs:
                               <label class="selector-label">Toma</label>
                               <select id="tomaSelectorAlertas" class="selector-dropdown"></select>
                           </div>
+                          <div id="resistenciaNominalSectionAlertas" class="selector-section">
+                              <label class="selector-label">Resistencia nominal (MPa)</label>
+                              <select id="resistenciaNominalSelectorAlertas" class="selector-dropdown"></select>
+                          </div>
                       </div>
                       <div id="tableSectionAlertas" class="table-section">
                           <table id="dataTableAlertas">
@@ -532,6 +536,7 @@ jobs:
                   const selectorCilindroAlertas = document.getElementById('cilindroSelectorAlertas');
                   const selectorLocalizacionAlertas = document.getElementById('localizacionSelectorAlertas');
                   const selectorTomaAlertas = document.getElementById('tomaSelectorAlertas');
+                  const selectorResistenciaNominalAlertas = document.getElementById('resistenciaNominalSelectorAlertas');
                   const filtersRowAlertas = document.getElementById('filtersRowAlertas');
                   const tableSectionAlertas = document.getElementById('tableSectionAlertas');
                   const dataTableAlertas = document.getElementById('dataTableAlertas');
@@ -544,6 +549,7 @@ jobs:
                       const cilindroSeleccionado = selectorCilindroAlertas.value;
                       const localizacionSeleccionada = selectorLocalizacionAlertas.value;
                       const tomaSeleccionada = selectorTomaAlertas.value;
+                      const resistenciaNominalSeleccionada = selectorResistenciaNominalAlertas.value;
 
                       let datosTemp = datosFiltradosAlertas;
 
@@ -556,10 +562,14 @@ jobs:
                       if (tomaSeleccionada) {{
                           datosTemp = datosTemp.filter(row => row['Toma'] === tomaSeleccionada);
                       }}
+                      if (resistenciaNominalSeleccionada) {{
+                          datosTemp = datosTemp.filter(row => row['Resistencia nominal (MPa)'] === parseFloat(resistenciaNominalSeleccionada));
+                      }}
 
                       const cilindrosDisponibles = [...new Set(datosTemp.map(row => row['Cilindro N°']))].filter(c => c).sort();
                       const localizacionesDisponibles = [...new Set(datosTemp.map(row => row['Localización']))].filter(l => l).sort();
                       const tomasDisponibles = [...new Set(datosTemp.map(row => row['Toma']))].filter(t => t).sort();
+                      const resistenciasNominalesDisponibles = [...new Set(datosTemp.map(row => row['Resistencia nominal (MPa)']))].filter(r => r !== null && r !== undefined).sort((a,b) => a - b);
 
                       const cilindroActual = selectorCilindroAlertas.value;
                       selectorCilindroAlertas.innerHTML = '<option value="">-- Todos los cilindros --</option>';
@@ -591,6 +601,16 @@ jobs:
                       }});
                       selectorTomaAlertas.value = tomaActual;
 
+                      const resistenciaNominalActual = selectorResistenciaNominalAlertas.value;
+                      selectorResistenciaNominalAlertas.innerHTML = '<option value="">-- Todas las resistencias --</option>';
+                      resistenciasNominalesDisponibles.forEach(resistencia => {{
+                          const option = document.createElement('option');
+                          option.value = resistencia;
+                          option.textContent = resistencia;
+                          selectorResistenciaNominalAlertas.appendChild(option);
+                      }});
+                      selectorResistenciaNominalAlertas.value = resistenciaNominalActual;
+
                       actualizarTablaAlertas();
                   }}
 
@@ -598,6 +618,7 @@ jobs:
                       const cilindro = selectorCilindroAlertas.value;
                       const localizacion = selectorLocalizacionAlertas.value;
                       const toma = selectorTomaAlertas.value;
+                      const resistenciaNominal = selectorResistenciaNominalAlertas.value;
 
                       let datosTemp = datosFiltradosAlertas;
 
@@ -609,6 +630,9 @@ jobs:
                       }}
                       if (toma) {{
                           datosTemp = datosTemp.filter(row => row['Toma'] === toma);
+                      }}
+                      if (resistenciaNominal) {{
+                          datosTemp = datosTemp.filter(row => row['Resistencia nominal (MPa)'] === parseFloat(resistenciaNominal));
                       }}
 
                       generarTablaAlertas(datosTemp);
@@ -713,12 +737,14 @@ jobs:
                   selectorCilindroAlertas.addEventListener('change', recalcularOpcionesAlertas);
                   selectorLocalizacionAlertas.addEventListener('change', recalcularOpcionesAlertas);
                   selectorTomaAlertas.addEventListener('change', recalcularOpcionesAlertas);
+                  selectorResistenciaNominalAlertas.addEventListener('change', recalcularOpcionesAlertas);
 
                   btnResetAlertas.addEventListener('click', function() {{
                       proyectoInputAlertas.value = '';
                       selectorCilindroAlertas.value = '';
                       selectorLocalizacionAlertas.value = '';
                       selectorTomaAlertas.value = '';
+                      selectorResistenciaNominalAlertas.value = '';
                       filtersRowAlertas.style.display = 'none';
                       tableSectionAlertas.classList.remove('active');
                       proyectoInputAlertas.focus();
