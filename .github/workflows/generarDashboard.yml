@@ -21,7 +21,7 @@ jobs:
       - name: 📦 Instalar dependencias
         run: pip install pandas openpyxl
 
-      - name: 📊 Generar HTML desde Consolidado.xlsx
+      - name: 📊 Generar Dashboard con 3 Pestañas
         run: |
           python << 'PYTHON_SCRIPT'
           import pandas as pd
@@ -29,33 +29,47 @@ jobs:
           from datetime import datetime
 
           archivo_consolidado = "desplegable/Consolidado.xlsx"
+          archivo_alertas = "desplegable/ConsolidadoAlertas.xlsx"
+          archivo_incumplimientos = "desplegable/Incumplimientos.xlsx"
           archivo_html = "index.html"
 
-          if not os.path.exists(archivo_consolidado):
-              print(f'[!] El archivo {archivo_consolidado} no existe')
-              exit(1)
+          datos_tabs = {{}}
+          proyectos_consolidado = []
 
-          print(f'[*] Leyendo: {archivo_consolidado}')
-          df = pd.read_excel(archivo_consolidado)
-          print(f'[+] Datos cargados: {len(df)} registros, {len(df.columns)} columnas')
+          # Leer Consolidado.xlsx
+          if os.path.exists(archivo_consolidado):
+              print(f'[*] Leyendo: {archivo_consolidado}')
+              df_consolidado = pd.read_excel(archivo_consolidado)
+              datos_tabs['consolidado'] = df_consolidado.to_json(orient='records')
+              proyectos_consolidado = sorted([p for p in df_consolidado['Proyecto'].unique().tolist() if pd.notna(p)])
+              print(f'[+] Consolidado cargado: {len(df_consolidado)} registros')
+          else:
+              print(f'[!] Archivo no encontrado: {archivo_consolidado}')
+              datos_tabs['consolidado'] = '[]'
 
-          columnas = list(df.columns)
-          num_registros = len(df)
-          num_columnas = len(df.columns)
-          fecha_generacion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+          # Leer ConsolidadoAlertas.xlsx
+          if os.path.exists(archivo_alertas):
+              print(f'[*] Leyendo: {archivo_alertas}')
+              df_alertas = pd.read_excel(archivo_alertas)
+              datos_tabs['alertas'] = df_alertas.to_json(orient='records')
+              print(f'[+] Control 28 días cargado: {len(df_alertas)} registros')
+          else:
+              print(f'[!] Archivo no encontrado: {archivo_alertas}')
+              datos_tabs['alertas'] = '[]'
 
-          print(f'[+] Columnas: {", ".join(columnas)}')
-
-          # Obtener proyectos únicos
-          proyectos = df['Proyecto'].unique().tolist() if 'Proyecto' in df.columns else []
-          proyectos_sorted = sorted([p for p in proyectos if pd.notna(p)])
-
-          # Convertir DataFrame a JSON
-          datos_json = df.to_json(orient='records')
+          # Leer Incumplimientos.xlsx
+          if os.path.exists(archivo_incumplimientos):
+              print(f'[*] Leyendo: {archivo_incumplimientos}')
+              df_incumplimientos = pd.read_excel(archivo_incumplimientos)
+              datos_tabs['incumplimientos'] = df_incumplimientos.to_json(orient='records')
+              print(f'[+] Incumplimientos cargado: {len(df_incumplimientos)} registros')
+          else:
+              print(f'[!] Archivo no encontrado: {archivo_incumplimientos}')
+              datos_tabs['incumplimientos'] = '[]'
 
           # Generar opciones del datalist
           opciones_html = ''
-          for proyecto in proyectos_sorted:
+          for proyecto in proyectos_consolidado:
               opciones_html += f'<option value="{proyecto}"></option>'
 
           html = f"""<!DOCTYPE html>
@@ -63,11 +77,17 @@ jobs:
           <head>
               <meta charset="utf-8">
               <meta content="width=device-width, initial-scale=1.0" name="viewport">
-              <title>Consolidado de Resistencias</title>
+              <title>Dashboard de Resistencias</title>
               <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
               <style>
                   body {{ background-color: #ffffff; color: #141311; margin: 0; padding: 24px; font-family: 'Inter', sans-serif; }}
                   .container {{ max-width: 1440px; margin: 0 auto; }}
+                  .tabs-container {{ display: flex; gap: 8px; margin-bottom: 32px; border-bottom: 2px solid #A3C610; }}
+                  .tab-button {{ padding: 12px 24px; background-color: transparent; border: none; color: #4B4F1D; font-weight: 600; font-size: 14px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 3px solid transparent; transition: all 0.3s ease; }}
+                  .tab-button:hover {{ color: #A3C610; }}
+                  .tab-button.active {{ color: #A3C610; border-bottom-color: #A3C610; }}
+                  .tab-content {{ display: none; }}
+                  .tab-content.active {{ display: block; }}
                   .selector-section {{ margin-bottom: 32px; }}
                   .selector-label {{ font-size: 12px; color: #4B4F1D; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 8px; display: block; }}
                   .selector-dropdown {{ width: 100%; padding: 12px 16px; border: 2px solid #A3C610; background-color: #ffffff; color: #141311; border-radius: 4px; font-size: 16px; cursor: pointer; font-family: 'Inter', sans-serif; }}
@@ -93,55 +113,104 @@ jobs:
           </head>
           <body>
               <div class="container">
-                  <div class="proyecto-input-row">
-                      <div class="proyecto-input-wrapper">
-                          <label class="selector-label">Seleccione el proyecto</label>
-                          <input type="text" id="proyectoInput" class="selector-dropdown" placeholder="Buscar proyecto..." list="proyectoList" autocomplete="off" />
-                          <datalist id="proyectoList">
-                              {opciones_html}
-                          </datalist>
-                      </div>
-                      <button id="btnReset" class="btn-reset">Restaurar</button>
+                  <div class="tabs-container">
+                      <button class="tab-button active" data-tab="consolidado">Consolidado</button>
+                      <button class="tab-button" data-tab="alertas">Control 28 Días</button>
+                      <button class="tab-button" data-tab="incumplimientos">Alertas Incumplimientos</button>
                   </div>
-                  <div id="filtersRow" class="filters-row" style="display: none; opacity: 0;">
-                      <div id="cilindroSection" class="selector-section">
-                          <label class="selector-label">Cilindro N°</label>
-                          <select id="cilindroSelector" class="selector-dropdown">
-                          </select>
+
+                  <div id="consolidado" class="tab-content active">
+                      <div class="proyecto-input-row">
+                          <div class="proyecto-input-wrapper">
+                              <label class="selector-label">Seleccione el proyecto</label>
+                              <input type="text" id="proyectoInputConsolidado" class="selector-dropdown" placeholder="Buscar proyecto..." list="proyectoListConsolidado" autocomplete="off" />
+                              <datalist id="proyectoListConsolidado">
+                                  {opciones_html}
+                              </datalist>
+                          </div>
+                          <button id="btnResetConsolidado" class="btn-reset">Restaurar</button>
                       </div>
-                      <div id="localizacionSection" class="selector-section">
-                          <label class="selector-label">Localización</label>
-                          <select id="localizacionSelector" class="selector-dropdown">
-                          </select>
+                      <div id="filtersRowConsolidado" class="filters-row" style="display: none; opacity: 0;">
+                          <div id="cilindroSectionConsolidado" class="selector-section">
+                              <label class="selector-label">Cilindro N°</label>
+                              <select id="cilindroSelectorConsolidado" class="selector-dropdown"></select>
+                          </div>
+                          <div id="localizacionSectionConsolidado" class="selector-section">
+                              <label class="selector-label">Localización</label>
+                              <select id="localizacionSelectorConsolidado" class="selector-dropdown"></select>
+                          </div>
+                          <div id="tomaSectionConsolidado" class="selector-section">
+                              <label class="selector-label">Toma</label>
+                              <select id="tomaSelectorConsolidado" class="selector-dropdown"></select>
+                          </div>
                       </div>
-                      <div id="tomaSection" class="selector-section">
-                          <label class="selector-label">Toma</label>
-                          <select id="tomaSelector" class="selector-dropdown">
-                          </select>
+                      <div id="tableSectionConsolidado" class="table-section">
+                          <table id="dataTableConsolidado">
+                              <thead></thead>
+                              <tbody></tbody>
+                          </table>
                       </div>
                   </div>
-                  <div id="tableSection" class="table-section">
-                      <table id="dataTable">
-                          <thead></thead>
-                          <tbody></tbody>
-                      </table>
+
+                  <div id="alertas" class="tab-content">
+                      <div id="tableAlertas" class="table-section active">
+                          <table id="dataTableAlertas">
+                              <thead></thead>
+                              <tbody></tbody>
+                          </table>
+                      </div>
+                  </div>
+
+                  <div id="incumplimientos" class="tab-content">
+                      <div id="tableIncumplimientos" class="table-section active">
+                          <table id="dataTableIncumplimientos">
+                              <thead></thead>
+                              <tbody></tbody>
+                          </table>
+                      </div>
                   </div>
               </div>
 
               <script>
-                  const datosCompletos = {datos_json};
-                  const proyectoInput = document.getElementById('proyectoInput');
-                  const selectorCilindro = document.getElementById('cilindroSelector');
-                  const selectorLocalizacion = document.getElementById('localizacionSelector');
-                  const selectorToma = document.getElementById('tomaSelector');
-                  const filtersRow = document.getElementById('filtersRow');
-                  const tableSection = document.getElementById('tableSection');
-                  const dataTable = document.getElementById('dataTable');
-                  const btnReset = document.getElementById('btnReset');
+                  const datosConsolidado = {datos_tabs['consolidado']};
+                  const datosAlertas = {datos_tabs['alertas']};
+                  const datosIncumplimientos = {datos_tabs['incumplimientos']};
+                  // Elementos de la pestaña Consolidado
+                  const proyectoInput = document.getElementById('proyectoInputConsolidado');
+                  const selectorCilindro = document.getElementById('cilindroSelectorConsolidado');
+                  const selectorLocalizacion = document.getElementById('localizacionSelectorConsolidado');
+                  const selectorToma = document.getElementById('tomaSelectorConsolidado');
+                  const filtersRow = document.getElementById('filtersRowConsolidado');
+                  const tableSection = document.getElementById('tableSectionConsolidado');
+                  const dataTable = document.getElementById('dataTableConsolidado');
+                  const btnReset = document.getElementById('btnResetConsolidado');
+
+                  // Elementos de pestañas
+                  const tabButtons = document.querySelectorAll('.tab-button');
+                  const tabContents = document.querySelectorAll('.tab-content');
 
                   let datosFiltrados = [];
                   let tablaVisible = false;
-                  const proyectos = [...new Set(datosCompletos.map(row => row['Proyecto']))].filter(p => p).sort();
+                  const proyectos = [...new Set(datosConsolidado.map(row => row['Proyecto']))].filter(p => p).sort();
+
+                  // Función para cambiar pestañas
+                  function cambiarPestana(nombrePestana) {{
+                      tabContents.forEach(tab => tab.classList.remove('active'));
+                      tabButtons.forEach(btn => btn.classList.remove('active'));
+
+                      document.getElementById(nombrePestana).classList.add('active');
+                      document.querySelector('[data-tab="' + nombrePestana + '"]').classList.add('active');
+
+                      if (nombrePestana === 'alertas') {{
+                          generarTablaSimple(datosAlertas, document.getElementById('dataTableAlertas'), true);
+                      }} else if (nombrePestana === 'incumplimientos') {{
+                          generarTablaSimple(datosIncumplimientos, document.getElementById('dataTableIncumplimientos'), true);
+                      }}
+                  }}
+
+                  tabButtons.forEach(btn => {{
+                      btn.addEventListener('click', () => cambiarPestana(btn.dataset.tab));
+                  }});
 
                   function recalcularOpcionesFiltros() {{
                       const cilindroSeleccionado = selectorCilindro.value;
@@ -282,6 +351,45 @@ jobs:
                       }}
                   }}
 
+                  function generarTablaSimple(datos, tableElement, conDelay = false) {{
+                      if (datos && datos.length > 0) {{
+                          const thead = tableElement.querySelector('thead');
+                          const tbody = tableElement.querySelector('tbody');
+
+                          // Limpiar tabla
+                          thead.innerHTML = '';
+                          tbody.innerHTML = '';
+
+                          // Generar encabezados
+                          const headers = Object.keys(datos[0]);
+                          const headerRow = document.createElement('tr');
+                          headers.forEach(header => {{
+                              const th = document.createElement('th');
+                              th.textContent = header;
+                              headerRow.appendChild(th);
+                          }});
+                          thead.appendChild(headerRow);
+
+                          // Generar filas de datos
+                          datos.forEach(row => {{
+                              const tr = document.createElement('tr');
+                              headers.forEach(header => {{
+                                  const td = document.createElement('td');
+                                  let valor = row[header] !== null ? row[header] : '';
+
+                                  // Formatear fechas para columnas específicas
+                                  if ((header === 'Rotura' || header === 'Toma') && valor !== '') {{
+                                      valor = formatearFecha(valor);
+                                  }}
+
+                                  td.textContent = valor;
+                                  tr.appendChild(td);
+                              }});
+                              tbody.appendChild(tr);
+                          }});
+                      }}
+                  }}
+
                   function actualizarFiltros() {{
                       const cilindro = selectorCilindro.value;
                       const localizacion = selectorLocalizacion.value;
@@ -322,7 +430,7 @@ jobs:
                       }}
 
                       // Filtrar por proyecto
-                      datosFiltrados = datosCompletos.filter(row => row['Proyecto'] === valor);
+                      datosFiltrados = datosConsolidado.filter(row => row['Proyecto'] === valor);
 
                       // Resetear selectores
                       selectorCilindro.value = '';
