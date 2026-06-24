@@ -153,7 +153,31 @@ jobs:
                   </div>
 
                   <div id="alertas" class="tab-content">
-                      <div id="tableAlertas" class="table-section active">
+                      <div class="proyecto-input-row">
+                          <div class="proyecto-input-wrapper">
+                              <label class="selector-label">Seleccione el proyecto</label>
+                              <input type="text" id="proyectoInputAlertas" class="selector-dropdown" placeholder="Buscar proyecto..." list="proyectoListAlertas" autocomplete="off" />
+                              <datalist id="proyectoListAlertas">
+                                  {opciones_html}
+                              </datalist>
+                          </div>
+                          <button id="btnResetAlertas" class="btn-reset">Restaurar</button>
+                      </div>
+                      <div id="filtersRowAlertas" class="filters-row" style="display: none; opacity: 0;">
+                          <div id="cilindroSectionAlertas" class="selector-section">
+                              <label class="selector-label">Cilindro N°</label>
+                              <select id="cilindroSelectorAlertas" class="selector-dropdown"></select>
+                          </div>
+                          <div id="localizacionSectionAlertas" class="selector-section">
+                              <label class="selector-label">Localización</label>
+                              <select id="localizacionSelectorAlertas" class="selector-dropdown"></select>
+                          </div>
+                          <div id="tomaSectionAlertas" class="selector-section">
+                              <label class="selector-label">Toma</label>
+                              <select id="tomaSelectorAlertas" class="selector-dropdown"></select>
+                          </div>
+                      </div>
+                      <div id="tableSectionAlertas" class="table-section">
                           <table id="dataTableAlertas">
                               <thead></thead>
                               <tbody></tbody>
@@ -162,7 +186,31 @@ jobs:
                   </div>
 
                   <div id="incumplimientos" class="tab-content">
-                      <div id="tableIncumplimientos" class="table-section active">
+                      <div class="proyecto-input-row">
+                          <div class="proyecto-input-wrapper">
+                              <label class="selector-label">Seleccione el proyecto</label>
+                              <input type="text" id="proyectoInputIncumplimientos" class="selector-dropdown" placeholder="Buscar proyecto..." list="proyectoListIncumplimientos" autocomplete="off" />
+                              <datalist id="proyectoListIncumplimientos">
+                                  {opciones_html}
+                              </datalist>
+                          </div>
+                          <button id="btnResetIncumplimientos" class="btn-reset">Restaurar</button>
+                      </div>
+                      <div id="filtersRowIncumplimientos" class="filters-row" style="display: none; opacity: 0;">
+                          <div id="cilindroSectionIncumplimientos" class="selector-section">
+                              <label class="selector-label">Cilindro N°</label>
+                              <select id="cilindroSelectorIncumplimientos" class="selector-dropdown"></select>
+                          </div>
+                          <div id="localizacionSectionIncumplimientos" class="selector-section">
+                              <label class="selector-label">Localización</label>
+                              <select id="localizacionSelectorIncumplimientos" class="selector-dropdown"></select>
+                          </div>
+                          <div id="tomaSectionIncumplimientos" class="selector-section">
+                              <label class="selector-label">Toma</label>
+                              <select id="tomaSelectorIncumplimientos" class="selector-dropdown"></select>
+                          </div>
+                      </div>
+                      <div id="tableSectionIncumplimientos" class="table-section">
                           <table id="dataTableIncumplimientos">
                               <thead></thead>
                               <tbody></tbody>
@@ -189,86 +237,119 @@ jobs:
                   const tabButtons = document.querySelectorAll('.tab-button');
                   const tabContents = document.querySelectorAll('.tab-content');
 
-                  let datosFiltrados = [];
-                  let tablaVisible = false;
-                  const proyectos = [...new Set(datosConsolidado.map(row => row['Proyecto']))].filter(p => p).sort();
+
+                  // Configuración para cada pestaña
+                  const pestanaConfig = {{
+                      consolidado: {{
+                          datos: datosConsolidado,
+                          input: document.getElementById('proyectoInputConsolidado'),
+                          btnReset: document.getElementById('btnResetConsolidado'),
+                          filtersRow: document.getElementById('filtersRowConsolidado'),
+                          tableSection: document.getElementById('tableSectionConsolidado'),
+                          dataTable: document.getElementById('dataTableConsolidado'),
+                          cilindroSelector: document.getElementById('cilindroSelectorConsolidado'),
+                          localizacionSelector: document.getElementById('localizacionSelectorConsolidado'),
+                          tomaSelector: document.getElementById('tomaSelectorConsolidado')
+                      }},
+                      alertas: {{
+                          datos: datosAlertas,
+                          input: document.getElementById('proyectoInputAlertas'),
+                          btnReset: document.getElementById('btnResetAlertas'),
+                          filtersRow: document.getElementById('filtersRowAlertas'),
+                          tableSection: document.getElementById('tableSectionAlertas'),
+                          dataTable: document.getElementById('dataTableAlertas'),
+                          cilindroSelector: document.getElementById('cilindroSelectorAlertas'),
+                          localizacionSelector: document.getElementById('localizacionSelectorAlertas'),
+                          tomaSelector: document.getElementById('tomaSelectorAlertas')
+                      }},
+                      incumplimientos: {{
+                          datos: datosIncumplimientos,
+                          input: document.getElementById('proyectoInputIncumplimientos'),
+                          btnReset: document.getElementById('btnResetIncumplimientos'),
+                          filtersRow: document.getElementById('filtersRowIncumplimientos'),
+                          tableSection: document.getElementById('tableSectionIncumplimientos'),
+                          dataTable: document.getElementById('dataTableIncumplimientos'),
+                          cilindroSelector: document.getElementById('cilindroSelectorIncumplimientos'),
+                          localizacionSelector: document.getElementById('localizacionSelectorIncumplimientos'),
+                          tomaSelector: document.getElementById('tomaSelectorIncumplimientos')
+                      }}
+                  }};
+
+                  let pestanaActiva = 'consolidado';
+                  const estadoPestanas = {
+                      consolidado: { datosFiltrados: [], tablaVisible: false },
+                      alertas: { datosFiltrados: [], tablaVisible: false },
+                      incumplimientos: { datosFiltrados: [], tablaVisible: false }
+                  };
 
                   // Función para cambiar pestañas
-                  function cambiarPestana(nombrePestana) {{
+                  function cambiarPestana(nombrePestana) {
                       tabContents.forEach(tab => tab.classList.remove('active'));
                       tabButtons.forEach(btn => btn.classList.remove('active'));
 
                       document.getElementById(nombrePestana).classList.add('active');
                       document.querySelector('[data-tab="' + nombrePestana + '"]').classList.add('active');
 
-                      if (nombrePestana === 'alertas') {{
-                          generarTablaSimple(datosAlertas, document.getElementById('dataTableAlertas'), true);
-                      }} else if (nombrePestana === 'incumplimientos') {{
-                          generarTablaSimple(datosIncumplimientos, document.getElementById('dataTableIncumplimientos'), true);
-                      }}
-                  }}
+                      pestanaActiva = nombrePestana;
+                  }
 
-                  tabButtons.forEach(btn => {{
+                  tabButtons.forEach(btn => {
                       btn.addEventListener('click', () => cambiarPestana(btn.dataset.tab));
-                  }});
+                  });
 
-                  function recalcularOpcionesFiltros() {{
-                      const cilindroSeleccionado = selectorCilindro.value;
-                      const localizacionSeleccionada = selectorLocalizacion.value;
-                      const tomaSeleccionada = selectorToma.value;
+                  function recalcularOpcionesFiltros(config) {
+                      const cilindroSeleccionado = config.cilindroSelector.value;
+                      const localizacionSeleccionada = config.localizacionSelector.value;
+                      const tomaSeleccionada = config.tomaSelector.value;
 
-                      // Filtrar datos basándose en los filtros actuales
-                      let datosTemp = datosFiltrados;
+                      let datosTemp = estadoPestanas[pestanaActiva].datosFiltrados;
 
-                      if (cilindroSeleccionado) {{
+                      if (cilindroSeleccionado) {
                           datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindroSeleccionado);
-                      }}
-                      if (localizacionSeleccionada) {{
+                      }
+                      if (localizacionSeleccionada) {
                           datosTemp = datosTemp.filter(row => row['Localización'] === localizacionSeleccionada);
-                      }}
-                      if (tomaSeleccionada) {{
+                      }
+                      if (tomaSeleccionada) {
                           datosTemp = datosTemp.filter(row => row['Toma'] === tomaSeleccionada);
-                      }}
+                      }
 
-                      // Obtener opciones disponibles para cada filtro basándose en datosTemp
                       const cilindrosDisponibles = [...new Set(datosTemp.map(row => row['Cilindro N°']))].filter(c => c).sort();
                       const localizacionesDisponibles = [...new Set(datosTemp.map(row => row['Localización']))].filter(l => l).sort();
                       const tomasDisponibles = [...new Set(datosTemp.map(row => row['Toma']))].filter(t => t).sort();
 
-                      // Actualizar selectores con opciones disponibles
-                      const cilindroActual = selectorCilindro.value;
-                      selectorCilindro.innerHTML = '<option value="">-- Todos los cilindros --</option>';
-                      cilindrosDisponibles.forEach(cilindro => {{
+                      const cilindroActual = config.cilindroSelector.value;
+                      config.cilindroSelector.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      cilindrosDisponibles.forEach(cilindro => {
                           const option = document.createElement('option');
                           option.value = cilindro;
                           option.textContent = cilindro;
-                          selectorCilindro.appendChild(option);
-                      }});
-                      selectorCilindro.value = cilindroActual;
+                          config.cilindroSelector.appendChild(option);
+                      });
+                      config.cilindroSelector.value = cilindroActual;
 
-                      const localizacionActual = selectorLocalizacion.value;
-                      selectorLocalizacion.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
-                      localizacionesDisponibles.forEach(localizacion => {{
+                      const localizacionActual = config.localizacionSelector.value;
+                      config.localizacionSelector.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
+                      localizacionesDisponibles.forEach(localizacion => {
                           const option = document.createElement('option');
                           option.value = localizacion;
                           option.textContent = localizacion;
-                          selectorLocalizacion.appendChild(option);
-                      }});
-                      selectorLocalizacion.value = localizacionActual;
+                          config.localizacionSelector.appendChild(option);
+                      });
+                      config.localizacionSelector.value = localizacionActual;
 
-                      const tomaActual = selectorToma.value;
-                      selectorToma.innerHTML = '<option value="">-- Todas las tomas --</option>';
-                      tomasDisponibles.forEach(toma => {{
+                      const tomaActual = config.tomaSelector.value;
+                      config.tomaSelector.innerHTML = '<option value="">-- Todas las tomas --</option>';
+                      tomasDisponibles.forEach(toma => {
                           const option = document.createElement('option');
                           option.value = toma;
                           option.textContent = toma;
-                          selectorToma.appendChild(option);
-                      }});
-                      selectorToma.value = tomaActual;
+                          config.tomaSelector.appendChild(option);
+                      });
+                      config.tomaSelector.value = tomaActual;
 
-                      // Actualizar tabla con filtros aplicados
-                      actualizarFiltros();
-                  }}
+                      actualizarFiltrosPestana(config);
+                  }
 
                   // Función para formatear fechas
                   function formatearFecha(valor) {{
@@ -301,195 +382,143 @@ jobs:
                       return valor;
                   }}
 
-                  function generarTabla(datos, conDelay = false) {{
-                      if (datos.length > 0) {{
-                          const thead = dataTable.querySelector('thead');
-                          const tbody = dataTable.querySelector('tbody');
 
-                          // Limpiar tabla
-                          thead.innerHTML = '';
-                          tbody.innerHTML = '';
+                  function actualizarFiltrosPestana(config) {
+                      const cilindro = config.cilindroSelector.value;
+                      const localizacion = config.localizacionSelector.value;
+                      const toma = config.tomaSelector.value;
 
-                          // Generar encabezados
-                          const headers = Object.keys(datos[0]);
-                          const headerRow = document.createElement('tr');
-                          headers.forEach(header => {{
-                              const th = document.createElement('th');
-                              th.textContent = header;
-                              headerRow.appendChild(th);
-                          }});
-                          thead.appendChild(headerRow);
+                      let datosTemp = estadoPestanas[pestanaActiva].datosFiltrados;
 
-                          // Generar filas de datos
-                          datos.forEach(row => {{
-                              const tr = document.createElement('tr');
-                              headers.forEach(header => {{
-                                  const td = document.createElement('td');
-                                  let valor = row[header] !== null ? row[header] : '';
+                      if (cilindro) {
+                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindro);
+                      }
+                      if (localizacion) {
+                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacion);
+                      }
+                      if (toma) {
+                          datosTemp = datosTemp.filter(row => row['Toma'] === toma);
+                      }
 
-                                  // Formatear fechas para columnas específicas
-                                  if ((header === 'Rotura' || header === 'Toma') && valor !== '') {{
-                                      valor = formatearFecha(valor);
-                                  }}
+                      generarTablaGeneral(datosTemp, config.dataTable);
+                  }
 
-                                  td.textContent = valor;
-                                  tr.appendChild(td);
-                              }});
-                              tbody.appendChild(tr);
-                          }});
-
-                          // Mostrar tabla con delay si es primera vez
-                          if (conDelay && !tablaVisible) {{
-                              setTimeout(() => {{
-                                  tableSection.classList.add('active');
-                                  tablaVisible = true;
-                              }}, 800);
-                          }} else {{
-                              tableSection.classList.add('active');
-                              tablaVisible = true;
-                          }}
-                      }}
-                  }}
-
-                  function generarTablaSimple(datos, tableElement, conDelay = false) {{
-                      if (datos && datos.length > 0) {{
+                  function generarTablaGeneral(datos, tableElement) {
+                      if (datos.length > 0) {
                           const thead = tableElement.querySelector('thead');
                           const tbody = tableElement.querySelector('tbody');
 
-                          // Limpiar tabla
                           thead.innerHTML = '';
                           tbody.innerHTML = '';
 
-                          // Generar encabezados
                           const headers = Object.keys(datos[0]);
                           const headerRow = document.createElement('tr');
-                          headers.forEach(header => {{
+                          headers.forEach(header => {
                               const th = document.createElement('th');
                               th.textContent = header;
                               headerRow.appendChild(th);
-                          }});
+                          });
                           thead.appendChild(headerRow);
 
-                          // Generar filas de datos
-                          datos.forEach(row => {{
+                          datos.forEach(row => {
                               const tr = document.createElement('tr');
-                              headers.forEach(header => {{
+                              headers.forEach(header => {
                                   const td = document.createElement('td');
                                   let valor = row[header] !== null ? row[header] : '';
 
-                                  // Formatear fechas para columnas específicas
-                                  if ((header === 'Rotura' || header === 'Toma') && valor !== '') {{
+                                  if ((header === 'Rotura' || header === 'Toma' || header === 'Fecha Descarga' || header === 'Fecha Primera Aparición') && valor !== '') {
                                       valor = formatearFecha(valor);
-                                  }}
+                                  }
 
                                   td.textContent = valor;
                                   tr.appendChild(td);
-                              }});
+                              });
                               tbody.appendChild(tr);
-                          }});
-                      }}
-                  }}
+                          });
 
-                  function actualizarFiltros() {{
-                      const cilindro = selectorCilindro.value;
-                      const localizacion = selectorLocalizacion.value;
-                      const toma = selectorToma.value;
+                          tableElement.parentElement.classList.add('active');
+                      }
+                  }
 
-                      let datosTemp = datosFiltrados;
+                  function mostrarFiltrosConDelay(config) {
+                      config.filtersRow.style.opacity = '0';
+                      config.filtersRow.style.display = 'flex';
+                      setTimeout(() => {
+                          config.filtersRow.style.transition = 'opacity 1500ms ease-in-out';
+                          config.filtersRow.style.opacity = '1';
+                      }, 0);
+                  }
 
-                      if (cilindro) {{
-                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindro);
-                      }}
-                      if (localizacion) {{
-                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacion);
-                      }}
-                      if (toma) {{
-                          datosTemp = datosTemp.filter(row => row['Toma'] === toma);
-                      }}
+                  function inicializarPestana(nombrePestana) {
+                      const config = pestanaConfig[nombrePestana];
+                      const proyectosUnicos = [...new Set(config.datos.map(row => row['Proyecto']))].filter(p => p).sort();
 
-                      generarTabla(datosTemp);
-                  }}
+                      config.input.addEventListener('input', function() {
+                          const valor = this.value.trim();
 
-                  function mostrarFiltrosConDelay() {{
-                      // Mostrar fila de filtros con fade-in
-                      filtersRow.style.opacity = '0';
-                      filtersRow.style.display = 'flex';
-                      setTimeout(() => {{
-                          filtersRow.style.transition = 'opacity 1500ms ease-in-out';
-                          filtersRow.style.opacity = '1';
-                      }}, 0);
-                  }}
+                          if (!valor || !proyectosUnicos.includes(valor)) {
+                              config.tableSection.classList.remove('active');
+                              config.filtersRow.style.display = 'none';
+                              return;
+                          }
 
-                  proyectoInput.addEventListener('input', function() {{
-                      const valor = this.value.trim();
+                          estadoPestanas[nombrePestana].datosFiltrados = config.datos.filter(row => row['Proyecto'] === valor);
 
-                      if (!valor || !proyectos.includes(valor)) {{
-                          tableSection.classList.remove('active');
-                          filtersRow.style.display = 'none';
-                          return;
-                      }}
+                          config.cilindroSelector.value = '';
+                          config.localizacionSelector.value = '';
+                          config.tomaSelector.value = '';
 
-                      // Filtrar por proyecto
-                      datosFiltrados = datosConsolidado.filter(row => row['Proyecto'] === valor);
+                          const cilindros = [...new Set(estadoPestanas[nombrePestana].datosFiltrados.map(row => row['Cilindro N°']))].filter(c => c).sort();
+                          const localizaciones = [...new Set(estadoPestanas[nombrePestana].datosFiltrados.map(row => row['Localización']))].filter(l => l).sort();
+                          const tomas = [...new Set(estadoPestanas[nombrePestana].datosFiltrados.map(row => row['Toma']))].filter(t => t).sort();
 
-                      // Resetear selectores
-                      selectorCilindro.value = '';
-                      selectorLocalizacion.value = '';
-                      selectorToma.value = '';
+                          config.cilindroSelector.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                          cilindros.forEach(cilindro => {
+                              const option = document.createElement('option');
+                              option.value = cilindro;
+                              option.textContent = cilindro;
+                              config.cilindroSelector.appendChild(option);
+                          });
 
-                      // Obtener valores únicos para cada filtro
-                      const cilindros = [...new Set(datosFiltrados.map(row => row['Cilindro N°']))].filter(c => c).sort();
-                      const localizaciones = [...new Set(datosFiltrados.map(row => row['Localización']))].filter(l => l).sort();
-                      const tomas = [...new Set(datosFiltrados.map(row => row['Toma']))].filter(t => t).sort();
+                          config.localizacionSelector.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
+                          localizaciones.forEach(localizacion => {
+                              const option = document.createElement('option');
+                              option.value = localizacion;
+                              option.textContent = localizacion;
+                              config.localizacionSelector.appendChild(option);
+                          });
 
-                      // Llenar dropdowns
-                      selectorCilindro.innerHTML = '<option value="">-- Todos los cilindros --</option>';
-                      cilindros.forEach(cilindro => {{
-                          const option = document.createElement('option');
-                          option.value = cilindro;
-                          option.textContent = cilindro;
-                          selectorCilindro.appendChild(option);
-                      }});
+                          config.tomaSelector.innerHTML = '<option value="">-- Todas las tomas --</option>';
+                          tomas.forEach(toma => {
+                              const option = document.createElement('option');
+                              option.value = toma;
+                              option.textContent = toma;
+                              config.tomaSelector.appendChild(option);
+                          });
 
-                      selectorLocalizacion.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
-                      localizaciones.forEach(localizacion => {{
-                          const option = document.createElement('option');
-                          option.value = localizacion;
-                          option.textContent = localizacion;
-                          selectorLocalizacion.appendChild(option);
-                      }});
+                          mostrarFiltrosConDelay(config);
+                          generarTablaGeneral(estadoPestanas[nombrePestana].datosFiltrados, config.dataTable);
+                      });
 
-                      selectorToma.innerHTML = '<option value="">-- Todas las tomas --</option>';
-                      tomas.forEach(toma => {{
-                          const option = document.createElement('option');
-                          option.value = toma;
-                          option.textContent = toma;
-                          selectorToma.appendChild(option);
-                      }});
+                      config.cilindroSelector.addEventListener('change', () => recalcularOpcionesFiltros(config));
+                      config.localizacionSelector.addEventListener('change', () => recalcularOpcionesFiltros(config));
+                      config.tomaSelector.addEventListener('change', () => recalcularOpcionesFiltros(config));
 
-                      // Mostrar filtros con delay
-                      mostrarFiltrosConDelay();
+                      config.btnReset.addEventListener('click', function() {
+                          config.input.value = '';
+                          config.cilindroSelector.value = '';
+                          config.localizacionSelector.value = '';
+                          config.tomaSelector.value = '';
+                          config.filtersRow.style.display = 'none';
+                          config.tableSection.classList.remove('active');
+                          config.input.focus();
+                      });
+                  }
 
-                      // Generar tabla con delay
-                      generarTabla(datosFiltrados, true);
-                  }});
-
-                  // Listeners para cambios en filtros secundarios
-                  selectorCilindro.addEventListener('change', recalcularOpcionesFiltros);
-                  selectorLocalizacion.addEventListener('change', recalcularOpcionesFiltros);
-                  selectorToma.addEventListener('change', recalcularOpcionesFiltros);
-
-                  // Listener para botón de reset
-                  btnReset.addEventListener('click', function() {{
-                      proyectoInput.value = '';
-                      selectorCilindro.value = '';
-                      selectorLocalizacion.value = '';
-                      selectorToma.value = '';
-                      filtersRow.style.display = 'none';
-                      tableSection.classList.remove('active');
-                      tablaVisible = false;
-                      proyectoInput.focus();
-                  }});
+                  // Inicializar las 3 pestañas
+                  inicializarPestana('consolidado');
+                  inicializarPestana('alertas');
+                  inicializarPestana('incumplimientos');
               </script>
           </body>
           </html>"""
