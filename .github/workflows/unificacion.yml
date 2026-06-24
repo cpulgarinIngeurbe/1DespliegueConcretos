@@ -558,6 +558,20 @@ jobs:
                       ascending=[True, True]
                   ).reset_index(drop=True)
 
+                  # Validar que cada cilindro tenga al menos un valor negativo
+                  print(f'\n[*] Validando cilindros con diferencia negativa...')
+                  cilindros_validos = []
+                  for cilindro, grupo in df_incumplimientos.groupby('Cilindro N°'):
+                      tiene_negativo = (grupo['Diferencia (MPa)'] < 0).any()
+                      if tiene_negativo:
+                          cilindros_validos.append(cilindro)
+
+                  df_incumplimientos_validado = df_incumplimientos[df_incumplimientos['Cilindro N°'].isin(cilindros_validos)].copy()
+                  registros_eliminados = cantidad_incumplimientos - len(df_incumplimientos_validado)
+                  print(f'  [+] Cilindros validados: {len(cilindros_validos)}')
+                  print(f'  [+] Registros eliminados (sin negativos): {registros_eliminados}')
+                  df_incumplimientos = df_incumplimientos_validado
+
                   # Guardar archivo de incumplimientos
                   df_incumplimientos.to_excel(archivo_incumplimientos, index=False)
                   print(f'  [+] ✅ Archivo de incumplimientos creado: {archivo_incumplimientos}')
