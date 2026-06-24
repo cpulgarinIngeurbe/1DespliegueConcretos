@@ -40,6 +40,14 @@ jobs:
           if os.path.exists(archivo_consolidado):
               print(f'[*] Leyendo: {archivo_consolidado}')
               df_consolidado = pd.read_excel(archivo_consolidado)
+
+              # Limpiar primeros 6 registros de Promedio Móvil por grupo de Resistencia nominal
+              if 'Promedio Móvil (MPa)' in df_consolidado.columns and 'Resistencia nominal (MPa)' in df_consolidado.columns:
+                  for resistencia in df_consolidado['Resistencia nominal (MPa)'].unique():
+                      mask = df_consolidado['Resistencia nominal (MPa)'] == resistencia
+                      indices = df_consolidado[mask].index[:6]
+                      df_consolidado.loc[indices, 'Promedio Móvil (MPa)'] = None
+
               datos_tabs['consolidado'] = df_consolidado.to_json(orient='records')
               proyectos_consolidado = sorted([p for p in df_consolidado['Proyecto'].unique().tolist() if pd.notna(p)])
               print(f'[+] Consolidado cargado: {len(df_consolidado)} registros')
@@ -51,6 +59,14 @@ jobs:
           if os.path.exists(archivo_alertas):
               print(f'[*] Leyendo: {archivo_alertas}')
               df_alertas = pd.read_excel(archivo_alertas)
+
+              # Limpiar primeros 6 registros de Promedio Móvil por grupo de Resistencia nominal
+              if 'Promedio Móvil (MPa)' in df_alertas.columns and 'Resistencia nominal (MPa)' in df_alertas.columns:
+                  for resistencia in df_alertas['Resistencia nominal (MPa)'].unique():
+                      mask = df_alertas['Resistencia nominal (MPa)'] == resistencia
+                      indices = df_alertas[mask].index[:6]
+                      df_alertas.loc[indices, 'Promedio Móvil (MPa)'] = None
+
               datos_tabs['alertas'] = df_alertas.to_json(orient='records')
               print(f'[+] Control 28 días cargado: {len(df_alertas)} registros')
           else:
