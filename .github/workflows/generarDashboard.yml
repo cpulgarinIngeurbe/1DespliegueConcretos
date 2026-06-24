@@ -427,13 +427,16 @@ jobs:
                                       valor = formatearFecha(valor);
                                   }}
 
-                                  // Formatear valores numéricos a 2 decimales
-                                  if (typeof valor === 'number' && !isNaN(valor)) {{
-                                      valor = valor.toFixed(2);
-                                  }} else if (typeof valor === 'string' && valor !== '') {{
-                                      const numValue = parseFloat(valor);
-                                      if (!isNaN(numValue) && isFinite(numValue)) {{
-                                          valor = numValue.toFixed(2);
+                                  // Formatear valores numéricos a 2 decimales para columnas específicas
+                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)'];
+                                  if (columnasDecimales.includes(header) && valor !== '') {{
+                                      if (typeof valor === 'number' && !isNaN(valor)) {{
+                                          valor = valor.toFixed(2);
+                                      }} else if (typeof valor === 'string') {{
+                                          const numValue = parseFloat(valor);
+                                          if (!isNaN(numValue) && isFinite(numValue)) {{
+                                              valor = numValue.toFixed(2);
+                                          }}
                                       }}
                                   }}
 
@@ -499,13 +502,16 @@ jobs:
                                       valor = formatearFecha(valor);
                                   }}
 
-                                  // Formatear valores numéricos a 2 decimales
-                                  if (typeof valor === 'number' && !isNaN(valor)) {{
-                                      valor = valor.toFixed(2);
-                                  }} else if (typeof valor === 'string' && valor !== '') {{
-                                      const numValue = parseFloat(valor);
-                                      if (!isNaN(numValue) && isFinite(numValue)) {{
-                                          valor = numValue.toFixed(2);
+                                  // Formatear valores numéricos a 2 decimales para columnas específicas
+                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)'];
+                                  if (columnasDecimales.includes(header) && valor !== '') {{
+                                      if (typeof valor === 'number' && !isNaN(valor)) {{
+                                          valor = valor.toFixed(2);
+                                      }} else if (typeof valor === 'string') {{
+                                          const numValue = parseFloat(valor);
+                                          if (!isNaN(numValue) && isFinite(numValue)) {{
+                                              valor = numValue.toFixed(2);
+                                          }}
                                       }}
                                   }}
 
