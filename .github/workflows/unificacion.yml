@@ -312,51 +312,13 @@ jobs:
           else:
               print(f'  [!] Advertencia: Archivo Curvas.xlsx no encontrado en carpeta Estandar')
 
-          # Crear columna "Diferencia (MPa)" comparando Resistencia Real vs Teórica (DESPUÉS del Inner Join)
+          # Crear columna "Diferencia (MPa)" = Resistencia (MPa) - Resistencia Teórica (MPa)
           print(f'\n[*] Creando columna "Diferencia (MPa)"...')
-          print(f'  [DEBUG] Columnas disponibles: {list(df_unificado.columns)}')
-          print(f'  [DEBUG] ¿Existe "Resistencia Teórica (MPa)"?: {"Resistencia Teórica (MPa)" in df_unificado.columns}')
-
-          if 'Resistencia Teórica (MPa)' in df_unificado.columns:
-              print(f'  [DEBUG] Valores en "Resistencia Teórica (MPa)": {df_unificado["Resistencia Teórica (MPa)"].value_counts()}')
-
-          if 'Resistencia (MPa)' in df_unificado.columns:
-              df_unificado['Diferencia (MPa)'] = np.nan
-              df_unificado['Diferencia (MPa)'] = df_unificado['Diferencia (MPa)'].astype(object)
-
-              contador_falta = 0
-              contador_calculado = 0
-
-              for idx, row in df_unificado.iterrows():
-                  valor_teorico = row.get('Resistencia Teórica (MPa)')
-
-                  if pd.isna(valor_teorico) or valor_teorico == '':
-                      df_unificado.at[idx, 'Diferencia (MPa)'] = 'Falta Teorico'
-                      contador_falta += 1
-                  else:
-                      try:
-                          resistencia_real_str = str(row['Resistencia (MPa)']).replace(',', '.')
-                          resistencia_teorica_str = str(valor_teorico).replace(',', '.')
-                          resistencia_real = float(resistencia_real_str)
-                          resistencia_teorica = float(resistencia_teorica_str)
-                          diferencia = resistencia_real - resistencia_teorica
-
-                          if diferencia > 0:
-                              df_unificado.at[idx, 'Diferencia (MPa)'] = -diferencia
-                          else:
-                              df_unificado.at[idx, 'Diferencia (MPa)'] = diferencia
-                          contador_calculado += 1
-                      except (ValueError, TypeError) as e:
-                          df_unificado.at[idx, 'Diferencia (MPa)'] = 'Falta Teorico'
-                          contador_falta += 1
-                          if idx < 3:
-                              print(f'  [DEBUG] Error en fila {idx}: {e} | Real: {row["Resistencia (MPa)"]} | Teórica: {valor_teorico}')
-
+          if 'Resistencia (MPa)' in df_unificado.columns and 'Resistencia Teórica (MPa)' in df_unificado.columns:
+              df_unificado['Diferencia (MPa)'] = df_unificado['Resistencia (MPa)'] - df_unificado['Resistencia Teórica (MPa)']
               print(f'  [+] ✅ Columna "Diferencia (MPa)" creada exitosamente')
-              print(f'  [+] Registros con cálculo: {contador_calculado}')
-              print(f'  [+] Registros con "Falta Teorico": {contador_falta}')
           else:
-              print(f'  [!] Advertencia: Columna "Resistencia (MPa)" no encontrada')
+              print(f'  [!] Advertencia: No se pueden crear columnas (faltan "Resistencia (MPa)" o "Resistencia Teórica (MPa)")')
 
           # Guardar el archivo unificado
           df_unificado.to_excel(archivo_unificado, index=False)
