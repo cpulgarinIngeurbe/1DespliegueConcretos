@@ -754,13 +754,20 @@ jobs:
                                   const td = document.createElement('td');
                                   let valor = row[header] !== null ? row[header] : '';
 
-                                  if ((header === 'Rotura' || header === 'Toma') && valor !== '') {{
-                                      if (typeof valor === 'number') {{
-                                          const fecha = new Date(valor);
-                                          const d = String(fecha.getDate()).padStart(2, '0');
-                                          const m = String(fecha.getMonth() + 1).padStart(2, '0');
-                                          const y = fecha.getFullYear();
-                                          valor = d + '-' + m + '-' + y;
+                                  if ((header === 'Rotura' || header === 'Toma' || header === 'Fecha Descarga') && valor !== '') {{
+                                      valor = formatearFecha(valor);
+                                  }}
+
+                                  // Formatear valores numéricos a 2 decimales para columnas específicas
+                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)'];
+                                  if (columnasDecimales.includes(header) && valor !== '') {{
+                                      if (typeof valor === 'number' && !isNaN(valor)) {{
+                                          valor = valor.toFixed(2);
+                                      }} else if (typeof valor === 'string') {{
+                                          const numValue = parseFloat(valor);
+                                          if (!isNaN(numValue) && isFinite(numValue)) {{
+                                              valor = numValue.toFixed(2);
+                                          }}
                                       }}
                                   }}
 
@@ -995,13 +1002,20 @@ jobs:
                                   const td = document.createElement('td');
                                   let valor = row[header] !== null ? row[header] : '';
 
-                                  if ((header === 'Rotura' || header === 'Toma') && valor !== '') {{
-                                      if (typeof valor === 'number') {{
-                                          const fecha = new Date(valor);
-                                          const d = String(fecha.getDate()).padStart(2, '0');
-                                          const m = String(fecha.getMonth() + 1).padStart(2, '0');
-                                          const y = fecha.getFullYear();
-                                          valor = d + '-' + m + '-' + y;
+                                  if ((header === 'Rotura' || header === 'Toma' || header === 'Fecha Descarga') && valor !== '') {{
+                                      valor = formatearFecha(valor);
+                                  }}
+
+                                  // Formatear valores numéricos a 2 decimales para columnas específicas
+                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)'];
+                                  if (columnasDecimales.includes(header) && valor !== '') {{
+                                      if (typeof valor === 'number' && !isNaN(valor)) {{
+                                          valor = valor.toFixed(2);
+                                      }} else if (typeof valor === 'string') {{
+                                          const numValue = parseFloat(valor);
+                                          if (!isNaN(numValue) && isFinite(numValue)) {{
+                                              valor = numValue.toFixed(2);
+                                          }}
                                       }}
                                   }}
 
