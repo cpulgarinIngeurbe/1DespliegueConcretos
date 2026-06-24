@@ -234,7 +234,19 @@ jobs:
                   const proyectos = [...new Set(datosConsolidado.map(row => row['Proyecto']))].filter(p => p).sort();
 
                   // Función para cambiar pestañas
+                  let pestanaActual = 'consolidado';
+
                   function cambiarPestana(nombrePestana) {{
+                      // Reset de la pestaña anterior
+                      if (pestanaActual === 'consolidado') {{
+                          btnReset.click();
+                      }} else if (pestanaActual === 'alertas') {{
+                          btnResetAlertas.click();
+                      }} else if (pestanaActual === 'incumplimientos') {{
+                          btnResetIncumplimientos.click();
+                      }}
+
+                      // Cambiar a la nueva pestaña
                       tabContents.forEach(tab => tab.classList.remove('active'));
                       tabButtons.forEach(btn => btn.classList.remove('active'));
 
@@ -246,6 +258,8 @@ jobs:
                       }} else if (nombrePestana === 'incumplimientos') {{
                           generarTablaSimple(datosIncumplimientos, document.getElementById('dataTableIncumplimientos'), true);
                       }}
+
+                      pestanaActual = nombrePestana;
                   }}
 
                   tabButtons.forEach(btn => {{
