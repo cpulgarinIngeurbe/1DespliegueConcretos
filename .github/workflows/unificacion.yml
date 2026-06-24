@@ -533,19 +533,20 @@ jobs:
           print(f'\n[*] Creando archivo Incumplimientos.xlsx...')
           archivo_incumplimientos = os.path.join(ruta_desplegable, "Incumplimientos.xlsx")
 
-          if 'Diferencia (MPa)' in df_unificado.columns and 'Cilindro N°' in df_unificado.columns:
-              # Paso 1: Identificar cilindros con Diferencia (MPa) < 0
-              cilindros_incumplimiento = df_unificado[df_unificado['Diferencia (MPa)'] < 0]['Cilindro N°'].unique()
-              print(f'  [DEBUG] Cilindros identificados con diferencia negativa: {len(cilindros_incumplimiento)}')
+          if 'Diferencia (MPa)' in df_unificado.columns and 'Cilindro N°' in df_unificado.columns and 'Edad (días)' in df_unificado.columns:
+              # Paso 1: Convertir Edad (días) a numérico
+              df_unificado['Edad (días)'] = pd.to_numeric(df_unificado['Edad (días)'], errors='coerce')
+
+              # Paso 2: Filtrar por Edad >= 28
+              df_unificado_edad_28 = df_unificado[df_unificado['Edad (días)'] >= 28].copy()
+
+              # Paso 3: Identificar cilindros con Diferencia (MPa) < 0 en el subset de Edad >= 28
+              cilindros_incumplimiento = df_unificado_edad_28[df_unificado_edad_28['Diferencia (MPa)'] < 0]['Cilindro N°'].unique()
+              print(f'  [DEBUG] Cilindros identificados con diferencia negativa (Edad >= 28): {len(cilindros_incumplimiento)}')
               print(f'  [DEBUG] Cilindros: {cilindros_incumplimiento[:10]}')  # Mostrar primeros 10
 
-              # Paso 2: Incluir TODOS los registros de esos cilindros (sin importar si su diferencia es negativa o positiva)
-              df_incumplimientos = df_unificado[df_unificado['Cilindro N°'].isin(cilindros_incumplimiento)].copy()
-
-              # Paso 3: Filtrar solo registros con Edad (días) >= 28
-              if 'Edad (días)' in df_incumplimientos.columns:
-                  df_incumplimientos['Edad (días)'] = pd.to_numeric(df_incumplimientos['Edad (días)'], errors='coerce')
-                  df_incumplimientos = df_incumplimientos[df_incumplimientos['Edad (días)'] >= 28].copy()
+              # Paso 4: Incluir TODOS los registros de esos cilindros (solo con Edad >= 28)
+              df_incumplimientos = df_unificado_edad_28[df_unificado_edad_28['Cilindro N°'].isin(cilindros_incumplimiento)].copy()
 
               cantidad_incumplimientos = len(df_incumplimientos)
               print(f'  [DEBUG] Registros totales encontrados para esos cilindros (Edad = 28): {cantidad_incumplimientos}')
