@@ -558,18 +558,20 @@ jobs:
                       ascending=[True, True]
                   ).reset_index(drop=True)
 
-                  # Validar que cada cilindro tenga al menos un valor negativo
-                  print(f'\n[*] Validando cilindros con diferencia negativa...')
+                  # Validar que cada grupo (Proyecto + Cilindro N°) tenga al menos un valor negativo
+                  print(f'\n[*] Validando grupos (Proyecto + Cilindro N°) con diferencia negativa...')
                   df_incumplimientos['Diferencia (MPa)'] = pd.to_numeric(df_incumplimientos['Diferencia (MPa)'], errors='coerce')
-                  cilindros_validos = []
-                  for cilindro, grupo in df_incumplimientos.groupby('Cilindro N°'):
+                  grupos_validos = []
+                  for (proyecto, cilindro), grupo in df_incumplimientos.groupby(['Proyecto', 'Cilindro N°']):
                       tiene_negativo = (grupo['Diferencia (MPa)'] < 0).any()
                       if tiene_negativo:
-                          cilindros_validos.append(cilindro)
+                          grupos_validos.append((proyecto, cilindro))
 
-                  df_incumplimientos_validado = df_incumplimientos[df_incumplimientos['Cilindro N°'].isin(cilindros_validos)].copy()
+                  # Crear máscara para los grupos válidos
+                  mask = df_incumplimientos.apply(lambda row: (row['Proyecto'], row['Cilindro N°']) in grupos_validos, axis=1)
+                  df_incumplimientos_validado = df_incumplimientos[mask].copy()
                   registros_eliminados = cantidad_incumplimientos - len(df_incumplimientos_validado)
-                  print(f'  [+] Cilindros validados: {len(cilindros_validos)}')
+                  print(f'  [+] Grupos (Proyecto + Cilindro) validados: {len(grupos_validos)}')
                   print(f'  [+] Registros eliminados (sin negativos): {registros_eliminados}')
                   df_incumplimientos = df_incumplimientos_validado
 
