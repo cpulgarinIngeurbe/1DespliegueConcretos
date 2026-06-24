@@ -209,6 +209,22 @@ jobs:
                   </div>
 
                   <div id="incumplimientos" class="tab-content">
+                      <div class="proyecto-input-row">
+                          <div class="proyecto-input-wrapper">
+                              <label class="selector-label">Seleccione el proyecto</label>
+                              <input type="text" id="proyectoInputIncumplimientos" class="selector-dropdown" placeholder="Buscar proyecto..." list="proyectoListIncumplimientos" autocomplete="off" />
+                              <datalist id="proyectoListIncumplimientos">
+                                  {opciones_html}
+                              </datalist>
+                          </div>
+                          <button id="btnResetIncumplimientos" class="btn-reset">Restaurar</button>
+                      </div>
+                      <div id="tableSectionIncumplimientos" class="table-section">
+                          <table id="dataTableIncumplimientos">
+                              <thead></thead>
+                              <tbody></tbody>
+                          </table>
+                      </div>
                   </div>
               </div>
 
@@ -785,6 +801,81 @@ jobs:
                       filtersRowAlertas.style.display = 'none';
                       tableSectionAlertas.classList.remove('active');
                       proyectoInputAlertas.focus();
+                  }});
+
+                  // ========== PESTAÑA INCUMPLIMIENTOS ==========
+                  const proyectoInputIncumplimientos = document.getElementById('proyectoInputIncumplimientos');
+                  const tableSectionIncumplimientos = document.getElementById('tableSectionIncumplimientos');
+                  const dataTableIncumplimientos = document.getElementById('dataTableIncumplimientos');
+                  const btnResetIncumplimientos = document.getElementById('btnResetIncumplimientos');
+
+                  const proyectosIncumplimientos = [...new Set(datosIncumplimientos.map(row => row['Proyecto']))].filter(p => p).sort();
+
+                  function generarTablaIncumplimientos(datos) {{
+                      if (datos.length > 0) {{
+                          const thead = dataTableIncumplimientos.querySelector('thead');
+                          const tbody = dataTableIncumplimientos.querySelector('tbody');
+
+                          thead.innerHTML = '';
+                          tbody.innerHTML = '';
+
+                          const headers = Object.keys(datos[0]);
+                          const headerRow = document.createElement('tr');
+                          headers.forEach(header => {{
+                              const th = document.createElement('th');
+                              th.textContent = header;
+                              headerRow.appendChild(th);
+                          }});
+                          thead.appendChild(headerRow);
+
+                          datos.forEach(row => {{
+                              const tr = document.createElement('tr');
+                              headers.forEach(header => {{
+                                  const td = document.createElement('td');
+                                  let valor = row[header] !== null ? row[header] : '';
+
+                                  if ((header === 'Rotura' || header === 'Toma') && valor !== '') {{
+                                      if (typeof valor === 'number') {{
+                                          const fecha = new Date(valor);
+                                          const d = String(fecha.getDate()).padStart(2, '0');
+                                          const m = String(fecha.getMonth() + 1).padStart(2, '0');
+                                          const y = fecha.getFullYear();
+                                          valor = d + '-' + m + '-' + y;
+                                      }}
+                                  }}
+
+                                  td.textContent = valor;
+
+                                  // Colorear celdas negativas o cero en columna "Diferencia (MPa)"
+                                  if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) {{
+                                      td.classList.add('red-negative');
+                                  }}
+
+                                  tr.appendChild(td);
+                              }});
+                              tbody.appendChild(tr);
+                          }});
+
+                          tableSectionIncumplimientos.classList.add('active');
+                      }}
+                  }}
+
+                  proyectoInputIncumplimientos.addEventListener('input', function() {{
+                      const valor = this.value.trim();
+
+                      if (!valor || !proyectosIncumplimientos.includes(valor)) {{
+                          tableSectionIncumplimientos.classList.remove('active');
+                          return;
+                      }}
+
+                      const datosFiltradosIncumplimientos = datosIncumplimientos.filter(row => row['Proyecto'] === valor);
+                      generarTablaIncumplimientos(datosFiltradosIncumplimientos);
+                  }});
+
+                  btnResetIncumplimientos.addEventListener('click', function() {{
+                      proyectoInputIncumplimientos.value = '';
+                      tableSectionIncumplimientos.classList.remove('active');
+                      proyectoInputIncumplimientos.focus();
                   }});
 
               </script>
