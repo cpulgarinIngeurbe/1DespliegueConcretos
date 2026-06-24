@@ -277,6 +277,31 @@ jobs:
               print(f'  [!] Primera ejecución: todos los registros marcados como NUEVO')
               print(f'  [+] Registros NUEVOS: {len(df_unificado)}')
 
+          # Crear columna "Diferencia (MPa)" comparando Resistencia Real vs Teórica
+          print(f'\n[*] Creando columna "Diferencia (MPa)"...')
+          if 'Resistencia (MPa)' in df_unificado.columns:
+              df_unificado['Diferencia (MPa)'] = ''
+
+              for idx, row in df_unificado.iterrows():
+                  if pd.isna(row.get('Resistencia Teórica (MPa)')) or row.get('Resistencia Teórica (MPa)') == '':
+                      df_unificado.at[idx, 'Diferencia (MPa)'] = 'Falta Teorico'
+                  else:
+                      try:
+                          resistencia_real = float(row['Resistencia (MPa)'])
+                          resistencia_teorica = float(row['Resistencia Teórica (MPa)'])
+                          diferencia = resistencia_real - resistencia_teorica
+
+                          if diferencia > 0:
+                              df_unificado.at[idx, 'Diferencia (MPa)'] = -diferencia
+                          else:
+                              df_unificado.at[idx, 'Diferencia (MPa)'] = diferencia
+                      except (ValueError, TypeError):
+                          df_unificado.at[idx, 'Diferencia (MPa)'] = 'Falta Teorico'
+
+              print(f'  [+] ✅ Columna "Diferencia (MPa)" creada exitosamente')
+          else:
+              print(f'  [!] Advertencia: Columna "Resistencia (MPa)" no encontrada')
+
           # Inner Join con Curvas.xlsx para agregar "Resistencia Teórica (MPa)"
           print(f'\n[*] Realizando Inner Join con Curvas.xlsx...')
           archivo_curvas = os.path.join("Estandar", "Curvas.xlsx")
@@ -316,6 +341,53 @@ jobs:
           df_unificado.to_excel(archivo_unificado, index=False)
           print(f'\n[+] ✅ Archivo unificado guardado en: {archivo_unificado}')
           print(f'  [+] Tamaño: {len(df_unificado)} registros x {len(df_unificado.columns)} columnas')
+
+          # Aplicar formato condicional en Excel para columna "Diferencia (MPa)"
+          print(f'\n[*] Aplicando formato condicional a "Diferencia (MPa)"...')
+          try:
+              from openpyxl import load_workbook
+              from openpyxl.styles import PatternFill, Font, Alignment, numbers
+              from openpyxl.formatting.rule import CellIsRule
+
+              wb = load_workbook(archivo_unificado)
+              ws = wb.active
+
+              # Encontrar la columna "Diferencia (MPa)"
+              col_diferencia = None
+              for col_idx, cell in enumerate(ws[1], 1):
+                  if cell.value == 'Diferencia (MPa)':
+                      col_diferencia = col_idx
+                      break
+
+              if col_diferencia:
+                  # Recorrer las celdas de datos (desde fila 2)
+                  for row_idx in range(2, ws.max_row + 1):
+                      cell = ws.cell(row=row_idx, column=col_diferencia)
+
+                      if cell.value == 'Falta Teorico':
+                          # Sin color especial para "Falta Teorico"
+                          cell.alignment = Alignment(horizontal='center')
+                      elif isinstance(cell.value, (int, float)):
+                          # ROJO si es negativo (diferencia > 0)
+                          if cell.value < 0:
+                              cell.fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
+                              cell.font = Font(color='FFFFFF', bold=True)
+                          # VERDE si es positivo o cero (diferencia <= 0)
+                          else:
+                              cell.fill = PatternFill(start_color='00B050', end_color='00B050', fill_type='solid')
+                              cell.font = Font(color='FFFFFF', bold=True)
+
+                          # Formato de número con 2 decimales
+                          cell.number_format = '#,##0.00'
+                          cell.alignment = Alignment(horizontal='center')
+
+                  wb.save(archivo_unificado)
+                  print(f'  [+] ✅ Formato condicional aplicado correctamente')
+              else:
+                  print(f'  [!] Advertencia: Columna "Diferencia (MPa)" no encontrada en Excel')
+
+          except Exception as e:
+              print(f'  [!] Error al aplicar formato condicional: {str(e)}')
 
           # Guardar copia para próxima ejecución y eliminar anterior
           import shutil
