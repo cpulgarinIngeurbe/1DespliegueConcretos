@@ -357,6 +357,15 @@ jobs:
                       // Aplicar filtros guardados a la nueva pestaña
                       aplicarFiltros(nombrePestana);
 
+                      // Regenerar tabla con filtros aplicados
+                      if (nombrePestana === 'alertas') {{
+                          if (typeof recalcularOpcionesAlertas === 'function') recalcularOpcionesAlertas();
+                      }} else if (nombrePestana === 'incumplimientos') {{
+                          if (typeof recalcularOpcionesIncumplimientos === 'function') recalcularOpcionesIncumplimientos();
+                      }} else if (nombrePestana === 'consolidado') {{
+                          if (typeof recalcularOpcionesFiltros === 'function') recalcularOpcionesFiltros();
+                      }}
+
                       pestanaActual = nombrePestana;
                   }}
 
