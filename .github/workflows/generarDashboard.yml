@@ -173,7 +173,8 @@ jobs:
                       <div id="filtersRowConsolidado" class="filters-row" style="display: none; opacity: 0;">
                           <div id="cilindroSectionConsolidado" class="selector-section">
                               <label class="selector-label">Cilindro N°</label>
-                              <select id="cilindroSelectorConsolidado" class="selector-dropdown"></select>
+                              <input type="text" id="cilindroSelectorConsolidado" class="selector-dropdown" placeholder="Buscar cilindro..." list="cilindroListConsolidado" autocomplete="off" />
+                              <datalist id="cilindroListConsolidado"></datalist>
                           </div>
                           <div id="localizacionSectionConsolidado" class="selector-section">
                               <label class="selector-label">Localización</label>
@@ -206,7 +207,8 @@ jobs:
                       <div id="filtersRowAlertas" class="filters-row" style="display: none; opacity: 0;">
                           <div id="cilindroSectionAlertas" class="selector-section">
                               <label class="selector-label">Cilindro N°</label>
-                              <select id="cilindroSelectorAlertas" class="selector-dropdown"></select>
+                              <input type="text" id="cilindroSelectorAlertas" class="selector-dropdown" placeholder="Buscar cilindro..." list="cilindroListAlertas" autocomplete="off" />
+                              <datalist id="cilindroListAlertas"></datalist>
                           </div>
                           <div id="localizacionSectionAlertas" class="selector-section">
                               <label class="selector-label">Localización</label>
@@ -243,7 +245,8 @@ jobs:
                       <div id="filtersRowIncumplimientos" class="filters-row" style="display: none; opacity: 0;">
                           <div id="cilindroSectionIncumplimientos" class="selector-section">
                               <label class="selector-label">Cilindro N°</label>
-                              <select id="cilindroSelectorIncumplimientos" class="selector-dropdown"></select>
+                              <input type="text" id="cilindroSelectorIncumplimientos" class="selector-dropdown" placeholder="Buscar cilindro..." list="cilindroListIncumplimientos" autocomplete="off" />
+                              <datalist id="cilindroListIncumplimientos"></datalist>
                           </div>
                           <div id="localizacionSectionIncumplimientos" class="selector-section">
                               <label class="selector-label">Localización</label>
@@ -406,14 +409,14 @@ jobs:
                       const localizacionesDisponibles = [...new Set(datosTemp.map(row => row['Localización']))].filter(l => l).sort();
                       const tomasDisponibles = [...new Set(datosTemp.map(row => row['Toma']))].filter(t => t).sort();
 
-                      // Actualizar selectores con opciones disponibles
+                      // Actualizar datalist para cilindro
                       const cilindroActual = selectorCilindro.value;
-                      selectorCilindro.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      const cilindroDatalist = document.getElementById('cilindroListConsolidado');
+                      cilindroDatalist.innerHTML = '';
                       cilindrosDisponibles.forEach(cilindro => {{
                           const option = document.createElement('option');
                           option.value = cilindro;
-                          option.textContent = cilindro;
-                          selectorCilindro.appendChild(option);
+                          cilindroDatalist.appendChild(option);
                       }});
                       selectorCilindro.value = cilindroActual;
 
@@ -692,13 +695,13 @@ jobs:
                       const localizaciones = [...new Set(datosFiltrados.map(row => row['Localización']))].filter(l => l).sort();
                       const tomas = [...new Set(datosFiltrados.map(row => row['Toma']))].filter(t => t).sort();
 
-                      // Llenar dropdowns
-                      selectorCilindro.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      // Llenar datalist para cilindro
+                      const cilindroDatalist = document.getElementById('cilindroListConsolidado');
+                      cilindroDatalist.innerHTML = '';
                       cilindros.forEach(cilindro => {{
                           const option = document.createElement('option');
                           option.value = cilindro;
-                          option.textContent = cilindro;
-                          selectorCilindro.appendChild(option);
+                          cilindroDatalist.appendChild(option);
                       }});
 
                       selectorLocalizacion.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
@@ -713,7 +716,7 @@ jobs:
                       tomas.forEach(toma => {{
                           const option = document.createElement('option');
                           option.value = toma;
-                          option.textContent = toma;
+                          option.textContent = formatearFecha(toma);
                           selectorToma.appendChild(option);
                       }});
 
@@ -725,7 +728,7 @@ jobs:
                   }});
 
                   // Listeners para cambios en filtros secundarios
-                  selectorCilindro.addEventListener('change', recalcularOpcionesFiltros);
+                  selectorCilindro.addEventListener('input', recalcularOpcionesFiltros);
                   selectorLocalizacion.addEventListener('change', recalcularOpcionesFiltros);
                   selectorToma.addEventListener('change', recalcularOpcionesFiltros);
 
@@ -782,12 +785,12 @@ jobs:
                       const resistenciasNominalesDisponibles = [...new Set(datosTemp.map(row => row['Resistencia nominal (MPa)']))].filter(r => r !== null && r !== undefined).sort((a,b) => a - b);
 
                       const cilindroActual = selectorCilindroAlertas.value;
-                      selectorCilindroAlertas.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      const cilindroDatalistAlertas = document.getElementById('cilindroListAlertas');
+                      cilindroDatalistAlertas.innerHTML = '';
                       cilindrosDisponibles.forEach(cilindro => {{
                           const option = document.createElement('option');
                           option.value = cilindro;
-                          option.textContent = cilindro;
-                          selectorCilindroAlertas.appendChild(option);
+                          cilindroDatalistAlertas.appendChild(option);
                       }});
                       selectorCilindroAlertas.value = cilindroActual;
 
@@ -944,12 +947,12 @@ jobs:
                       const tomas = [...new Set(datosFiltradosAlertas.map(row => row['Toma']))].filter(t => t).sort();
                       const resistenciasNominales = [...new Set(datosFiltradosAlertas.map(row => row['Resistencia nominal (MPa)']))].filter(r => r !== null && r !== undefined).sort((a,b) => a - b);
 
-                      selectorCilindroAlertas.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      const cilindroDatalistAlertas = document.getElementById('cilindroListAlertas');
+                      cilindroDatalistAlertas.innerHTML = '';
                       cilindros.forEach(cilindro => {{
                           const option = document.createElement('option');
                           option.value = cilindro;
-                          option.textContent = cilindro;
-                          selectorCilindroAlertas.appendChild(option);
+                          cilindroDatalistAlertas.appendChild(option);
                       }});
 
                       selectorLocalizacionAlertas.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
@@ -986,7 +989,7 @@ jobs:
                       generarTablaAlertas(datosFiltradosAlertas);
                   }});
 
-                  selectorCilindroAlertas.addEventListener('change', recalcularOpcionesAlertas);
+                  selectorCilindroAlertas.addEventListener('input', recalcularOpcionesAlertas);
                   selectorLocalizacionAlertas.addEventListener('change', recalcularOpcionesAlertas);
                   selectorTomaAlertas.addEventListener('change', recalcularOpcionesAlertas);
                   selectorResistenciaNominalAlertas.addEventListener('change', recalcularOpcionesAlertas);
@@ -1043,12 +1046,12 @@ jobs:
                       const resistenciasNominalesDisponibles = [...new Set(datosTemp.map(row => row['Resistencia nominal (MPa)']))].filter(r => r !== null && r !== undefined).sort((a,b) => a - b);
 
                       const cilindroActual = selectorCilindroIncumplimientos.value;
-                      selectorCilindroIncumplimientos.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      const cilindroDatalistIncumplimientos = document.getElementById('cilindroListIncumplimientos');
+                      cilindroDatalistIncumplimientos.innerHTML = '';
                       cilindrosDisponibles.forEach(cilindro => {{
                           const option = document.createElement('option');
                           option.value = cilindro;
-                          option.textContent = cilindro;
-                          selectorCilindroIncumplimientos.appendChild(option);
+                          cilindroDatalistIncumplimientos.appendChild(option);
                       }});
                       selectorCilindroIncumplimientos.value = cilindroActual;
 
@@ -1204,12 +1207,12 @@ jobs:
                       const tomas = [...new Set(datosFiltradosIncumplimientos.map(row => row['Toma']))].filter(t => t).sort();
                       const resistenciasNominales = [...new Set(datosFiltradosIncumplimientos.map(row => row['Resistencia nominal (MPa)']))].filter(r => r !== null && r !== undefined).sort((a,b) => a - b);
 
-                      selectorCilindroIncumplimientos.innerHTML = '<option value="">-- Todos los cilindros --</option>';
+                      const cilindroDatalistIncumplimientos = document.getElementById('cilindroListIncumplimientos');
+                      cilindroDatalistIncumplimientos.innerHTML = '';
                       cilindros.forEach(cilindro => {{
                           const option = document.createElement('option');
                           option.value = cilindro;
-                          option.textContent = cilindro;
-                          selectorCilindroIncumplimientos.appendChild(option);
+                          cilindroDatalistIncumplimientos.appendChild(option);
                       }});
 
                       selectorLocalizacionIncumplimientos.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
@@ -1246,7 +1249,7 @@ jobs:
                       generarTablaIncumplimientos(datosFiltradosIncumplimientos);
                   }});
 
-                  selectorCilindroIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
+                  selectorCilindroIncumplimientos.addEventListener('input', recalcularOpcionesIncumplimientos);
                   selectorLocalizacionIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
                   selectorTomaIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
                   selectorResistenciaNominalIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
