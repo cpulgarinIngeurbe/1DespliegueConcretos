@@ -525,7 +525,7 @@ jobs:
               print(f'\n[*] Creando columna calculada...')
               if 'Resistencia nominal (MPa)' in df_alertas.columns:
                   df_alertas['Resistencia Mínima (MPa)'] = df_alertas['Resistencia nominal (MPa)'].apply(
-                      lambda x: x - 3.5 if x <= 35 else 1.1 * x
+                      lambda x: x - 3.5 if x <= 35 else x - (x * 0.1)
                   )
                   print(f'  [+] ✅ Columna "Resistencia Mínima (MPa)" creada exitosamente')
               else:
