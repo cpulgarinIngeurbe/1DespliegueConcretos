@@ -53,20 +53,14 @@ jobs:
                   self.contraseña = contraseña
                   self.headless = headless
                   self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                  self.log_file = f'datos/logs_{self.timestamp}.txt'
 
               async def log(self, nivel: str, mensaje: str):
-                  """Log con timestamp"""
+                  """Log con timestamp (solo en consola, sin archivo)"""
                   timestamp = datetime.now().strftime("%H:%M:%S")
                   prefijos = {'INFO': '📢', 'EXITO': '✅', 'ERROR': '❌', 'PASO': '📋', 'ESPERA': '⏳'}
                   prefijo = prefijos.get(nivel, '→')
                   log_msg = f"[{timestamp}] {prefijo} {mensaje}"
                   print(log_msg)
-                  try:
-                      with open(self.log_file, 'a', encoding='utf-8') as f:
-                          f.write(log_msg + '\n')
-                  except:
-                      pass
 
               async def ejecutar(self):
                   """Flujo completo"""
