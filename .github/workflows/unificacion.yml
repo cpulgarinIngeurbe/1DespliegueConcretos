@@ -727,31 +727,33 @@ jobs:
                   print(f'  [+] Registros después del filtro: {registros_despues_filtro}')
                   print(f'  [+] Registros eliminados: {registros_eliminados_filtro}')
 
-                  # Crear columna "Promedio Móvil (MPa)"
-                  print(f'\n[*] Calculando Promedio Móvil (MPa) para Incumplimientos...')
-                  df_incumplimientos['Promedio Móvil (MPa)'] = np.nan
+                  # Traer "Promedio Móvil (MPa)" desde ConsolidadoAlertas.xlsx
+                  print(f'\n[*] Trayendo Promedio Móvil (MPa) desde ConsolidadoAlertas...')
+                  if 'Promedio Móvil (MPa)' in df_alertas.columns:
+                      # Hacer merge/join con ConsolidadoAlertas para obtener Promedio Móvil (MPa)
+                      columnas_join = ['Proyecto', 'Cilindro N°', 'Localización', 'Toma']
+                      columnas_join_existentes = [col for col in columnas_join if col in df_incumplimientos.columns and col in df_alertas.columns]
 
-                  if 'Resistencia nominal (MPa) llave' in df_incumplimientos.columns:
-                      for valor_resistencia, grupo_resistencia in df_incumplimientos.groupby('Resistencia nominal (MPa) llave', dropna=False):
-                          indices_grupo = grupo_resistencia.index.tolist()
-                          cantidad_registros = len(indices_grupo)
-                          primeros_6 = indices_grupo[:6]
-                          df_incumplimientos.loc[primeros_6, 'Promedio Móvil (MPa)'] = np.nan
+                      if len(columnas_join_existentes) > 0:
+                          # Crear merge
+                          df_merge = df_alertas[columnas_join_existentes + ['Promedio Móvil (MPa)']].copy()
+                          df_incumplimientos = df_incumplimientos.merge(
+                              df_merge,
+                              on=columnas_join_existentes,
+                              how='left',
+                              suffixes=('', '_alertas')
+                          )
 
-                          if cantidad_registros >= 9:
-                              inicio = 0
-                              fin = 9
-                              paso = 3
-                              while fin <= cantidad_registros:
-                                  ventana_indices = indices_grupo[inicio:fin]
-                                  ultimos_3 = ventana_indices[6:9]
-                                  valores = df_incumplimientos.loc[ventana_indices, 'Resistencia Promedio (MPa)'].dropna()
-                                  if len(valores) >= 3:
-                                      promedio = valores.mean()
-                                      df_incumplimientos.loc[ultimos_3, 'Promedio Móvil (MPa)'] = promedio
-                                  inicio += paso
-                                  fin += paso
-                      print(f'  [+] ✅ Columna "Promedio Móvil (MPa)" creada para Incumplimientos')
+                          # Si no existe la columna, crearla
+                          if 'Promedio Móvil (MPa)_alertas' in df_incumplimientos.columns:
+                              df_incumplimientos['Promedio Móvil (MPa)'] = df_incumplimientos['Promedio Móvil (MPa)_alertas']
+                              df_incumplimientos.drop('Promedio Móvil (MPa)_alertas', axis=1, inplace=True)
+
+                          print(f'  [+] ✅ Promedio Móvil (MPa) traído desde ConsolidadoAlertas')
+                      else:
+                          print(f'  [!] Advertencia: No hay columnas comunes para hacer join')
+                  else:
+                      print(f'  [!] Advertencia: Columna "Promedio Móvil (MPa)" no encontrada en ConsolidadoAlertas')
 
                   # Crear columna calculada "Resistencia Mínima (MPa)" para Incumplimientos
                   print(f'\n[*] Creando columna Resistencia Mínima (MPa) para Incumplimientos...')
