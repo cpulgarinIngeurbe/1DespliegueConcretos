@@ -413,7 +413,7 @@ jobs:
                       tomasDisponibles.forEach(toma => {{
                           const option = document.createElement('option');
                           option.value = toma;
-                          option.textContent = toma;
+                          option.textContent = formatearFecha(toma);
                           selectorToma.appendChild(option);
                       }});
                       selectorToma.value = tomaActual;
