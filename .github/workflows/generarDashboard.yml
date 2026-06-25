@@ -354,16 +354,22 @@ jobs:
                       document.getElementById(nombrePestana).classList.add('active');
                       document.querySelector('[data-tab="' + nombrePestana + '"]').classList.add('active');
 
-                      // Aplicar filtros guardados a la nueva pestaña
-                      aplicarFiltros(nombrePestana);
-
-                      // Regenerar tabla con filtros aplicados
+                      // Aplicar solo los filtros de Proyecto y Cilindro N° a la nueva pestaña
                       if (nombrePestana === 'alertas') {{
-                          if (typeof recalcularOpcionesAlertas === 'function') recalcularOpcionesAlertas();
+                          document.getElementById('proyectoInputAlertas').value = filtrosGlobales.proyecto;
+                          if (document.getElementById('cilindroSelectorAlertas')) {{
+                              document.getElementById('cilindroSelectorAlertas').value = filtrosGlobales.cilindro || '';
+                          }}
                       }} else if (nombrePestana === 'incumplimientos') {{
-                          if (typeof recalcularOpcionesIncumplimientos === 'function') recalcularOpcionesIncumplimientos();
+                          document.getElementById('proyectoInputIncumplimientos').value = filtrosGlobales.proyecto;
+                          if (document.getElementById('cilindroSelectorIncumplimientos')) {{
+                              document.getElementById('cilindroSelectorIncumplimientos').value = filtrosGlobales.cilindro || '';
+                          }}
                       }} else if (nombrePestana === 'consolidado') {{
-                          if (typeof recalcularOpcionesFiltros === 'function') recalcularOpcionesFiltros();
+                          document.getElementById('proyectoInputConsolidado').value = filtrosGlobales.proyecto;
+                          if (document.getElementById('cilindroSelectorConsolidado')) {{
+                              document.getElementById('cilindroSelectorConsolidado').value = filtrosGlobales.cilindro || '';
+                          }}
                       }}
 
                       pestanaActual = nombrePestana;
