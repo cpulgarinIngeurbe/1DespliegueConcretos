@@ -611,31 +611,7 @@ jobs:
                   print(f'  [+] Registros eliminados (sin negativos): {registros_eliminados}')
                   df_incumplimientos = df_incumplimientos_validado
 
-                  # Crear columnas "Resistencia Promedio (MPa)" y "No. Registros Promedio"
-                  print(f'\n[*] Calculando Resistencia Promedio (MPa) para Incumplimientos...')
-                  columnas_grupo = ['Cilindro N°', 'Localización', 'Toma']
-                  df_incumplimientos['Resistencia Promedio (MPa)'] = np.nan
-                  df_incumplimientos['No. Registros Promedio'] = np.nan
-
-                  for grupo, datos_grupo in df_incumplimientos.groupby(columnas_grupo, dropna=False):
-                      indices_grupo = datos_grupo.index.tolist()
-                      cantidad_grupo = len(indices_grupo)
-                      if cantidad_grupo == 3:
-                          promedio = datos_grupo['Resistencia (MPa)'].mean()
-                          df_incumplimientos.loc[indices_grupo, 'Resistencia Promedio (MPa)'] = promedio
-                          df_incumplimientos.loc[indices_grupo, 'No. Registros Promedio'] = cantidad_grupo
-                      else:
-                          df_incumplimientos.loc[indices_grupo, 'No. Registros Promedio'] = cantidad_grupo
-
-                  # Filtrar: solo mantener registros donde No. Registros Promedio == 3
-                  registros_antes_filtro = len(df_incumplimientos)
-                  df_incumplimientos = df_incumplimientos[df_incumplimientos['No. Registros Promedio'] == 3].copy()
-                  registros_despues_filtro = len(df_incumplimientos)
-                  registros_eliminados_filtro = registros_antes_filtro - registros_despues_filtro
-                  print(f'\n[*] Filtrando registros por "No. Registros Promedio"...')
-                  print(f'  [+] Registros antes del filtro: {registros_antes_filtro}')
-                  print(f'  [+] Registros después del filtro: {registros_despues_filtro}')
-                  print(f'  [+] Registros eliminados: {registros_eliminados_filtro}')
+                  # Crear columnas "Resistencia Promedio (MPa)" y "No. Registros Promedio" - se hará después de agregar cilindros nuevos
 
                   # Agregar cilindros con Resistencia Mínima (MPa) >= Resistencia (MPa)
                   print(f'\n[*] Identificando cilindros por condición: "Resistencia Mínima (MPa)" >= "Resistencia (MPa)"...')
@@ -724,6 +700,32 @@ jobs:
                           print(f'  [+] No hay cilindros nuevos para agregar')
                   else:
                       print(f'  [!] Columnas "Promedio Móvil (MPa)" o "Resistencia nominal (MPa)" no encontradas en alertas')
+
+                  # Crear columnas "Resistencia Promedio (MPa)" y "No. Registros Promedio" (después de agregar cilindros nuevos)
+                  print(f'\n[*] Calculando Resistencia Promedio (MPa) para Incumplimientos...')
+                  columnas_grupo = ['Cilindro N°', 'Localización', 'Toma']
+                  df_incumplimientos['Resistencia Promedio (MPa)'] = np.nan
+                  df_incumplimientos['No. Registros Promedio'] = np.nan
+
+                  for grupo, datos_grupo in df_incumplimientos.groupby(columnas_grupo, dropna=False):
+                      indices_grupo = datos_grupo.index.tolist()
+                      cantidad_grupo = len(indices_grupo)
+                      if cantidad_grupo == 3:
+                          promedio = datos_grupo['Resistencia (MPa)'].mean()
+                          df_incumplimientos.loc[indices_grupo, 'Resistencia Promedio (MPa)'] = promedio
+                          df_incumplimientos.loc[indices_grupo, 'No. Registros Promedio'] = cantidad_grupo
+                      else:
+                          df_incumplimientos.loc[indices_grupo, 'No. Registros Promedio'] = cantidad_grupo
+
+                  # Filtrar: solo mantener registros donde No. Registros Promedio == 3
+                  registros_antes_filtro = len(df_incumplimientos)
+                  df_incumplimientos = df_incumplimientos[df_incumplimientos['No. Registros Promedio'] == 3].copy()
+                  registros_despues_filtro = len(df_incumplimientos)
+                  registros_eliminados_filtro = registros_antes_filtro - registros_despues_filtro
+                  print(f'\n[*] Filtrando registros por "No. Registros Promedio"...')
+                  print(f'  [+] Registros antes del filtro: {registros_antes_filtro}')
+                  print(f'  [+] Registros después del filtro: {registros_despues_filtro}')
+                  print(f'  [+] Registros eliminados: {registros_eliminados_filtro}')
 
                   # Crear columna "Promedio Móvil (MPa)"
                   print(f'\n[*] Calculando Promedio Móvil (MPa) para Incumplimientos...')
