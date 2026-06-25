@@ -291,15 +291,33 @@ jobs:
                   // Función para cambiar pestañas
                   let pestanaActual = 'consolidado';
                   let filtrosGlobales = {{
-                      proyecto: '',
-                      cilindro: '',
-                      localizacion: '',
-                      toma: '',
-                      resistenciaNominal: ''
+                      proyecto: ''
+                  }};
+                  let filtrosPorPestana = {{
+                      consolidado: {{ cilindro: '', localizacion: '', toma: '' }},
+                      alertas: {{ cilindro: '', localizacion: '', toma: '', resistenciaNominal: '' }},
+                      incumplimientos: {{ cilindro: '', localizacion: '', toma: '', resistenciaNominal: '' }}
                   }};
 
 
                   function cambiarPestana(nombrePestana) {{
+                      // Guardar filtros secundarios de la pestaña actual
+                      if (pestanaActual === 'consolidado') {{
+                          filtrosPorPestana.consolidado.cilindro = document.getElementById('cilindroSelectorConsolidado').value || '';
+                          filtrosPorPestana.consolidado.localizacion = document.getElementById('localizacionSelectorConsolidado').value || '';
+                          filtrosPorPestana.consolidado.toma = document.getElementById('tomaSelectorConsolidado').value || '';
+                      }} else if (pestanaActual === 'alertas') {{
+                          filtrosPorPestana.alertas.cilindro = document.getElementById('cilindroSelectorAlertas').value || '';
+                          filtrosPorPestana.alertas.localizacion = document.getElementById('localizacionSelectorAlertas').value || '';
+                          filtrosPorPestana.alertas.toma = document.getElementById('tomaSelectorAlertas').value || '';
+                          filtrosPorPestana.alertas.resistenciaNominal = document.getElementById('resistenciaNominalSelectorAlertas').value || '';
+                      }} else if (pestanaActual === 'incumplimientos') {{
+                          filtrosPorPestana.incumplimientos.cilindro = document.getElementById('cilindroSelectorIncumplimientos').value || '';
+                          filtrosPorPestana.incumplimientos.localizacion = document.getElementById('localizacionSelectorIncumplimientos').value || '';
+                          filtrosPorPestana.incumplimientos.toma = document.getElementById('tomaSelectorIncumplimientos').value || '';
+                          filtrosPorPestana.incumplimientos.resistenciaNominal = document.getElementById('resistenciaNominalSelectorIncumplimientos').value || '';
+                      }}
+
                       // Cambiar a la nueva pestaña
                       tabContents.forEach(tab => tab.classList.remove('active'));
                       tabButtons.forEach(btn => btn.classList.remove('active'));
@@ -314,27 +332,47 @@ jobs:
                               document.getElementById('proyectoInputAlertas').dispatchEvent(new Event('input', {{ bubbles: true }}));
                           }}
                           // Regenerar filtros secundarios
-                          if (typeof recalcularOpcionesAlertas === 'function') {{
-                              setTimeout(() => recalcularOpcionesAlertas(), 100);
-                          }}
+                          setTimeout(() => {{
+                              if (typeof recalcularOpcionesAlertas === 'function') {{
+                                  recalcularOpcionesAlertas();
+                              }}
+                              // Restaurar filtros guardados
+                              if (filtrosPorPestana.alertas.cilindro) document.getElementById('cilindroSelectorAlertas').value = filtrosPorPestana.alertas.cilindro;
+                              if (filtrosPorPestana.alertas.localizacion) document.getElementById('localizacionSelectorAlertas').value = filtrosPorPestana.alertas.localizacion;
+                              if (filtrosPorPestana.alertas.toma) document.getElementById('tomaSelectorAlertas').value = filtrosPorPestana.alertas.toma;
+                              if (filtrosPorPestana.alertas.resistenciaNominal) document.getElementById('resistenciaNominalSelectorAlertas').value = filtrosPorPestana.alertas.resistenciaNominal;
+                          }}, 100);
                       }} else if (nombrePestana === 'incumplimientos') {{
                           document.getElementById('proyectoInputIncumplimientos').value = filtrosGlobales.proyecto;
                           if (filtrosGlobales.proyecto) {{
                               document.getElementById('proyectoInputIncumplimientos').dispatchEvent(new Event('input', {{ bubbles: true }}));
                           }}
                           // Regenerar filtros secundarios
-                          if (typeof recalcularOpcionesIncumplimientos === 'function') {{
-                              setTimeout(() => recalcularOpcionesIncumplimientos(), 100);
-                          }}
+                          setTimeout(() => {{
+                              if (typeof recalcularOpcionesIncumplimientos === 'function') {{
+                                  recalcularOpcionesIncumplimientos();
+                              }}
+                              // Restaurar filtros guardados
+                              if (filtrosPorPestana.incumplimientos.cilindro) document.getElementById('cilindroSelectorIncumplimientos').value = filtrosPorPestana.incumplimientos.cilindro;
+                              if (filtrosPorPestana.incumplimientos.localizacion) document.getElementById('localizacionSelectorIncumplimientos').value = filtrosPorPestana.incumplimientos.localizacion;
+                              if (filtrosPorPestana.incumplimientos.toma) document.getElementById('tomaSelectorIncumplimientos').value = filtrosPorPestana.incumplimientos.toma;
+                              if (filtrosPorPestana.incumplimientos.resistenciaNominal) document.getElementById('resistenciaNominalSelectorIncumplimientos').value = filtrosPorPestana.incumplimientos.resistenciaNominal;
+                          }}, 100);
                       }} else if (nombrePestana === 'consolidado') {{
                           document.getElementById('proyectoInputConsolidado').value = filtrosGlobales.proyecto;
                           if (filtrosGlobales.proyecto) {{
                               document.getElementById('proyectoInputConsolidado').dispatchEvent(new Event('input', {{ bubbles: true }}));
                           }}
                           // Regenerar filtros secundarios
-                          if (typeof recalcularOpcionesFiltros === 'function') {{
-                              setTimeout(() => recalcularOpcionesFiltros(), 100);
-                          }}
+                          setTimeout(() => {{
+                              if (typeof recalcularOpcionesFiltros === 'function') {{
+                                  recalcularOpcionesFiltros();
+                              }}
+                              // Restaurar filtros guardados
+                              if (filtrosPorPestana.consolidado.cilindro) document.getElementById('cilindroSelectorConsolidado').value = filtrosPorPestana.consolidado.cilindro;
+                              if (filtrosPorPestana.consolidado.localizacion) document.getElementById('localizacionSelectorConsolidado').value = filtrosPorPestana.consolidado.localizacion;
+                              if (filtrosPorPestana.consolidado.toma) document.getElementById('tomaSelectorConsolidado').value = filtrosPorPestana.consolidado.toma;
+                          }}, 100);
                       }}
 
                       pestanaActual = nombrePestana;
