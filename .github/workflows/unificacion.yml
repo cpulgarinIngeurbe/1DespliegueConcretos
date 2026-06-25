@@ -524,9 +524,13 @@ jobs:
               # Crear columna calculada basada en Resistencia nominal (MPa)
               print(f'\n[*] Creando columna calculada...')
               if 'Resistencia nominal (MPa)' in df_alertas.columns:
-                  df_alertas['Resistencia Mínima (MPa)'] = df_alertas['Resistencia nominal (MPa)'].apply(
-                      lambda x: x - 3.5 if x <= 35 else x - (x * 0.1)
-                  )
+                  def calcular_resistencia_minima(x):
+                      if x <= 35:
+                          return x - 3.5
+                      else:
+                          return x * 0.9
+
+                  df_alertas['Resistencia Mínima (MPa)'] = df_alertas['Resistencia nominal (MPa)'].apply(calcular_resistencia_minima)
                   print(f'  [+] ✅ Columna "Resistencia Mínima (MPa)" creada exitosamente')
               else:
                   print(f'  [!] Advertencia: Columna "Resistencia nominal (MPa)" no encontrada')
