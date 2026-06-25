@@ -50,7 +50,7 @@ jobs:
                           df_consolidado.loc[indices, 'Promedio Móvil (MPa)'] = None
 
               # Redondear columnas numéricas a 2 decimales
-              columnas_decimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)']
+              columnas_decimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)', 'PROMEDIO Resistencia Mínima (MPa)']
               for col in columnas_decimales:
                   if col in df_consolidado.columns:
                       df_consolidado[col] = df_consolidado[col].apply(lambda x: round(x, 2) if pd.notna(x) else x)
@@ -76,7 +76,7 @@ jobs:
                           df_alertas.loc[indices, 'Promedio Móvil (MPa)'] = None
 
               # Redondear columnas numéricas a 2 decimales
-              columnas_decimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)']
+              columnas_decimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)', 'PROMEDIO Resistencia Mínima (MPa)']
               for col in columnas_decimales:
                   if col in df_alertas.columns:
                       df_alertas[col] = df_alertas[col].apply(lambda x: round(x, 2) if pd.notna(x) else x)
@@ -93,7 +93,7 @@ jobs:
               df_incumplimientos = pd.read_excel(archivo_incumplimientos)
 
               # Redondear columnas numéricas a 2 decimales
-              columnas_decimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)']
+              columnas_decimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)', 'PROMEDIO Resistencia Mínima (MPa)']
               for col in columnas_decimales:
                   if col in df_incumplimientos.columns:
                       df_incumplimientos[col] = df_incumplimientos[col].apply(lambda x: round(x, 2) if pd.notna(x) else x)
