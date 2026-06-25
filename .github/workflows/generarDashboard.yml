@@ -634,6 +634,7 @@ jobs:
                   }}
 
                   proyectoInput.addEventListener('input', function() {{
+                      filtrosGlobales.proyecto = this.value.trim();
                       const valor = this.value.trim();
 
                       if (!valor || !proyectos.includes(valor)) {{
@@ -874,6 +875,7 @@ jobs:
                   }}
 
                   proyectoInputAlertas.addEventListener('input', function() {{
+                      filtrosGlobales.proyecto = this.value.trim();
                       const valor = this.value.trim();
 
                       if (!valor || !proyectosAlertas.includes(valor)) {{
