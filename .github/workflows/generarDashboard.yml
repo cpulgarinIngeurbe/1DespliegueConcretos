@@ -676,7 +676,12 @@ jobs:
                   }});
 
                   // Listeners para cambios en filtros secundarios
-                  selectorCilindro.addEventListener('change', recalcularOpcionesFiltros);
+                  selectorCilindro.addEventListener('change', function() {{
+                      recalcularOpcionesFiltros();
+                      filtrosGlobales.cilindro = selectorCilindro.value;
+                      if (selectorCilindroAlertas) selectorCilindroAlertas.value = filtrosGlobales.cilindro;
+                      if (selectorCilindroIncumplimientos) selectorCilindroIncumplimientos.value = filtrosGlobales.cilindro;
+                  }});
                   selectorLocalizacion.addEventListener('change', recalcularOpcionesFiltros);
                   selectorToma.addEventListener('change', recalcularOpcionesFiltros);
 
