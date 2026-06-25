@@ -631,6 +631,20 @@ jobs:
                                   fin += paso
                       print(f'  [+] ✅ Columna "Promedio Móvil (MPa)" creada para Incumplimientos')
 
+                  # Crear columna calculada "Resistencia Mínima (MPa)" para Incumplimientos
+                  print(f'\n[*] Creando columna Resistencia Mínima (MPa) para Incumplimientos...')
+                  if 'Resistencia nominal (MPa)' in df_incumplimientos.columns:
+                      def calcular_resistencia_minima(x):
+                          if x <= 35:
+                              return x - 3.5
+                          else:
+                              return x * 0.9
+
+                      df_incumplimientos['Resistencia Mínima (MPa)'] = df_incumplimientos['Resistencia nominal (MPa)'].apply(calcular_resistencia_minima)
+                      print(f'  [+] ✅ Columna "Resistencia Mínima (MPa)" creada exitosamente')
+                  else:
+                      print(f'  [!] Advertencia: Columna "Resistencia nominal (MPa)" no encontrada')
+
                   # Guardar archivo de incumplimientos
                   df_incumplimientos.to_excel(archivo_incumplimientos, index=False)
                   print(f'  [+] ✅ Archivo de incumplimientos creado: {archivo_incumplimientos}')
