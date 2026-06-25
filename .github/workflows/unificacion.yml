@@ -97,7 +97,8 @@ jobs:
                   'B-19388 NATIVA': 'NATIVA',
                   'B-19322 VIALE 26': 'VIALE 26',
                   '23472 - TERRA (MANAZANA 4)': 'TERRA',
-                  '24603 - FLORA - PARQUE CENTRAL LOS ROBLES': 'FLORA'
+                  '24603 - FLORA - PARQUE CENTRAL LOS ROBLES': 'FLORA',
+                  '28229 - PIAZZA TRIANGULO DE BAVARIA': 'PIAZZA'
               }
 
               valores_antes = df_unificado['Proyecto'].nunique()
