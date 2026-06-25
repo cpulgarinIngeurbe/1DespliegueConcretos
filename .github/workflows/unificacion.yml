@@ -709,20 +709,6 @@ jobs:
                   else:
                       print(f'  [!] Advertencia: Columna "Resistencia nominal (MPa)" no encontrada')
 
-                  # Crear columna "PROMEDIO Resistencia Mínima (MPa)" agrupado por Proyecto + Cilindro N°
-                  print(f'\n[*] Calculando PROMEDIO Resistencia Mínima (MPa) por Proyecto + Cilindro N°...')
-                  if 'Resistencia Mínima (MPa)' in df_incumplimientos.columns:
-                      df_incumplimientos['PROMEDIO Resistencia Mínima (MPa)'] = np.nan
-
-                      for (proyecto, cilindro), grupo in df_incumplimientos.groupby(['Proyecto', 'Cilindro N°'], dropna=False):
-                          indices_grupo = grupo.index.tolist()
-                          promedio = grupo['Resistencia Mínima (MPa)'].mean()
-                          df_incumplimientos.loc[indices_grupo, 'PROMEDIO Resistencia Mínima (MPa)'] = promedio
-
-                      print(f'  [+] ✅ Columna "PROMEDIO Resistencia Mínima (MPa)" creada exitosamente')
-                  else:
-                      print(f'  [!] Advertencia: Columna "Resistencia Mínima (MPa)" no encontrada')
-
                   # Guardar archivo de incumplimientos
                   df_incumplimientos.to_excel(archivo_incumplimientos, index=False)
                   print(f'  [+] ✅ Archivo de incumplimientos creado: {archivo_incumplimientos}')
