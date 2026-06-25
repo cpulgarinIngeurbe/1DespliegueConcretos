@@ -521,6 +521,16 @@ jobs:
               else:
                   print(f'  [!] Advertencia: No se pudo crear Promedio Móvil (columnas faltantes)')
 
+              # Crear columna calculada basada en Resistencia nominal (MPa)
+              print(f'\n[*] Creando columna calculada...')
+              if 'Resistencia nominal (MPa)' in df_alertas.columns:
+                  df_alertas['Resistencia Mínima (MPa)'] = df_alertas['Resistencia nominal (MPa)'].apply(
+                      lambda x: x - 3.5 if x <= 35 else 1.1 * x
+                  )
+                  print(f'  [+] ✅ Columna "Resistencia Mínima (MPa)" creada exitosamente')
+              else:
+                  print(f'  [!] Advertencia: Columna "Resistencia nominal (MPa)" no encontrada')
+
               # Guardar archivo de alertas
               df_alertas.to_excel(archivo_alertas, index=False)
               print(f'  [+] ✅ Archivo de alertas creado: {archivo_alertas}')
