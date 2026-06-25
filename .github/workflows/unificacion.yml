@@ -361,7 +361,7 @@ jobs:
               df_unificado['Diferencia (MPa)'] = df_unificado['Resistencia (MPa)'] - df_unificado['Resistencia nominal (MPa)']
               print(f'  [+] ✅ Columna "Diferencia (MPa)" creada exitosamente')
           else:
-              print(f'  [!] Advertencia: No se pueden crear columnas (faltan "Resistencia (MPa)" o "Resistencia Teórica (MPa)")')
+              print(f'  [!] Advertencia: No se pueden crear columnas (faltan "Resistencia (MPa)" o "Resistencia nominal (MPa)")')
 
           # Guardar el archivo unificado
           df_unificado.to_excel(archivo_unificado, index=False)
