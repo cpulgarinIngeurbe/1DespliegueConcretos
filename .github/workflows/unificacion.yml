@@ -473,6 +473,16 @@ jobs:
                   print(f'  [+] ✅ Columnas creadas exitosamente')
                   print(f'  [+] "Resistencia Promedio (MPa)" - Registros con promedio: {grupos_con_promedio}')
                   print(f'  [+] "No. Registros Promedio" - Todos los registros tienen conteo de grupo')
+
+                  # Filtrar: solo mantener registros donde No. Registros Promedio == 3
+                  registros_antes = len(df_alertas)
+                  df_alertas = df_alertas[df_alertas['No. Registros Promedio'] == 3].copy()
+                  registros_despues = len(df_alertas)
+                  registros_eliminados = registros_antes - registros_despues
+                  print(f'\n[*] Filtrando registros por "No. Registros Promedio"...')
+                  print(f'  [+] Registros antes del filtro: {registros_antes}')
+                  print(f'  [+] Registros después del filtro: {registros_despues}')
+                  print(f'  [+] Registros eliminados: {registros_eliminados}')
               else:
                   print(f'  [!] Advertencia: No se pudieron crear las columnas (columnas faltantes)')
 
@@ -604,6 +614,16 @@ jobs:
                           df_incumplimientos.loc[indices_grupo, 'No. Registros Promedio'] = cantidad_grupo
                       else:
                           df_incumplimientos.loc[indices_grupo, 'No. Registros Promedio'] = cantidad_grupo
+
+                  # Filtrar: solo mantener registros donde No. Registros Promedio == 3
+                  registros_antes_filtro = len(df_incumplimientos)
+                  df_incumplimientos = df_incumplimientos[df_incumplimientos['No. Registros Promedio'] == 3].copy()
+                  registros_despues_filtro = len(df_incumplimientos)
+                  registros_eliminados_filtro = registros_antes_filtro - registros_despues_filtro
+                  print(f'\n[*] Filtrando registros por "No. Registros Promedio"...')
+                  print(f'  [+] Registros antes del filtro: {registros_antes_filtro}')
+                  print(f'  [+] Registros después del filtro: {registros_despues_filtro}')
+                  print(f'  [+] Registros eliminados: {registros_eliminados_filtro}')
 
                   # Crear columna "Promedio Móvil (MPa)"
                   print(f'\n[*] Calculando Promedio Móvil (MPa) para Incumplimientos...')
