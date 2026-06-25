@@ -344,8 +344,14 @@ jobs:
                   }}
 
                   function cambiarPestana(nombrePestana) {{
-                      // Guardar filtros de la pestaña actual
-                      guardarFiltros(pestanaActual);
+                      // Guardar proyecto de la pestaña actual
+                      if (pestanaActual === 'consolidado') {{
+                          filtrosGlobales.proyecto = document.getElementById('proyectoInputConsolidado').value;
+                      }} else if (pestanaActual === 'alertas') {{
+                          filtrosGlobales.proyecto = document.getElementById('proyectoInputAlertas').value;
+                      }} else if (pestanaActual === 'incumplimientos') {{
+                          filtrosGlobales.proyecto = document.getElementById('proyectoInputIncumplimientos').value;
+                      }}
 
                       // Cambiar a la nueva pestaña
                       tabContents.forEach(tab => tab.classList.remove('active'));
@@ -354,22 +360,13 @@ jobs:
                       document.getElementById(nombrePestana).classList.add('active');
                       document.querySelector('[data-tab="' + nombrePestana + '"]').classList.add('active');
 
-                      // Aplicar solo los filtros de Proyecto y Cilindro N° a la nueva pestaña
+                      // Aplicar proyecto guardado a la nueva pestaña
                       if (nombrePestana === 'alertas') {{
                           document.getElementById('proyectoInputAlertas').value = filtrosGlobales.proyecto;
-                          if (document.getElementById('cilindroSelectorAlertas')) {{
-                              document.getElementById('cilindroSelectorAlertas').value = filtrosGlobales.cilindro || '';
-                          }}
                       }} else if (nombrePestana === 'incumplimientos') {{
                           document.getElementById('proyectoInputIncumplimientos').value = filtrosGlobales.proyecto;
-                          if (document.getElementById('cilindroSelectorIncumplimientos')) {{
-                              document.getElementById('cilindroSelectorIncumplimientos').value = filtrosGlobales.cilindro || '';
-                          }}
                       }} else if (nombrePestana === 'consolidado') {{
                           document.getElementById('proyectoInputConsolidado').value = filtrosGlobales.proyecto;
-                          if (document.getElementById('cilindroSelectorConsolidado')) {{
-                              document.getElementById('cilindroSelectorConsolidado').value = filtrosGlobales.cilindro || '';
-                          }}
                       }}
 
                       pestanaActual = nombrePestana;
@@ -691,12 +688,7 @@ jobs:
                   }});
 
                   // Listeners para cambios en filtros secundarios
-                  selectorCilindro.addEventListener('change', function() {{
-                      recalcularOpcionesFiltros();
-                      filtrosGlobales.cilindro = selectorCilindro.value;
-                      if (selectorCilindroAlertas) selectorCilindroAlertas.value = filtrosGlobales.cilindro;
-                      if (selectorCilindroIncumplimientos) selectorCilindroIncumplimientos.value = filtrosGlobales.cilindro;
-                  }});
+                  selectorCilindro.addEventListener('change', recalcularOpcionesFiltros);
                   selectorLocalizacion.addEventListener('change', recalcularOpcionesFiltros);
                   selectorToma.addEventListener('change', recalcularOpcionesFiltros);
 
