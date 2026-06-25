@@ -533,6 +533,18 @@ jobs:
                                       td.classList.add('red-negative');
                                   }}
 
+                                  // Colorear en amarillo "Resistencia (MPa)" si es menor a "Resistencia Teórica (MPa)"
+                                  if (header === 'Resistencia (MPa)' && valor !== '') {{
+                                      const resistencia = parseFloat(valor);
+                                      const resistenciaTeórica = row['Resistencia Teórica (MPa)'];
+                                      if (!isNaN(resistencia) && resistenciaTeórica !== null && resistenciaTeórica !== undefined) {{
+                                          const resistenciaTeóricaNum = parseFloat(resistenciaTeórica);
+                                          if (!isNaN(resistenciaTeóricaNum) && resistencia < resistenciaTeóricaNum) {{
+                                              td.classList.add('yellow-bg');
+                                          }}
+                                      }}
+                                  }}
+
                                   // Colorear con fondo verde claro columnas específicas
                                   const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia Teórica (MPa)'];
                                   if (columnasVerdes.includes(header)) {{
