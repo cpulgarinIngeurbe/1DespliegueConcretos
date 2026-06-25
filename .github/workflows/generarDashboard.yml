@@ -424,11 +424,17 @@ jobs:
 
                   // Función para formatear fechas
                   function formatearFecha(valor) {{
-                      if (!valor) return '';
+                      if (!valor && valor !== 0) return '';
 
-                      // Si es un timestamp de pandas (número)
-                      if (typeof valor === 'number') {{
-                          let timestamp = valor;
+                      let timestamp = valor;
+
+                      // Si es un string numérico, convertir a número
+                      if (typeof valor === 'string' && /^\d+$/.test(valor)) {{
+                          timestamp = parseFloat(valor);
+                      }}
+
+                      // Si es un timestamp (número)
+                      if (typeof timestamp === 'number' && !isNaN(timestamp)) {{
                           // Si es timestamp en nanosegundos (muy grande), convertir a milisegundos
                           if (timestamp > 253402300799999) {{
                               timestamp = Math.floor(timestamp / 1000000);
