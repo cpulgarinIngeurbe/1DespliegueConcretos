@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  enviar-reporte:
+  enviar-reportes-por-proyecto:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Descargar código
@@ -17,31 +17,43 @@ jobs:
 
       - name: 📦 Instalar dependencias
         run: |
-          pip install requests openpyxl
+          pip install requests openpyxl pandas
 
-      - name: 📧 Enviar reporte por correo
+      - name: 📧 Enviar reportes por proyecto
         env:
           TENANT_ID: ${{ secrets.TENANT_ID }}
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          EMAIL_FLORA: ${{ secrets.EMAIL_FLORA }}
+          EMAIL_TERRA: ${{ secrets.EMAIL_TERRA }}
+          EMAIL_NATIVA: ${{ secrets.EMAIL_NATIVA }}
+          EMAIL_VIALE: ${{ secrets.EMAIL_VIALE }}
         run: |
           import requests
           import base64
           import os
+          import tempfile
+          import pandas as pd
           from datetime import datetime
+          from openpyxl import load_workbook
 
           # Configuración
           tenant_id = os.getenv('TENANT_ID')
           client_id = os.getenv('CLIENT_ID')
           client_secret = os.getenv('CLIENT_SECRET')
-          email_to = os.getenv('EMAIL_TO')
           mail_from = os.getenv('MAIL_FROM')
           archivo_incumplimientos = "desplegable/Incumplimientos.xlsx"
 
-          print(f'\n[*] Iniciando envío de reporte...')
-          print(f'  [+] Correo destinatario: {email_to}')
+          # Mapeo de proyectos a correos
+          proyectos_correos = {
+              'FLORA': os.getenv('EMAIL_FLORA'),
+              'TERRA': os.getenv('EMAIL_TERRA'),
+              'NATIVA': os.getenv('EMAIL_NATIVA'),
+              'VIALE': os.getenv('EMAIL_VIALE')
+          }
+
+          print(f'\n[*] Iniciando envío de reportes por proyecto...')
           print(f'  [+] Correo remitente: {mail_from}')
 
           try:
@@ -69,73 +81,105 @@ jobs:
                   print(f'  [!] Error: Archivo no encontrado: {archivo_incumplimientos}')
                   exit(1)
 
-              with open(archivo_incumplimientos, 'rb') as f:
-                  archivo_contenido = base64.b64encode(f.read()).decode()
+              df_incumplimientos = pd.read_excel(archivo_incumplimientos)
+              print(f'  [+] ✅ Archivo leído: {len(df_incumplimientos)} registros')
 
-              archivo_tamaño = os.path.getsize(archivo_incumplimientos)
-              print(f'  [+] ✅ Archivo leído: {archivo_tamaño} bytes')
-
-              # Paso 3: Enviar email con archivo adjunto
-              print(f'\n[*] Enviando email...')
+              # Paso 3: Identificar proyectos únicos
+              proyectos_unicos = df_incumplimientos['Proyecto'].unique()
+              print(f'  [+] Proyectos encontrados: {list(proyectos_unicos)}')
 
               fecha_actual = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
 
-              email_payload = {
-                  'message': {
-                      'subject': f'Reporte de Incumplimientos - {fecha_actual}',
-                      'body': {
-                          'contentType': 'HTML',
-                          'content': f"""
-                          <html>
-                              <body>
-                                  <h2>Reporte de Incumplimientos</h2>
-                                  <p>Se adjunta el archivo de Incumplimientos.xlsx con los registros actualizados.</p>
-                                  <p><strong>Fecha de generación:</strong> {fecha_actual}</p>
-                                  <p>---</p>
-                                  <p><em>Este es un correo automático generado por el sistema de CI/CD.</em></p>
-                              </body>
-                          </html>
-                          """
-                      },
-                      'toRecipients': [
-                          {
-                              'emailAddress': {
-                                  'address': email_to
+              # Paso 4: Enviar email para cada proyecto
+              for proyecto in proyectos_unicos:
+                  if pd.isna(proyecto):
+                      continue
+
+                  email_destino = proyectos_correos.get(proyecto)
+                  if not email_destino:
+                      print(f'\n[!] Advertencia: No hay correo configurado para proyecto: {proyecto}')
+                      continue
+
+                  print(f'\n[*] Procesando proyecto: {proyecto}')
+
+                  # Filtrar datos para este proyecto
+                  df_proyecto = df_incumplimientos[df_incumplimientos['Proyecto'] == proyecto].copy()
+                  registros_proyecto = len(df_proyecto)
+                  print(f'  [+] Registros encontrados: {registros_proyecto}')
+
+                  # Crear archivo temporal filtrado
+                  with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
+                      tmp_path = tmp.name
+                      df_proyecto.to_excel(tmp_path, index=False)
+
+                  # Leer archivo temporal y codificarlo
+                  with open(tmp_path, 'rb') as f:
+                      archivo_contenido = base64.b64encode(f.read()).decode()
+
+                  # Enviar email
+                  print(f'  [+] Enviando email a: {email_destino}')
+
+                  email_payload = {
+                      'message': {
+                          'subject': f'Reporte de Incumplimientos - {proyecto} - {fecha_actual}',
+                          'body': {
+                              'contentType': 'HTML',
+                              'content': f"""
+                              <html>
+                                  <body>
+                                      <h2>Reporte de Incumplimientos</h2>
+                                      <p><strong>Proyecto:</strong> {proyecto}</p>
+                                      <p><strong>Total de registros:</strong> {registros_proyecto}</p>
+                                      <p>Se adjunta el archivo de Incumplimientos filtrado para este proyecto.</p>
+                                      <p><strong>Fecha de generación:</strong> {fecha_actual}</p>
+                                      <p>---</p>
+                                      <p><em>Este es un correo automático generado por el sistema de CI/CD.</em></p>
+                                  </body>
+                              </html>
+                              """
+                          },
+                          'toRecipients': [
+                              {
+                                  'emailAddress': {
+                                      'address': email_destino
+                                  }
                               }
-                          }
-                      ],
-                      'attachments': [
-                          {
-                              '@odata.type': '#microsoft.graph.fileAttachment',
-                              'name': 'Incumplimientos.xlsx',
-                              'contentBytes': archivo_contenido
-                          }
-                      ]
-                  },
-                  'saveToSentItems': True
-              }
+                          ],
+                          'attachments': [
+                              {
+                                  '@odata.type': '#microsoft.graph.fileAttachment',
+                                  'name': f'Incumplimientos_{proyecto}.xlsx',
+                                  'contentBytes': archivo_contenido
+                              }
+                          ]
+                      },
+                      'saveToSentItems': True
+                  }
 
-              send_url = f'https://graph.microsoft.com/v1.0/users/{mail_from}/sendMail'
-              headers = {
-                  'Authorization': f'Bearer {access_token}',
-                  'Content-Type': 'application/json'
-              }
+                  send_url = f'https://graph.microsoft.com/v1.0/users/{mail_from}/sendMail'
+                  headers = {
+                      'Authorization': f'Bearer {access_token}',
+                      'Content-Type': 'application/json'
+                  }
 
-              send_response = requests.post(send_url, json=email_payload, headers=headers)
+                  send_response = requests.post(send_url, json=email_payload, headers=headers)
 
-              if send_response.status_code in [200, 202]:
-                  print(f'  [+] ✅ Email enviado exitosamente')
-                  print(f'  [+] Destinatario: {email_to}')
-                  print(f'  [+] Asunto: Reporte de Incumplimientos - {fecha_actual}')
-              else:
-                  print(f'  [!] Error al enviar email: {send_response.status_code}')
-                  print(f'  [!] Respuesta: {send_response.text}')
-                  exit(1)
+                  if send_response.status_code in [200, 202]:
+                      print(f'  [+] ✅ Email enviado exitosamente')
+                      print(f'  [+] Destinatario: {email_destino}')
+                  else:
+                      print(f'  [!] Error al enviar email: {send_response.status_code}')
+                      print(f'  [!] Respuesta: {send_response.text}')
+
+                  # Limpiar archivo temporal
+                  os.unlink(tmp_path)
+
+              print(f'\n[+] ✅ Todos los reportes han sido enviados correctamente')
 
           except Exception as e:
               print(f'  [!] Error: {str(e)}')
+              import traceback
+              traceback.print_exc()
               exit(1)
-
-          print(f'\n[+] ✅ Reporte enviado correctamente')
 
         shell: python
