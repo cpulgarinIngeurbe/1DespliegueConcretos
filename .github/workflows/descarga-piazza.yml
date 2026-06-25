@@ -185,7 +185,7 @@ jobs:
                                   await page.locator('text=Exportar a Excel').click()
 
                               download = await download_info.value
-                              nombre_archivo = 'datos/REPORTE_CONCRELAB_PIAZZA.xlsx'
+                              nombre_archivo = 'datos/reporte_concrelab_PIAZZA.xlsx'
                               await download.save_as(nombre_archivo)
 
                               await self.log('EXITO', f'   Descargado: {nombre_archivo}')
