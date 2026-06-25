@@ -846,7 +846,7 @@ jobs:
                                   }}
 
                                   // Formatear valores numéricos a 2 decimales para columnas específicas
-                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)'];
+                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)'];
                                   if (columnasDecimales.includes(header) && valor !== '') {{
                                       if (typeof valor === 'number' && !isNaN(valor)) {{
                                           valor = valor.toFixed(2);
@@ -863,6 +863,18 @@ jobs:
                                   // Colorear celdas negativas o cero en columna "Diferencia (MPa)"
                                   if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) {{
                                       td.classList.add('red-negative');
+                                  }}
+
+                                  // Colorear en rojo "Resistencia Mínima (MPa)" si es menor que "Resistencia nominal (MPa)"
+                                  if (header === 'Resistencia Mínima (MPa)' && valor !== '') {{
+                                      const resistenciaMinima = parseFloat(valor);
+                                      const resistenciaNominal = row['Resistencia nominal (MPa)'];
+                                      if (!isNaN(resistenciaMinima) && resistenciaNominal !== null && resistenciaNominal !== undefined) {{
+                                          const resistenciaNominalNum = parseFloat(resistenciaNominal);
+                                          if (!isNaN(resistenciaNominalNum) && resistenciaMinima < resistenciaNominalNum) {{
+                                              td.classList.add('red-negative');
+                                          }}
+                                      }}
                                   }}
 
                                   // Colorear con fondo verde claro columnas específicas
