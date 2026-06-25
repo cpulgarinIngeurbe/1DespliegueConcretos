@@ -865,13 +865,13 @@ jobs:
                                       td.classList.add('red-negative');
                                   }}
 
-                                  // Colorear en rojo "Resistencia Mínima (MPa)" si es menor que "Resistencia nominal (MPa)"
+                                  // Colorear en rojo "Resistencia Mínima (MPa)" si es mayor o igual a "Resistencia (MPa)"
                                   if (header === 'Resistencia Mínima (MPa)' && valor !== '') {{
                                       const resistenciaMinima = parseFloat(valor);
-                                      const resistenciaNominal = row['Resistencia nominal (MPa)'];
-                                      if (!isNaN(resistenciaMinima) && resistenciaNominal !== null && resistenciaNominal !== undefined) {{
-                                          const resistenciaNominalNum = parseFloat(resistenciaNominal);
-                                          if (!isNaN(resistenciaNominalNum) && resistenciaMinima < resistenciaNominalNum) {{
+                                      const resistencia = row['Resistencia (MPa)'];
+                                      if (!isNaN(resistenciaMinima) && resistencia !== null && resistencia !== undefined) {{
+                                          const resistenciaNum = parseFloat(resistencia);
+                                          if (!isNaN(resistenciaNum) && resistenciaMinima >= resistenciaNum) {{
                                               td.classList.add('red-negative');
                                           }}
                                       }}
