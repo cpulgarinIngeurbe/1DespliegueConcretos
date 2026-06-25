@@ -355,10 +355,10 @@ jobs:
           else:
               print(f'  [!] Advertencia: Archivo Curvas.xlsx no encontrado en carpeta Estandar')
 
-          # Crear columna "Diferencia (MPa)" = Resistencia (MPa) - Resistencia Teórica (MPa)
+          # Crear columna "Diferencia (MPa)" = Resistencia (MPa) - Resistencia nominal (MPa)
           print(f'\n[*] Creando columna "Diferencia (MPa)"...')
-          if 'Resistencia (MPa)' in df_unificado.columns and 'Resistencia Teórica (MPa)' in df_unificado.columns:
-              df_unificado['Diferencia (MPa)'] = df_unificado['Resistencia (MPa)'] - df_unificado['Resistencia Teórica (MPa)']
+          if 'Resistencia (MPa)' in df_unificado.columns and 'Resistencia nominal (MPa)' in df_unificado.columns:
+              df_unificado['Diferencia (MPa)'] = df_unificado['Resistencia (MPa)'] - df_unificado['Resistencia nominal (MPa)']
               print(f'  [+] ✅ Columna "Diferencia (MPa)" creada exitosamente')
           else:
               print(f'  [!] Advertencia: No se pueden crear columnas (faltan "Resistencia (MPa)" o "Resistencia Teórica (MPa)")')
