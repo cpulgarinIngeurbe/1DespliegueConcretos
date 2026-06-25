@@ -625,6 +625,50 @@ jobs:
                   print(f'  [+] Registros después del filtro: {registros_despues_filtro}')
                   print(f'  [+] Registros eliminados: {registros_eliminados_filtro}')
 
+                  # Agregar cilindros con Resistencia Mínima (MPa) >= Resistencia (MPa)
+                  print(f'\n[*] Identificando cilindros por condición: "Resistencia Mínima (MPa)" >= "Resistencia (MPa)"...')
+                  if 'Resistencia Mínima (MPa)' in df_alertas.columns and 'Resistencia (MPa)' in df_alertas.columns:
+                      # Crear columna auxiliar para la comparación
+                      df_alertas['cumple_minima'] = df_alertas['Resistencia Mínima (MPa)'] >= df_alertas['Resistencia (MPa)']
+
+                      # Identificar grupos (Proyecto + Cilindro N°) que cumplen la condición
+                      grupos_con_minima = df_alertas[df_alertas['cumple_minima'] == True].groupby(['Proyecto', 'Cilindro N°']).size().reset_index(name='count')
+                      grupos_con_minima_list = [(row['Proyecto'], row['Cilindro N°']) for _, row in grupos_con_minima.iterrows()]
+
+                      print(f'  [+] Grupos (Proyecto + Cilindro) identificados: {len(grupos_con_minima_list)}')
+
+                      # Obtener cilindros que ya están en incumplimientos
+                      cilindros_actuales = set(df_incumplimientos[['Proyecto', 'Cilindro N°']].apply(tuple, axis=1))
+
+                      # Identificar cilindros nuevos para agregar
+                      cilindros_nuevos = [grupo for grupo in grupos_con_minima_list if grupo not in cilindros_actuales]
+
+                      if cilindros_nuevos:
+                          print(f'  [+] Cilindros nuevos a agregar: {len(cilindros_nuevos)}')
+
+                          # Extraer registros de cilindros nuevos de df_unificado_edad_28
+                          df_nuevos_cilindros = df_unificado_edad_28.copy()
+                          for proyecto, cilindro in cilindros_nuevos:
+                              df_nuevo = df_unificado_edad_28[(df_unificado_edad_28['Proyecto'] == proyecto) & (df_unificado_edad_28['Cilindro N°'] == cilindro)]
+                              df_nuevos_cilindros = pd.concat([df_nuevos_cilindros, df_nuevo], ignore_index=False)
+
+                          # Eliminar duplicados manteniendo solo los nuevos
+                          df_nuevos_cilindros = df_nuevos_cilindros.drop_duplicates(subset=['Proyecto', 'Cilindro N°', 'Edad (días)'], keep='first')
+                          df_nuevos_cilindros = df_nuevos_cilindros[~df_nuevos_cilindros.apply(tuple, axis=1).isin(cilindros_actuales)]
+
+                          # Agregar los nuevos registros
+                          if len(df_nuevos_cilindros) > 0:
+                              df_incumplimientos = pd.concat([df_incumplimientos, df_nuevos_cilindros], ignore_index=True)
+                              print(f'  [+] Registros de nuevos cilindros agregados: {len(df_nuevos_cilindros)}')
+
+                          # Limpiar columna auxiliar
+                          if 'cumple_minima' in df_alertas.columns:
+                              df_alertas.drop('cumple_minima', axis=1, inplace=True)
+                      else:
+                          print(f'  [+] No hay cilindros nuevos para agregar')
+                  else:
+                      print(f'  [!] Columnas "Resistencia Mínima (MPa)" o "Resistencia (MPa)" no encontradas en alertas')
+
                   # Crear columna "Promedio Móvil (MPa)"
                   print(f'\n[*] Calculando Promedio Móvil (MPa) para Incumplimientos...')
                   df_incumplimientos['Promedio Móvil (MPa)'] = np.nan
