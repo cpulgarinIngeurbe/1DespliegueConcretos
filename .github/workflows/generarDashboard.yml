@@ -542,12 +542,16 @@ jobs:
                                           const resistenciaTeóricaNum = parseFloat(resistenciaTeórica);
                                           if (!isNaN(resistenciaTeóricaNum) && resistencia < resistenciaTeóricaNum) {{
                                               td.classList.add('yellow-bg');
+                                          }} else {{
+                                              td.classList.add('green-bg');
                                           }}
+                                      }} else {{
+                                          td.classList.add('green-bg');
                                       }}
                                   }}
 
-                                  // Colorear con fondo verde claro columnas específicas
-                                  const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia Teórica (MPa)'];
+                                  // Colorear con fondo verde claro columnas específicas (excepto Resistencia (MPa) que se maneja arriba)
+                                  const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia Teórica (MPa)'];
                                   if (columnasVerdes.includes(header)) {{
                                       td.classList.add('green-bg');
                                   }}
