@@ -143,8 +143,19 @@ jobs:
 
                       await self.log('EXITO', '   En Data Muestras')
 
+                      # SELECCIONAR OPCIÓN PARA MOSTRAR TODOS LOS REGISTROS
+                      await self.log('PASO', '7. Seleccionando opción para mostrar todos los registros...')
+                      try:
+                          await page.locator('div.css-1q5wwa7').click()
+                          await asyncio.sleep(1)
+                          await page.locator('[role="option"]').last.click()
+                          await asyncio.sleep(2)
+                          await self.log('EXITO', '   Opción seleccionada - Mostrando todos los registros')
+                      except Exception as e:
+                          await self.log('EXITO', '   Continuando sin cambiar opción (puede que no sea necesario)')
+
                       # DESCARGAR EXCEL
-                      await self.log('PASO', '7. Descargando Excel...')
+                      await self.log('PASO', '8. Descargando Excel...')
                       await page.wait_for_load_state('networkidle')
                       await asyncio.sleep(2)
 
