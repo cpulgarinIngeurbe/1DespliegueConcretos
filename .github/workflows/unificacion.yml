@@ -576,11 +576,23 @@ jobs:
               print(f'  [DEBUG] Registros totales encontrados para esos cilindros (Edad = 28): {cantidad_incumplimientos}')
 
               if cantidad_incumplimientos > 0:
-                  # Ordenar por Proyecto y Cilindro N° para agrupar registros del mismo cilindro
-                  df_incumplimientos = df_incumplimientos.sort_values(
-                      by=['Proyecto', 'Cilindro N°'],
-                      ascending=[True, True]
-                  ).reset_index(drop=True)
+                  # Ordenar por Proyecto, Cilindro N°, y Toma (más reciente a más antigua)
+                  print(f'\n[*] Ordenando por Proyecto + Cilindro N° y Toma (fecha más reciente primero)...')
+                  if 'Toma' in df_incumplimientos.columns:
+                      # Convertir Toma a datetime para ordenamiento correcto
+                      df_incumplimientos['Toma_temp'] = pd.to_datetime(df_incumplimientos['Toma'], format='%d-%m-%Y', errors='coerce')
+                      df_incumplimientos = df_incumplimientos.sort_values(
+                          by=['Proyecto', 'Cilindro N°', 'Toma_temp'],
+                          ascending=[True, True, False]
+                      ).reset_index(drop=True)
+                      df_incumplimientos.drop('Toma_temp', axis=1, inplace=True)
+                      print(f'  [+] ✅ Ordenamiento aplicado exitosamente')
+                  else:
+                      df_incumplimientos = df_incumplimientos.sort_values(
+                          by=['Proyecto', 'Cilindro N°'],
+                          ascending=[True, True]
+                      ).reset_index(drop=True)
+                      print(f'  [!] Advertencia: Columna "Toma" no encontrada para ordenamiento por fecha')
 
                   # Validar que cada grupo (Proyecto + Cilindro N°) tenga al menos un valor negativo
                   print(f'\n[*] Validando grupos (Proyecto + Cilindro N°) con diferencia negativa...')
