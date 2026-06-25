@@ -95,7 +95,51 @@ jobs:
             exit 1
           fi
 
-      - name: "2️⃣ Ejecutar: Descarga Diaria SGS"
+      - name: "2️⃣ Ejecutar: Descarga Piazza Concrelab"
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "[*] Iniciando: Descarga Piazza Concrelab"
+          gh workflow run "descarga-piazza.yml" --ref main
+
+          # Esperar a que aparezca el run
+          sleep 5
+
+          # Obtener el ID del último run
+          RUN_ID=$(gh run list --workflow descarga-piazza.yml --limit 1 --json databaseId -q '.[0].databaseId')
+          echo "[*] Run ID: $RUN_ID"
+
+          # Esperar a que el workflow termine
+          MAX_ATTEMPTS=360
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            STATUS=$(gh run view $RUN_ID --json status -q '.status')
+            CONCLUSION=$(gh run view $RUN_ID --json conclusion -q '.conclusion')
+
+            if [ "$STATUS" = "completed" ]; then
+              if [ "$CONCLUSION" = "success" ]; then
+                echo "[+] ✓ Descarga Piazza Concrelab completada exitosamente"
+                break
+              else
+                echo "[!] ✗ Descarga Piazza Concrelab falló con conclusión: $CONCLUSION"
+                exit 1
+              fi
+            fi
+
+            if [ $((ATTEMPT % 20)) -eq 0 ]; then
+              echo "[*] Esperando... Estado: $STATUS (intento $ATTEMPT/$MAX_ATTEMPTS)"
+            fi
+
+            sleep 3
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "[!] ✗ Timeout: Descarga Piazza Concrelab no completó en tiempo"
+            exit 1
+          fi
+
+      - name: "3️⃣ Ejecutar: Descarga Diaria SGS"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
@@ -139,7 +183,7 @@ jobs:
             exit 1
           fi
 
-      - name: "3️⃣ Ejecutar: Transformación Concrelab"
+      - name: "4️⃣ Ejecutar: Transformación Concrelab"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
@@ -183,7 +227,7 @@ jobs:
             exit 1
           fi
 
-      - name: "4️⃣ Ejecutar: Transformación SGS"
+      - name: "5️⃣ Ejecutar: Transformación SGS"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
@@ -227,7 +271,7 @@ jobs:
             exit 1
           fi
 
-      - name: "5️⃣ Ejecutar: Unificación"
+      - name: "6️⃣ Ejecutar: Unificación"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
@@ -271,7 +315,7 @@ jobs:
             exit 1
           fi
 
-      - name: "6️⃣ Ejecutar: Generar Dashboard"
+      - name: "7️⃣ Ejecutar: Generar Dashboard"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
@@ -315,13 +359,57 @@ jobs:
             exit 1
           fi
 
-      - name: "7️⃣ Ejecutar: Pages Build Deployment"
+      - name: "8️⃣ Ejecutar: Pages Build Deployment"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           echo "[*] Iniciando: Pages Build Deployment"
           echo "[+] Este workflow se ejecuta automáticamente cuando hay cambios en la rama principal"
           echo "[+] El index.html ya ha sido actualizado por el paso anterior"
+
+      - name: "9️⃣ Ejecutar: Reporte"
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "[*] Iniciando: Reporte"
+          gh workflow run "reporte.yml" --ref main
+
+          # Esperar a que aparezca el run
+          sleep 5
+
+          # Obtener el ID del último run
+          RUN_ID=$(gh run list --workflow reporte.yml --limit 1 --json databaseId -q '.[0].databaseId')
+          echo "[*] Run ID: $RUN_ID"
+
+          # Esperar a que el workflow termine
+          MAX_ATTEMPTS=360
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            STATUS=$(gh run view $RUN_ID --json status -q '.status')
+            CONCLUSION=$(gh run view $RUN_ID --json conclusion -q '.conclusion')
+
+            if [ "$STATUS" = "completed" ]; then
+              if [ "$CONCLUSION" = "success" ]; then
+                echo "[+] ✓ Reporte completado exitosamente"
+                break
+              else
+                echo "[!] ✗ Reporte falló con conclusión: $CONCLUSION"
+                exit 1
+              fi
+            fi
+
+            if [ $((ATTEMPT % 20)) -eq 0 ]; then
+              echo "[*] Esperando... Estado: $STATUS (intento $ATTEMPT/$MAX_ATTEMPTS)"
+            fi
+
+            sleep 3
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "[!] ✗ Timeout: Reporte no completó en tiempo"
+            exit 1
+          fi
 
       - name: ✅ Reporte final
         if: always()
@@ -330,11 +418,13 @@ jobs:
           echo ""
           echo "Resumen de ejecución:"
           echo "  1. ✓ Descarga Diaria Concrelab"
-          echo "  2. ✓ Descarga Diaria SGS"
-          echo "  3. ✓ Transformación Concrelab"
-          echo "  4. ✓ Transformación SGS"
-          echo "  5. ✓ Unificación"
-          echo "  6. ✓ Generar Dashboard"
-          echo "  7. ✓ Pages Build Deployment (automático)"
+          echo "  2. ✓ Descarga Piazza Concrelab"
+          echo "  3. ✓ Descarga Diaria SGS"
+          echo "  4. ✓ Transformación Concrelab"
+          echo "  5. ✓ Transformación SGS"
+          echo "  6. ✓ Unificación"
+          echo "  7. ✓ Generar Dashboard"
+          echo "  8. ✓ Pages Build Deployment (automático)"
+          echo "  9. ✓ Reporte"
           echo ""
           echo "Próxima ejecución programada según cronograma de Bogotá (COT)"
