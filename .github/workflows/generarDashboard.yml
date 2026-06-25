@@ -550,6 +550,19 @@ jobs:
                                       }}
                                   }}
 
+                                  // Colorear en amarillo "Cilindro N°" si Resistencia Teórica (MPa) > Resistencia (MPa)
+                                  if (header === 'Cilindro N°' && valor !== '') {{
+                                      const resistencia = row['Resistencia (MPa)'];
+                                      const resistenciaTeórica = row['Resistencia Teórica (MPa)'];
+                                      if (resistencia !== null && resistencia !== undefined && resistenciaTeórica !== null && resistenciaTeórica !== undefined) {{
+                                          const resistenciaNum = parseFloat(resistencia);
+                                          const resistenciaTeóricaNum = parseFloat(resistenciaTeórica);
+                                          if (!isNaN(resistenciaNum) && !isNaN(resistenciaTeóricaNum) && resistenciaTeóricaNum > resistenciaNum) {{
+                                              td.classList.add('yellow-bg');
+                                          }}
+                                      }}
+                                  }}
+
                                   // Colorear con fondo verde claro columnas específicas (excepto Resistencia (MPa) que se maneja arriba)
                                   const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia Teórica (MPa)'];
                                   if (columnasVerdes.includes(header)) {{
