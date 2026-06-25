@@ -313,15 +313,27 @@ jobs:
                           if (filtrosGlobales.proyecto) {{
                               document.getElementById('proyectoInputAlertas').dispatchEvent(new Event('input', {{ bubbles: true }}));
                           }}
+                          // Regenerar filtros secundarios
+                          if (typeof recalcularOpcionesAlertas === 'function') {{
+                              setTimeout(() => recalcularOpcionesAlertas(), 100);
+                          }}
                       }} else if (nombrePestana === 'incumplimientos') {{
                           document.getElementById('proyectoInputIncumplimientos').value = filtrosGlobales.proyecto;
                           if (filtrosGlobales.proyecto) {{
                               document.getElementById('proyectoInputIncumplimientos').dispatchEvent(new Event('input', {{ bubbles: true }}));
                           }}
+                          // Regenerar filtros secundarios
+                          if (typeof recalcularOpcionesIncumplimientos === 'function') {{
+                              setTimeout(() => recalcularOpcionesIncumplimientos(), 100);
+                          }}
                       }} else if (nombrePestana === 'consolidado') {{
                           document.getElementById('proyectoInputConsolidado').value = filtrosGlobales.proyecto;
                           if (filtrosGlobales.proyecto) {{
                               document.getElementById('proyectoInputConsolidado').dispatchEvent(new Event('input', {{ bubbles: true }}));
+                          }}
+                          // Regenerar filtros secundarios
+                          if (typeof recalcularOpcionesFiltros === 'function') {{
+                              setTimeout(() => recalcularOpcionesFiltros(), 100);
                           }}
                       }}
 
