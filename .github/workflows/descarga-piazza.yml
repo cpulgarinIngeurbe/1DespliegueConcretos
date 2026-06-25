@@ -1,0 +1,256 @@
+name: 📊 Descarga Piazza Concrelab
+
+on:
+  workflow_dispatch:
+
+jobs:
+  descargar-piazza:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Instalar Playwright
+        run: |
+          pip install playwright
+          playwright install chromium
+
+      - name: ⬇️ Descargar Excel de Piazza Concrelab
+        env:
+          CONCRELAB_PIAZZA_USER: ${{ secrets.CONCRELAB_PIAZZA_USER }}
+          CONCRELAB_PIAZZA_PASS: ${{ secrets.CONCRELAB_PIAZZA_PASS }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          python << 'EOF'
+          #!/usr/bin/env python3
+          """
+          SCRIPT FINAL - DESCARGA PIAZZA CONCRELAB
+          Estrategia comprobada: focus() + ArrowDown + Enter
+          """
+
+          import asyncio
+          import os
+          import sys
+          from playwright.async_api import async_playwright
+          from pathlib import Path
+          from datetime import datetime
+
+          Path('datos').mkdir(exist_ok=True)
+
+          class PiazzaDescargadorFinal:
+              """Descargador con estrategia comprobada"""
+
+              def __init__(self, usuario: str, contraseña: str, headless: bool = False):
+                  self.usuario = usuario
+                  self.contraseña = contraseña
+                  self.headless = headless
+                  self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                  self.log_file = f'datos/logs_{self.timestamp}.txt'
+
+              async def log(self, nivel: str, mensaje: str):
+                  """Log con timestamp"""
+                  timestamp = datetime.now().strftime("%H:%M:%S")
+                  prefijos = {'INFO': '📢', 'EXITO': '✅', 'ERROR': '❌', 'PASO': '📋', 'ESPERA': '⏳'}
+                  prefijo = prefijos.get(nivel, '→')
+                  log_msg = f"[{timestamp}] {prefijo} {mensaje}"
+                  print(log_msg)
+                  try:
+                      with open(self.log_file, 'a', encoding='utf-8') as f:
+                          f.write(log_msg + '\n')
+                  except:
+                      pass
+
+              async def ejecutar(self):
+                  """Flujo completo"""
+                  try:
+                      print("\n" + "=" * 80)
+                      await self.log('INFO', 'DESCARGA PIAZZA - ESTRATEGIA FINAL')
+                      print("=" * 80 + "\n")
+
+                      # Inicializar
+                      await self.log('PASO', '1. Inicializando navegador...')
+                      playwright = await async_playwright().start()
+                      browser = await playwright.chromium.launch(headless=self.headless)
+                      context = await browser.new_context(accept_downloads=True)
+                      page = await context.new_page()
+                      page.set_default_timeout(30000)
+                      await self.log('EXITO', '   Navegador listo')
+
+                      # LOGIN
+                      await self.log('PASO', '2. Autenticándose...')
+                      await page.goto("https://clientes.concrelab.com.co/login")
+                      await page.wait_for_load_state('networkidle')
+
+                      inputs = await page.locator('input').all()
+                      await inputs[0].fill(self.usuario)
+                      await inputs[1].fill(self.contraseña)
+                      await page.locator('button').first.click()
+                      await page.wait_for_load_state('networkidle')
+                      await asyncio.sleep(2)
+                      await self.log('EXITO', '   Login completado')
+
+                      # ABRIR MENÚ
+                      await self.log('PASO', '3. Abriendo menú de usuario...')
+                      menu = page.locator('div.text-right.px-2.cursor-pointer')
+                      await menu.click()
+                      await asyncio.sleep(2)
+                      await self.log('EXITO', '   Menú abierto')
+
+                      # SELECCIONAR EMPRESA (posición 2)
+                      await self.log('PASO', '4. Seleccionando Empresa (PIAZZA CONSTRUCCIONES)...')
+                      combobox_empresa = page.locator('input[role="combobox"]').nth(0)
+
+                      await combobox_empresa.focus()
+                      await asyncio.sleep(0.3)
+                      await combobox_empresa.press('ArrowDown')  # Abre el listbox
+                      await asyncio.sleep(0.5)
+
+                      # Presionar ArrowDown para ir a posición 2
+                      await combobox_empresa.press('ArrowDown')
+                      await asyncio.sleep(0.3)
+
+                      # Presionar Enter para confirmar
+                      await combobox_empresa.press('Enter')
+                      await asyncio.sleep(1)
+
+                      await self.log('EXITO', '   Empresa seleccionada: PIAZZA CONSTRUCCIONES S.A.S.')
+
+                      # SELECCIONAR PROYECTO (posición 1)
+                      await self.log('PASO', '5. Seleccionando Proyecto (posición 1)...')
+                      combobox_proyecto = page.locator('input[role="combobox"]').nth(1)
+
+                      await combobox_proyecto.focus()
+                      await asyncio.sleep(0.3)
+                      await combobox_proyecto.press('ArrowDown')  # Abre el listbox
+                      await asyncio.sleep(0.5)
+
+                      # Presionar Enter para confirmar
+                      await combobox_proyecto.press('Enter')
+                      await asyncio.sleep(1)
+
+                      await self.log('EXITO', '   Proyecto seleccionado')
+
+                      # NAVEGAR A DATA MUESTRAS
+                      await self.log('PASO', '6. Navegando a Data Muestras...')
+                      await page.locator('text=Concretos').first.click()
+                      await asyncio.sleep(1)
+
+                      await page.locator('a[href="/DataMuestras"]').click()
+                      await page.wait_for_load_state('networkidle')
+                      await asyncio.sleep(2)
+
+                      await self.log('EXITO', '   En Data Muestras')
+
+                      # DESCARGAR EXCEL
+                      await self.log('PASO', '7. Descargando Excel...')
+                      await page.wait_for_load_state('networkidle')
+                      await asyncio.sleep(2)
+
+                      # Buscar botón "More"
+                      selectores = ['button[title="More"]', 'button[title="Mas"]', 'button[aria-label*="More"]']
+                      boton_encontrado = False
+
+                      for selector in selectores:
+                          try:
+                              boton = page.locator(selector)
+                              if await boton.is_visible(timeout=3000):
+                                  await boton.click()
+                                  await asyncio.sleep(1)
+                                  await self.log('INFO', '   Botón More encontrado')
+                                  boton_encontrado = True
+                                  break
+                          except:
+                              continue
+
+                      if not boton_encontrado:
+                          raise Exception("Botón More/Más no encontrado")
+
+                      # Descargar
+                      for intento in range(1, 4):
+                          try:
+                              async with page.expect_download(timeout=20000) as download_info:
+                                  await page.locator('text=Exportar a Excel').click()
+
+                              download = await download_info.value
+                              nombre_archivo = f'datos/reporte_piazza_{self.timestamp}.xlsx'
+                              await download.save_as(nombre_archivo)
+
+                              await self.log('EXITO', f'   Descargado: {nombre_archivo}')
+
+                              print("\n" + "=" * 80)
+                              await self.log('EXITO', '✓ DESCARGA COMPLETADA EXITOSAMENTE')
+                              print("=" * 80)
+                              print(f"\n📁 Archivo guardado: {nombre_archivo}\n")
+
+                              return
+
+                          except Exception as e:
+                              if intento < 3:
+                                  await self.log('ESPERA', f'   Intento {intento} falló, reintentando...')
+                                  await asyncio.sleep(2 * intento)
+                              else:
+                                  raise
+
+                  except Exception as e:
+                      print("\n" + "=" * 80)
+                      await self.log('ERROR', f'✗ FALLO: {str(e)}')
+                      print("=" * 80)
+                      raise
+
+                  finally:
+                      try:
+                          await browser.close()
+                          await playwright.stop()
+                      except:
+                          pass
+
+
+          async def main():
+              """Punto de entrada"""
+              # Obtener credenciales de variables de entorno
+              USUARIO = os.getenv('CONCRELAB_PIAZZA_USER')
+              CONTRASEÑA = os.getenv('CONCRELAB_PIAZZA_PASS')
+
+              if not USUARIO or not CONTRASEÑA:
+                  print('[!] ERROR: Credenciales no configuradas en secrets')
+                  print('[!] Agrega CONCRELAB_PIAZZA_USER y CONCRELAB_PIAZZA_PASS en settings/secrets')
+                  return 1
+
+              # En GitHub Actions, usar headless=True
+              HEADLESS = True
+
+              try:
+                  descargador = PiazzaDescargadorFinal(usuario=USUARIO, contraseña=CONTRASEÑA, headless=HEADLESS)
+                  await descargador.ejecutar()
+                  return 0
+
+              except KeyboardInterrupt:
+                  print("\n\n❌ Interrumpido")
+                  return 1
+
+              except Exception as e:
+                  print(f"\n\n❌ Error: {e}")
+                  return 1
+
+
+          if __name__ == "__main__":
+              sys.exit(asyncio.run(main()))
+
+          EOF
+
+      - name: 📤 Commit y Push de archivos descargados
+        if: always()
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action Bot"
+          git add datos/ 2>/dev/null || true
+          git commit -m "[AUTO] Descarga Piazza - $(date '+%Y-%m-%d %H:%M:%S')" || true
+          git push || true
