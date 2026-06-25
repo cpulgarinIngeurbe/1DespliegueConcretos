@@ -1,0 +1,141 @@
+name: 📧 Reporte
+
+on:
+  workflow_dispatch:
+
+jobs:
+  enviar-reporte:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Descargar código
+        uses: actions/checkout@v3
+
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 📦 Instalar dependencias
+        run: |
+          pip install requests openpyxl
+
+      - name: 📧 Enviar reporte por correo
+        env:
+          TENANT_ID: ${{ secrets.TENANT_ID }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: |
+          import requests
+          import base64
+          import os
+          from datetime import datetime
+
+          # Configuración
+          tenant_id = os.getenv('TENANT_ID')
+          client_id = os.getenv('CLIENT_ID')
+          client_secret = os.getenv('CLIENT_SECRET')
+          email_to = os.getenv('EMAIL_TO')
+          mail_from = os.getenv('MAIL_FROM')
+          archivo_incumplimientos = "desplegable/Incumplimientos.xlsx"
+
+          print(f'\n[*] Iniciando envío de reporte...')
+          print(f'  [+] Correo destinatario: {email_to}')
+          print(f'  [+] Correo remitente: {mail_from}')
+
+          try:
+              # Paso 1: Obtener token de acceso
+              print(f'\n[*] Obteniendo token de acceso...')
+              token_url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
+              token_data = {
+                  'grant_type': 'client_credentials',
+                  'client_id': client_id,
+                  'client_secret': client_secret,
+                  'scope': 'https://graph.microsoft.com/.default'
+              }
+
+              token_response = requests.post(token_url, data=token_data)
+              if token_response.status_code != 200:
+                  print(f'  [!] Error al obtener token: {token_response.text}')
+                  exit(1)
+
+              access_token = token_response.json()['access_token']
+              print(f'  [+] ✅ Token obtenido exitosamente')
+
+              # Paso 2: Leer archivo Incumplimientos.xlsx
+              print(f'\n[*] Leyendo archivo Incumplimientos.xlsx...')
+              if not os.path.exists(archivo_incumplimientos):
+                  print(f'  [!] Error: Archivo no encontrado: {archivo_incumplimientos}')
+                  exit(1)
+
+              with open(archivo_incumplimientos, 'rb') as f:
+                  archivo_contenido = base64.b64encode(f.read()).decode()
+
+              archivo_tamaño = os.path.getsize(archivo_incumplimientos)
+              print(f'  [+] ✅ Archivo leído: {archivo_tamaño} bytes')
+
+              # Paso 3: Enviar email con archivo adjunto
+              print(f'\n[*] Enviando email...')
+
+              fecha_actual = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+
+              email_payload = {
+                  'message': {
+                      'subject': f'Reporte de Incumplimientos - {fecha_actual}',
+                      'body': {
+                          'contentType': 'HTML',
+                          'content': f"""
+                          <html>
+                              <body>
+                                  <h2>Reporte de Incumplimientos</h2>
+                                  <p>Se adjunta el archivo de Incumplimientos.xlsx con los registros actualizados.</p>
+                                  <p><strong>Fecha de generación:</strong> {fecha_actual}</p>
+                                  <p>---</p>
+                                  <p><em>Este es un correo automático generado por el sistema de CI/CD.</em></p>
+                              </body>
+                          </html>
+                          """
+                      },
+                      'toRecipients': [
+                          {
+                              'emailAddress': {
+                                  'address': email_to
+                              }
+                          }
+                      ],
+                      'attachments': [
+                          {
+                              '@odata.type': '#microsoft.graph.fileAttachment',
+                              'name': 'Incumplimientos.xlsx',
+                              'contentBytes': archivo_contenido
+                          }
+                      ]
+                  },
+                  'saveToSentItems': True
+              }
+
+              send_url = f'https://graph.microsoft.com/v1.0/users/{mail_from}/sendMail'
+              headers = {
+                  'Authorization': f'Bearer {access_token}',
+                  'Content-Type': 'application/json'
+              }
+
+              send_response = requests.post(send_url, json=email_payload, headers=headers)
+
+              if send_response.status_code in [200, 202]:
+                  print(f'  [+] ✅ Email enviado exitosamente')
+                  print(f'  [+] Destinatario: {email_to}')
+                  print(f'  [+] Asunto: Reporte de Incumplimientos - {fecha_actual}')
+              else:
+                  print(f'  [!] Error al enviar email: {send_response.status_code}')
+                  print(f'  [!] Respuesta: {send_response.text}')
+                  exit(1)
+
+          except Exception as e:
+              print(f'  [!] Error: {str(e)}')
+              exit(1)
+
+          print(f'\n[+] ✅ Reporte enviado correctamente')
+
+        shell: python
