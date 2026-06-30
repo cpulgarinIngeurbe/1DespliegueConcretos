@@ -208,7 +208,7 @@ jobs:
                   .red-negative {{ background-color: rgba(255, 0, 0, 0.15); }}
                   .green-bg {{ background-color: #f0f8f0; }}
                   .yellow-bg {{ background-color: #fffacd; }}
-                  .group-separator td {{ border-top: 2.5px solid #6B8E23 !important; }}
+                  .group-separator td {{ border-top: 2.5px solid #7CB342 !important; }}
               </style>
           </head>
           <body>
