@@ -357,11 +357,7 @@ jobs:
                           checkbox.addEventListener('change', () => {{
                               onChangeCallback();
                               // Cerrar el dropdown después de seleccionar
-                              const parentSection = dropdownElement.closest('.filter-section');
-                              if (parentSection) {{
-                                  const dropdown = parentSection.querySelector('.filter-dropdown');
-                                  if (dropdown) dropdown.classList.remove('open');
-                              }}
+                              dropdownElement.classList.remove('open');
                           }});
 
                           option.appendChild(checkbox);
