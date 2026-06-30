@@ -228,6 +228,11 @@ jobs:
                   .filter-tag {{ background-color: #f0f5a0; border: 1px solid #A3C610; color: #3D4800; padding: 4px 8px; border-radius: 3px; font-size: 8px; display: flex; align-items: center; gap: 4px; }}
                   .filter-tag-close {{ background: none; border: none; color: #3D4800; cursor: pointer; font-size: 10px; padding: 0; font-weight: bold; }}
                   .filter-tag-close:hover {{ color: #2f3215; }}
+                  .pagination {{ display: flex; gap: 4px; margin-top: 12px; justify-content: center; align-items: center; }}
+                  .pagination button {{ padding: 4px 8px; background-color: #4B4F1D; color: #A3C610; border: 1px solid #A3C610; border-radius: 3px; font-size: 8px; font-weight: 600; cursor: pointer; }}
+                  .pagination button:hover {{ background-color: #3d401a; }}
+                  .pagination button:disabled {{ opacity: 0.5; cursor: not-allowed; }}
+                  .pagination span {{ font-size: 8px; color: #7CB342; }}
                   .footer {{ margin-top: 20px; padding: 10px 0; border-top: 1px solid #A3C610; text-align: right; font-size: 8px; color: #7CB342; }}
               </style>
           </head>
@@ -250,6 +255,7 @@ jobs:
                               <thead></thead>
                               <tbody></tbody>
                           </table>
+                          <div class="pagination" id="paginationConsolidado"></div>
                       </div>
                   </div>
 
@@ -264,6 +270,7 @@ jobs:
                               <thead></thead>
                               <tbody></tbody>
                           </table>
+                          <div class="pagination" id="paginationAlertas"></div>
                       </div>
                   </div>
 
@@ -278,6 +285,7 @@ jobs:
                               <thead></thead>
                               <tbody></tbody>
                           </table>
+                          <div class="pagination" id="paginationIncumplimientos"></div>
                       </div>
                   </div>
                   <div class="footer">
@@ -328,6 +336,15 @@ jobs:
                   // Variable global para almacenar proyectos seleccionados (compartida entre pestañas)
                   let proyectosSeleccionados = [];
 
+                  // Variables de paginación
+                  const REGISTROS_POR_PAGINA = 100;
+                  let paginaConsolidado = 1;
+                  let paginaAlertas = 1;
+                  let paginaIncumplimientos = 1;
+                  let datosActualesConsolidado = [];
+                  let datosActualesAlertas = [];
+                  let datosActualesIncumplimientos = [];
+
                   // Función para obtener proyectos únicos
                   function obtenerProyectosUnicos(datos) {{
                       const proyectos = new Set();
@@ -349,14 +366,53 @@ jobs:
 
                   // Función para actualizar solo tablas (puede ser lenta)
                   function actualizarTablas() {{
-                      const datosFiltradosConsolidado = filtrarPorProyectos(datosConsolidado, proyectosSeleccionados);
-                      generarTabla(datosFiltradosConsolidado, false, datosConsolidado);
+                      datosActualesConsolidado = filtrarPorProyectos(datosConsolidado, proyectosSeleccionados);
+                      paginaConsolidado = 1;
+                      renderizarTablaConsolidado();
 
-                      const datosFiltradosAlertas = filtrarPorProyectos(datosAlertas, proyectosSeleccionados);
-                      generarTablaAlertas(datosFiltradosAlertas, datosAlertas);
+                      datosActualesAlertas = filtrarPorProyectos(datosAlertas, proyectosSeleccionados);
+                      paginaAlertas = 1;
+                      renderizarTablaAlertas();
 
-                      const datosFiltradosIncumplimientos = filtrarPorProyectos(datosIncumplimientos, proyectosSeleccionados);
-                      generarTablaIncumplimientos(datosFiltradosIncumplimientos, datosIncumplimientos);
+                      datosActualesIncumplimientos = filtrarPorProyectos(datosIncumplimientos, proyectosSeleccionados);
+                      paginaIncumplimientos = 1;
+                      renderizarTablaIncumplimientos();
+                  }}
+
+                  // Función para renderizar tabla de Consolidado con paginación
+                  function renderizarTablaConsolidado() {{
+                      const inicio = (paginaConsolidado - 1) * REGISTROS_POR_PAGINA;
+                      const fin = inicio + REGISTROS_POR_PAGINA;
+                      const datosPage = datosActualesConsolidado.slice(inicio, fin);
+                      generarTabla(datosPage, false, datosActualesConsolidado.length > 0 ? datosActualesConsolidado : datosConsolidado);
+                      crearPaginacion(datosActualesConsolidado.length, paginaConsolidado, document.getElementById('paginationConsolidado'), (nuevaPagina) => {{
+                          paginaConsolidado = nuevaPagina;
+                          renderizarTablaConsolidado();
+                      }});
+                  }}
+
+                  // Función para renderizar tabla de Alertas con paginación
+                  function renderizarTablaAlertas() {{
+                      const inicio = (paginaAlertas - 1) * REGISTROS_POR_PAGINA;
+                      const fin = inicio + REGISTROS_POR_PAGINA;
+                      const datosPage = datosActualesAlertas.slice(inicio, fin);
+                      generarTablaAlertas(datosPage, datosActualesAlertas.length > 0 ? datosActualesAlertas : datosAlertas);
+                      crearPaginacion(datosActualesAlertas.length, paginaAlertas, document.getElementById('paginationAlertas'), (nuevaPagina) => {{
+                          paginaAlertas = nuevaPagina;
+                          renderizarTablaAlertas();
+                      }});
+                  }}
+
+                  // Función para renderizar tabla de Incumplimientos con paginación
+                  function renderizarTablaIncumplimientos() {{
+                      const inicio = (paginaIncumplimientos - 1) * REGISTROS_POR_PAGINA;
+                      const fin = inicio + REGISTROS_POR_PAGINA;
+                      const datosPage = datosActualesIncumplimientos.slice(inicio, fin);
+                      generarTablaIncumplimientos(datosPage, datosActualesIncumplimientos.length > 0 ? datosActualesIncumplimientos : datosIncumplimientos);
+                      crearPaginacion(datosActualesIncumplimientos.length, paginaIncumplimientos, document.getElementById('paginationIncumplimientos'), (nuevaPagina) => {{
+                          paginaIncumplimientos = nuevaPagina;
+                          renderizarTablaIncumplimientos();
+                      }});
                   }}
 
                   // Función para actualizar UI inmediatamente (tags y checkboxes)
@@ -419,6 +475,30 @@ jobs:
                           option.appendChild(label);
                           dropdownElement.appendChild(option);
                       }});
+                  }}
+
+                  // Función para crear controles de paginación
+                  function crearPaginacion(totalRegistros, paginaActual, paginaContainer, callback) {{
+                      paginaContainer.innerHTML = '';
+                      if (totalRegistros <= REGISTROS_POR_PAGINA) return;
+
+                      const totalPaginas = Math.ceil(totalRegistros / REGISTROS_POR_PAGINA);
+                      const btnAnterior = document.createElement('button');
+                      btnAnterior.textContent = '← Anterior';
+                      btnAnterior.disabled = paginaActual === 1;
+                      btnAnterior.addEventListener('click', () => callback(paginaActual - 1));
+
+                      const spanPagina = document.createElement('span');
+                      spanPagina.textContent = `Página ${paginaActual} de ${totalPaginas}`;
+
+                      const btnSiguiente = document.createElement('button');
+                      btnSiguiente.textContent = 'Siguiente →';
+                      btnSiguiente.disabled = paginaActual === totalPaginas;
+                      btnSiguiente.addEventListener('click', () => callback(paginaActual + 1));
+
+                      paginaContainer.appendChild(btnAnterior);
+                      paginaContainer.appendChild(spanPagina);
+                      paginaContainer.appendChild(btnSiguiente);
                   }}
 
                   // Función para formatear fechas
