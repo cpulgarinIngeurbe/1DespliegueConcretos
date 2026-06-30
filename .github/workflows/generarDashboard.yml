@@ -54,6 +54,22 @@ jobs:
               if re.search(r'PILOTE|PILOTAJE', localizacion, re.IGNORECASE):
                   return 'Pilotaje'
 
+              # Plataforma
+              if re.search(r'PLATAFORMA', localizacion, re.IGNORECASE):
+                  return 'Plataforma'
+
+              # Barrete
+              if re.search(r'BARRETE', localizacion, re.IGNORECASE):
+                  return 'Barrete'
+
+              # Comunal → Salon Comunal
+              if re.search(r'COMUNAL', localizacion, re.IGNORECASE):
+                  return 'Salon Comunal'
+
+              # Rampa
+              if re.search(r'RAMP[AS]', localizacion, re.IGNORECASE):
+                  return 'Rampa'
+
               return ''
 
           archivo_consolidado = "desplegable/Consolidado.xlsx"
