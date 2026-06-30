@@ -731,13 +731,13 @@ jobs:
                       document.getElementById(nombrePestana).classList.add('active');
                       document.querySelector('[data-tab="' + nombrePestana + '"]').classList.add('active');
 
-                      // Generar tabla según la pestaña activa
+                      // Generar tabla vacía según la pestaña activa
                       if (nombrePestana === 'consolidado') {{
-                          generarTabla(datosConsolidado, true);
+                          generarTabla([], true, datosConsolidado);
                       }} else if (nombrePestana === 'alertas') {{
-                          generarTablaAlertas(datosAlertas);
+                          generarTablaAlertas([], datosAlertas);
                       }} else if (nombrePestana === 'incumplimientos') {{
-                          generarTablaIncumplimientos(datosIncumplimientos);
+                          generarTablaIncumplimientos([], datosIncumplimientos);
                       }}
                   }}
 
