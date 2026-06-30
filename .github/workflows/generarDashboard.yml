@@ -812,17 +812,17 @@ jobs:
 
                       // Llenar dropdowns con proyectos y conectar al sistema global
                       llenarDropdown(filterDropdownConsolidado, obtenerProyectosUnicos(datosConsolidado), () => {{
-                          proyectosSeleccionados = Array.from(document.querySelectorAll('.filter-dropdown input[type="checkbox"]:checked')).map(cb => cb.value);
+                          proyectosSeleccionados = Array.from(new Set(Array.from(document.querySelectorAll('.filter-dropdown input[type="checkbox"]:checked')).map(cb => cb.value)));
                           actualizarTodosFiltros();
                       }});
 
                       llenarDropdown(filterDropdownAlertas, obtenerProyectosUnicos(datosAlertas), () => {{
-                          proyectosSeleccionados = Array.from(document.querySelectorAll('.filter-dropdown input[type="checkbox"]:checked')).map(cb => cb.value);
+                          proyectosSeleccionados = Array.from(new Set(Array.from(document.querySelectorAll('.filter-dropdown input[type="checkbox"]:checked')).map(cb => cb.value)));
                           actualizarTodosFiltros();
                       }});
 
                       llenarDropdown(filterDropdownIncumplimientos, obtenerProyectosUnicos(datosIncumplimientos), () => {{
-                          proyectosSeleccionados = Array.from(document.querySelectorAll('.filter-dropdown input[type="checkbox"]:checked')).map(cb => cb.value);
+                          proyectosSeleccionados = Array.from(new Set(Array.from(document.querySelectorAll('.filter-dropdown input[type="checkbox"]:checked')).map(cb => cb.value)));
                           actualizarTodosFiltros();
                       }});
                   }});
