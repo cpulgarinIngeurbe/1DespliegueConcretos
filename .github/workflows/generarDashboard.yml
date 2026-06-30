@@ -504,45 +504,38 @@ jobs:
                       filterBtnUnidadIncumplimientos.style.display = mostrarUnidadBtn ? 'inline-block' : 'none';
 
                       // Actualizar dropdowns de Unidad Estructural con opciones filtradas por proyectos
-                      const unidadesConsolidado = obtenerUnidadesEstructuralesUnicas(datosConsolidado, proyectosSeleccionados);
-                      const unidadesAlertas = obtenerUnidadesEstructuralesUnicas(datosAlertas, proyectosSeleccionados);
-                      const unidadesIncumplimientos = obtenerUnidadesEstructuralesUnicas(datosIncumplimientos, proyectosSeleccionados);
+                      if (proyectosSeleccionados.length > 0) {{
+                          const unidadesConsolidado = obtenerUnidadesEstructuralesUnicas(datosConsolidado, proyectosSeleccionados);
+                          const unidadesAlertas = obtenerUnidadesEstructuralesUnicas(datosAlertas, proyectosSeleccionados);
+                          const unidadesIncumplimientos = obtenerUnidadesEstructuralesUnicas(datosIncumplimientos, proyectosSeleccionados);
 
-                      llenarDropdown(filterDropdownUnidadConsolidado, unidadesConsolidado, (unidad, isChecked) => {{
-                          if (isChecked) {{
-                              unidadesEstructuralesSeleccionadas.push(unidad);
-                          }} else {{
-                              unidadesEstructuralesSeleccionadas = unidadesEstructuralesSeleccionadas.filter(u => u !== unidad);
-                          }}
-                          actualizarUIInmediata();
-                          requestAnimationFrame(actualizarTablas);
-                      }});
-                      llenarDropdown(filterDropdownUnidadAlertas, unidadesAlertas, (unidad, isChecked) => {{
-                          if (isChecked) {{
-                              unidadesEstructuralesSeleccionadas.push(unidad);
-                          }} else {{
-                              unidadesEstructuralesSeleccionadas = unidadesEstructuralesSeleccionadas.filter(u => u !== unidad);
-                          }}
-                          actualizarUIInmediata();
-                          requestAnimationFrame(actualizarTablas);
-                      }});
-                      llenarDropdown(filterDropdownUnidadIncumplimientos, unidadesIncumplimientos, (unidad, isChecked) => {{
-                          if (isChecked) {{
-                              unidadesEstructuralesSeleccionadas.push(unidad);
-                          }} else {{
-                              unidadesEstructuralesSeleccionadas = unidadesEstructuralesSeleccionadas.filter(u => u !== unidad);
-                          }}
-                          actualizarUIInmediata();
-                          requestAnimationFrame(actualizarTablas);
-                      }});
-
-                      // Actualizar checkboxes de Unidad Estructural
-                      [filterDropdownUnidadConsolidado, filterDropdownUnidadAlertas, filterDropdownUnidadIncumplimientos].forEach(dropdown => {{
-                          const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
-                          checkboxes.forEach(checkbox => {{
-                              checkbox.checked = unidadesEstructuralesSeleccionadas.includes(checkbox.value);
+                          llenarDropdown(filterDropdownUnidadConsolidado, unidadesConsolidado, () => {{
+                              unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                              actualizarTodosFiltros();
                           }});
-                      }});
+                          llenarDropdown(filterDropdownUnidadAlertas, unidadesAlertas, () => {{
+                              unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadAlertas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                              actualizarTodosFiltros();
+                          }});
+                          llenarDropdown(filterDropdownUnidadIncumplimientos, unidadesIncumplimientos, () => {{
+                              unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                              actualizarTodosFiltros();
+                          }});
+
+                          // Actualizar checkboxes de Unidad Estructural
+                          [filterDropdownUnidadConsolidado, filterDropdownUnidadAlertas, filterDropdownUnidadIncumplimientos].forEach(dropdown => {{
+                              const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+                              checkboxes.forEach(checkbox => {{
+                                  checkbox.checked = unidadesEstructuralesSeleccionadas.includes(checkbox.value);
+                              }});
+                          }});
+                      }} else {{
+                          // Limpiar dropdowns si no hay proyectos seleccionados
+                          filterDropdownUnidadConsolidado.innerHTML = '';
+                          filterDropdownUnidadAlertas.innerHTML = '';
+                          filterDropdownUnidadIncumplimientos.innerHTML = '';
+                          unidadesEstructuralesSeleccionadas = [];
+                      }}
 
                       // Actualizar tags en todas las pestañas (proyectos)
                       actualizarTags(filterTagsConsolidado, proyectosSeleccionados, removerProyecto);
