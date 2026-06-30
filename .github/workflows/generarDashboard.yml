@@ -808,7 +808,7 @@ jobs:
                       }}
                   }}
 
-                  // Función para cambiar pestaña y aplicar filtro global
+                  // Función para cambiar pestaña sin recalcular (solo renderizar)
                   function cambiarPestana(nombrePestana) {{
                       // Cambiar visualización de pestañas
                       tabContents.forEach(tab => tab.classList.remove('active'));
@@ -817,15 +817,12 @@ jobs:
                       document.getElementById(nombrePestana).classList.add('active');
                       document.querySelector('[data-tab="' + nombrePestana + '"]').classList.add('active');
 
-                      // Aplicar filtro global según la pestaña activa (sin resetear página)
+                      // Solo renderizar con los datos existentes (no recalcular)
                       if (nombrePestana === 'consolidado') {{
-                          datosActualesConsolidado = filtrarPorProyectos(datosConsolidado, proyectosSeleccionados);
                           renderizarTablaConsolidado();
                       }} else if (nombrePestana === 'alertas') {{
-                          datosActualesAlertas = filtrarPorProyectos(datosAlertas, proyectosSeleccionados);
                           renderizarTablaAlertas();
                       }} else if (nombrePestana === 'incumplimientos') {{
-                          datosActualesIncumplimientos = filtrarPorProyectos(datosIncumplimientos, proyectosSeleccionados);
                           renderizarTablaIncumplimientos();
                       }}
                   }}
