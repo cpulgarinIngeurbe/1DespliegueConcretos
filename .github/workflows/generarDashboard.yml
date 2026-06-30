@@ -223,7 +223,7 @@ jobs:
                   .filter-option {{ padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-bottom: 0.5px solid #e5e2dd; cursor: pointer; }}
                   .filter-option:hover {{ background-color: #f8f8f7; }}
                   .filter-option input[type="checkbox"] {{ cursor: pointer; accent-color: #4B4F1D; }}
-                  .filter-option-label {{ flex: 1; font-size: 8px; cursor: pointer; }}
+                  .filter-option-label {{ flex: 1; font-size: 8px; cursor: pointer; padding: 2px 4px; }}
                   .filter-tags {{ display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }}
                   .filter-tag {{ background-color: #f0f5a0; border: 1px solid #A3C610; color: #3D4800; padding: 4px 8px; border-radius: 3px; font-size: 8px; display: flex; align-items: center; gap: 4px; }}
                   .filter-tag-close {{ background: none; border: none; color: #3D4800; cursor: pointer; font-size: 10px; padding: 0; font-weight: bold; }}
@@ -455,16 +455,18 @@ jobs:
                   // Función para llenar dropdown con checkboxes
                   function llenarDropdown(dropdownElement, proyectos, onChangeCallback) {{
                       dropdownElement.innerHTML = '';
-                      proyectos.forEach(proyecto => {{
+                      proyectos.forEach((proyecto, index) => {{
                           const option = document.createElement('div');
                           option.className = 'filter-option';
 
                           const checkbox = document.createElement('input');
                           checkbox.type = 'checkbox';
                           checkbox.value = proyecto;
+                          checkbox.id = 'checkbox-' + dropdownElement.id + '-' + index;
 
                           const label = document.createElement('label');
                           label.className = 'filter-option-label';
+                          label.htmlFor = checkbox.id;
                           label.textContent = proyecto;
 
                           checkbox.addEventListener('change', () => {{
