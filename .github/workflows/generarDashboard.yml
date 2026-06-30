@@ -337,7 +337,7 @@ jobs:
                   let proyectosSeleccionados = [];
 
                   // Variables de paginación
-                  const REGISTROS_POR_PAGINA = 100;
+                  const REGISTROS_POR_PAGINA = 150;
                   let paginaConsolidado = 1;
                   let paginaAlertas = 1;
                   let paginaIncumplimientos = 1;
@@ -389,6 +389,7 @@ jobs:
                           paginaConsolidado = nuevaPagina;
                           renderizarTablaConsolidado();
                       }});
+                      document.getElementById('tableSectionConsolidado').scrollIntoView({{behavior: 'smooth'}});
                   }}
 
                   // Función para renderizar tabla de Alertas con paginación
@@ -401,6 +402,7 @@ jobs:
                           paginaAlertas = nuevaPagina;
                           renderizarTablaAlertas();
                       }});
+                      document.getElementById('tableSectionAlertas').scrollIntoView({{behavior: 'smooth'}});
                   }}
 
                   // Función para renderizar tabla de Incumplimientos con paginación
@@ -413,6 +415,7 @@ jobs:
                           paginaIncumplimientos = nuevaPagina;
                           renderizarTablaIncumplimientos();
                       }});
+                      document.getElementById('tableSectionIncumplimientos').scrollIntoView({{behavior: 'smooth'}});
                   }}
 
                   // Función para actualizar UI inmediatamente (tags y checkboxes)
