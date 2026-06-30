@@ -488,86 +488,54 @@ jobs:
                       // Solo agregar filas si hay datos
                       if (datos.length > 0) {{
                           const headers = Object.keys(datos[0]);
-
+                          const fragment = document.createDocumentFragment();
                           let grupoAnterior = null;
+
                           datos.forEach(row => {{
                               const tr = document.createElement('tr');
                               headers.forEach(header => {{
                                   const td = document.createElement('td');
                                   let valor = row[header] !== null ? row[header] : '';
 
-                                  // Formatear fechas para columnas específicas
                                   if ((header === 'Rotura' || header === 'Toma' || header === 'Fecha Descarga') && valor !== '') {{
                                       valor = formatearFecha(valor);
                                   }}
 
-                                  // Formatear valores numéricos a 2 decimales
                                   const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)'];
                                   if (columnasDecimales.includes(header) && valor !== '') {{
-                                      if (typeof valor === 'number' && !isNaN(valor)) {{
-                                          valor = valor.toFixed(2);
-                                      }} else if (typeof valor === 'string') {{
-                                          const numValue = parseFloat(valor);
-                                          if (!isNaN(numValue) && isFinite(numValue)) {{
-                                              valor = numValue.toFixed(2);
-                                          }}
-                                      }}
+                                      valor = typeof valor === 'number' && !isNaN(valor) ? valor.toFixed(2) : (typeof valor === 'string' && !isNaN(parseFloat(valor)) ? parseFloat(valor).toFixed(2) : valor);
                                   }}
 
                                   td.textContent = valor;
 
-                                  // Colorear celdas negativas o cero en columna "Diferencia (MPa)"
-                                  if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) {{
-                                      td.classList.add('red-negative');
-                                  }}
-
-                                  // Colorear en amarillo "Resistencia (MPa)" si es menor a "Resistencia Teórica (MPa)"
+                                  if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
                                   if (header === 'Resistencia (MPa)' && valor !== '') {{
-                                      const resistencia = parseFloat(valor);
-                                      const resistenciaTeórica = row['Resistencia Teórica (MPa)'];
-                                      if (!isNaN(resistencia) && resistenciaTeórica !== null && resistenciaTeórica !== undefined) {{
-                                          const resistenciaTeóricaNum = parseFloat(resistenciaTeórica);
-                                          if (!isNaN(resistenciaTeóricaNum) && resistencia < resistenciaTeóricaNum) {{
-                                              td.classList.add('yellow-bg');
-                                          }} else {{
-                                              td.classList.add('green-bg');
-                                          }}
-                                      }} else {{
-                                          td.classList.add('green-bg');
-                                      }}
+                                      const res = parseFloat(valor);
+                                      const resTeor = parseFloat(row['Resistencia Teórica (MPa)'] || 0);
+                                      td.classList.add(!isNaN(res) && !isNaN(resTeor) && res < resTeor ? 'yellow-bg' : 'green-bg');
                                   }}
-
-                                  // Colorear en amarillo "Cilindro N°" si Resistencia Teórica (MPa) > Resistencia (MPa)
                                   if (header === 'Cilindro N°' && valor !== '') {{
-                                      const resistencia = row['Resistencia (MPa)'];
-                                      const resistenciaTeórica = row['Resistencia Teórica (MPa)'];
-                                      if (resistencia !== null && resistencia !== undefined && resistenciaTeórica !== null && resistenciaTeórica !== undefined) {{
-                                          const resistenciaNum = parseFloat(resistencia);
-                                          const resistenciaTeóricaNum = parseFloat(resistenciaTeórica);
-                                          if (!isNaN(resistenciaNum) && !isNaN(resistenciaTeóricaNum) && resistenciaTeóricaNum > resistenciaNum) {{
-                                              td.classList.add('yellow-bg');
-                                          }}
-                                      }}
+                                      const res = parseFloat(row['Resistencia (MPa)'] || 0);
+                                      const resTeor = parseFloat(row['Resistencia Teórica (MPa)'] || 0);
+                                      if (!isNaN(res) && !isNaN(resTeor) && resTeor > res) td.classList.add('yellow-bg');
                                   }}
 
-                                  // Colorear con fondo verde claro columnas específicas
                                   const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia Teórica (MPa)'];
-                                  if (columnasVerdes.includes(header)) {{
-                                      td.classList.add('green-bg');
-                                  }}
+                                  if (columnasVerdes.includes(header)) td.classList.add('green-bg');
 
                                   tr.appendChild(td);
                               }});
 
-                              // Aplicar separador de grupo si cambió PROYECTO + CILINDRO N°
                               const grupoActual = (row['Proyecto'] || '') + '|' + (row['Cilindro N°'] || '');
                               if (grupoActual !== grupoAnterior) {{
                                   tr.classList.add('group-separator');
                                   grupoAnterior = grupoActual;
                               }}
 
-                              tbody.appendChild(tr);
+                              fragment.appendChild(tr);
                           }});
+
+                          tbody.appendChild(fragment);
 
                           if (conDelay) {{
                               setTimeout(() => {{
@@ -604,8 +572,9 @@ jobs:
                       // Solo agregar filas si hay datos
                       if (datos.length > 0) {{
                           const headers = Object.keys(datos[0]);
-
+                          const fragment = document.createDocumentFragment();
                           let grupoAnterior = null;
+
                           datos.forEach(row => {{
                               const tr = document.createElement('tr');
                               headers.forEach(header => {{
@@ -616,57 +585,36 @@ jobs:
                                       valor = formatearFecha(valor);
                                   }}
 
-                                  // Formatear valores numéricos a 2 decimales
                                   const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)'];
                                   if (columnasDecimales.includes(header) && valor !== '') {{
-                                      if (typeof valor === 'number' && !isNaN(valor)) {{
-                                          valor = valor.toFixed(2);
-                                      }} else if (typeof valor === 'string') {{
-                                          const numValue = parseFloat(valor);
-                                          if (!isNaN(numValue) && isFinite(numValue)) {{
-                                              valor = numValue.toFixed(2);
-                                          }}
-                                      }}
+                                      valor = typeof valor === 'number' && !isNaN(valor) ? valor.toFixed(2) : (typeof valor === 'string' && !isNaN(parseFloat(valor)) ? parseFloat(valor).toFixed(2) : valor);
                                   }}
 
                                   td.textContent = valor;
 
-                                  // Colorear celdas negativas o cero en columna "Diferencia (MPa)"
-                                  if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) {{
-                                      td.classList.add('red-negative');
-                                  }}
-
-                                  // Colorear en rojo "Resistencia Mínima (MPa)" si es mayor o igual a "Resistencia (MPa)"
+                                  if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
                                   if (header === 'Resistencia Mínima (MPa)' && valor !== '') {{
-                                      const resistenciaMinima = parseFloat(valor);
-                                      const resistencia = row['Resistencia (MPa)'];
-                                      if (!isNaN(resistenciaMinima) && resistencia !== null && resistencia !== undefined) {{
-                                          const resistenciaNum = parseFloat(resistencia);
-                                          if (!isNaN(resistenciaNum) && resistenciaMinima >= resistenciaNum) {{
-                                              td.classList.add('red-negative');
-                                          }}
-                                      }}
+                                      const resMin = parseFloat(valor);
+                                      const res = parseFloat(row['Resistencia (MPa)'] || 0);
+                                      if (!isNaN(resMin) && !isNaN(res) && resMin >= res) td.classList.add('red-negative');
                                   }}
 
-                                  // Colorear con fondo verde claro columnas específicas
                                   const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia Teórica (MPa)'];
-                                  if (columnasVerdes.includes(header)) {{
-                                      td.classList.add('green-bg');
-                                  }}
+                                  if (columnasVerdes.includes(header)) td.classList.add('green-bg');
 
                                   tr.appendChild(td);
                               }});
 
-                              // Aplicar separador de grupo si cambió PROYECTO + CILINDRO N°
                               const grupoActual = (row['Proyecto'] || '') + '|' + (row['Cilindro N°'] || '');
                               if (grupoActual !== grupoAnterior) {{
                                   tr.classList.add('group-separator');
                                   grupoAnterior = grupoActual;
                               }}
 
-                              tbody.appendChild(tr);
+                              fragment.appendChild(tr);
                           }});
 
+                          tbody.appendChild(fragment);
                           tableSectionAlertas.classList.add('active');
                       }}
                   }}
@@ -696,8 +644,9 @@ jobs:
                       // Solo agregar filas si hay datos
                       if (datos.length > 0) {{
                           const headers = Object.keys(datos[0]);
-
+                          const fragment = document.createDocumentFragment();
                           let grupoAnterior = null;
+
                           datos.forEach(row => {{
                               const tr = document.createElement('tr');
                               headers.forEach(header => {{
@@ -708,57 +657,36 @@ jobs:
                                       valor = formatearFecha(valor);
                                   }}
 
-                                  // Formatear valores numéricos a 2 decimales
                                   const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)'];
                                   if (columnasDecimales.includes(header) && valor !== '') {{
-                                      if (typeof valor === 'number' && !isNaN(valor)) {{
-                                          valor = valor.toFixed(2);
-                                      }} else if (typeof valor === 'string') {{
-                                          const numValue = parseFloat(valor);
-                                          if (!isNaN(numValue) && isFinite(numValue)) {{
-                                              valor = numValue.toFixed(2);
-                                          }}
-                                      }}
+                                      valor = typeof valor === 'number' && !isNaN(valor) ? valor.toFixed(2) : (typeof valor === 'string' && !isNaN(parseFloat(valor)) ? parseFloat(valor).toFixed(2) : valor);
                                   }}
 
                                   td.textContent = valor;
 
-                                  // Colorear celdas negativas o cero en columna "Diferencia (MPa)"
-                                  if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) {{
-                                      td.classList.add('red-negative');
-                                  }}
-
-                                  // Colorear en amarillo "Resistencia Mínima (MPa)" si es mayor a "Resistencia Promedio (MPa)"
+                                  if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
                                   if (header === 'Resistencia Mínima (MPa)' && valor !== '') {{
-                                      const resistenciaMinima = parseFloat(valor);
-                                      const resistenciaPromedio = row['Resistencia Promedio (MPa)'];
-                                      if (!isNaN(resistenciaMinima) && resistenciaPromedio !== null && resistenciaPromedio !== undefined) {{
-                                          const resistenciaPromedioNum = parseFloat(resistenciaPromedio);
-                                          if (!isNaN(resistenciaPromedioNum) && resistenciaMinima > resistenciaPromedioNum) {{
-                                              td.classList.add('yellow-bg');
-                                          }}
-                                      }}
+                                      const resMin = parseFloat(valor);
+                                      const resPromedio = parseFloat(row['Resistencia Promedio (MPa)'] || 0);
+                                      if (!isNaN(resMin) && !isNaN(resPromedio) && resMin > resPromedio) td.classList.add('yellow-bg');
                                   }}
 
-                                  // Colorear con fondo verde claro columnas específicas
                                   const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia Teórica (MPa)'];
-                                  if (columnasVerdes.includes(header)) {{
-                                      td.classList.add('green-bg');
-                                  }}
+                                  if (columnasVerdes.includes(header)) td.classList.add('green-bg');
 
                                   tr.appendChild(td);
                               }});
 
-                              // Aplicar separador de grupo si cambió PROYECTO + CILINDRO N°
                               const grupoActual = (row['Proyecto'] || '') + '|' + (row['Cilindro N°'] || '');
                               if (grupoActual !== grupoAnterior) {{
                                   tr.classList.add('group-separator');
                                   grupoAnterior = grupoActual;
                               }}
 
-                              tbody.appendChild(tr);
+                              fragment.appendChild(tr);
                           }});
 
+                          tbody.appendChild(fragment);
                           tableSectionIncumplimientos.classList.add('active');
                       }}
                   }}
