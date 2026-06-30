@@ -343,6 +343,11 @@ jobs:
 
                   // Variables de paginación
                   const REGISTROS_POR_PAGINA = 150;
+
+                  // Columnas a ocultar por tabla
+                  const columnasOcultasConsolidado = ['Tipo de mezcla', 'Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Fecha Primera Aparición'];
+                  const columnasOcultasAlertas = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Estado', 'Fecha Primera Aparición'];
+                  const columnasOcultasIncumplimientos = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Estado', 'Fecha Primera Aparición'];
                   let paginaConsolidado = 1;
                   let paginaAlertas = 1;
                   let paginaIncumplimientos = 1;
@@ -564,7 +569,7 @@ jobs:
                       if (thead.innerHTML === '') {{
                           const datosParaHeaders = datosCompletos || datos || datosConsolidado;
                           if (datosParaHeaders.length > 0) {{
-                              const headers = Object.keys(datosParaHeaders[0]);
+                              const headers = Object.keys(datosParaHeaders[0]).filter(h => !columnasOcultasConsolidado.includes(h));
                               const headerRow = document.createElement('tr');
                               const thId = document.createElement('th');
                               thId.textContent = 'ID Vista';
@@ -580,7 +585,8 @@ jobs:
 
                       // Solo agregar filas si hay datos
                       if (datos.length > 0) {{
-                          const headers = Object.keys(datos[0]);
+                          const allHeaders = Object.keys(datos[0]);
+                          const headers = allHeaders.filter(h => !columnasOcultasConsolidado.includes(h));
                           const fragment = document.createDocumentFragment();
                           let grupoAnterior = null;
                           const inicioRegistro = (paginaConsolidado - 1) * REGISTROS_POR_PAGINA + 1;
@@ -657,7 +663,7 @@ jobs:
                       if (thead.innerHTML === '') {{
                           const datosParaHeaders = datosCompletos || datos || datosAlertas;
                           if (datosParaHeaders.length > 0) {{
-                              const headers = Object.keys(datosParaHeaders[0]);
+                              const headers = Object.keys(datosParaHeaders[0]).filter(h => !columnasOcultasAlertas.includes(h));
                               const headerRow = document.createElement('tr');
                               const thId = document.createElement('th');
                               thId.textContent = 'ID Vista';
@@ -673,7 +679,8 @@ jobs:
 
                       // Solo agregar filas si hay datos
                       if (datos.length > 0) {{
-                          const headers = Object.keys(datos[0]);
+                          const allHeaders = Object.keys(datos[0]);
+                          const headers = allHeaders.filter(h => !columnasOcultasAlertas.includes(h));
                           const fragment = document.createDocumentFragment();
                           let grupoAnterior = null;
                           const inicioRegistro = (paginaAlertas - 1) * REGISTROS_POR_PAGINA + 1;
@@ -738,7 +745,7 @@ jobs:
                       if (thead.innerHTML === '') {{
                           const datosParaHeaders = datosCompletos || datos || datosIncumplimientos;
                           if (datosParaHeaders.length > 0) {{
-                              const headers = Object.keys(datosParaHeaders[0]);
+                              const headers = Object.keys(datosParaHeaders[0]).filter(h => !columnasOcultasIncumplimientos.includes(h));
                               const headerRow = document.createElement('tr');
                               const thId = document.createElement('th');
                               thId.textContent = 'ID Vista';
@@ -754,7 +761,8 @@ jobs:
 
                       // Solo agregar filas si hay datos
                       if (datos.length > 0) {{
-                          const headers = Object.keys(datos[0]);
+                          const allHeaders = Object.keys(datos[0]);
+                          const headers = allHeaders.filter(h => !columnasOcultasIncumplimientos.includes(h));
                           const fragment = document.createDocumentFragment();
                           let grupoAnterior = null;
                           const inicioRegistro = (paginaIncumplimientos - 1) * REGISTROS_POR_PAGINA + 1;
