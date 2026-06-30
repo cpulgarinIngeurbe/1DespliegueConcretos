@@ -354,7 +354,15 @@ jobs:
                           label.className = 'filter-option-label';
                           label.textContent = proyecto;
 
-                          checkbox.addEventListener('change', onChangeCallback);
+                          checkbox.addEventListener('change', () => {{
+                              onChangeCallback();
+                              // Cerrar el dropdown después de seleccionar
+                              const parentSection = dropdownElement.closest('.filter-section');
+                              if (parentSection) {{
+                                  const dropdown = parentSection.querySelector('.filter-dropdown');
+                                  if (dropdown) dropdown.classList.remove('open');
+                              }}
+                          }});
 
                           option.appendChild(checkbox);
                           option.appendChild(label);
