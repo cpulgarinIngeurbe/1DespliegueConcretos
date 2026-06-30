@@ -409,9 +409,10 @@ jobs:
                           label.textContent = proyecto;
 
                           checkbox.addEventListener('change', () => {{
-                              onChangeCallback();
-                              // Cerrar el dropdown después de seleccionar
+                              // Cerrar dropdown PRIMERO (inmediato)
                               dropdownElement.classList.remove('open');
+                              // Luego actualizar la UI
+                              onChangeCallback();
                           }});
 
                           option.appendChild(checkbox);
