@@ -248,8 +248,11 @@ jobs:
                   <div id="consolidado" class="tab-content active">
                       <div class="filter-section">
                           <button class="filter-btn" id="filterBtnConsolidado">Filtrar por Proyecto</button>
+                          <button class="filter-btn" id="filterBtnUnidadConsolidado" style="display: none; margin-left: 8px;">Filtrar por Unidad Estructural</button>
                           <div class="filter-dropdown" id="filterDropdownConsolidado"></div>
+                          <div class="filter-dropdown" id="filterDropdownUnidadConsolidado"></div>
                           <div class="filter-tags" id="filterTagsConsolidado"></div>
+                          <div class="filter-tags" id="filterTagsUnidadConsolidado"></div>
                       </div>
                       <div id="tableSectionConsolidado" class="table-section">
                           <table id="dataTableConsolidado">
@@ -263,8 +266,11 @@ jobs:
                   <div id="alertas" class="tab-content">
                       <div class="filter-section">
                           <button class="filter-btn" id="filterBtnAlertas">Filtrar por Proyecto</button>
+                          <button class="filter-btn" id="filterBtnUnidadAlertas" style="display: none; margin-left: 8px;">Filtrar por Unidad Estructural</button>
                           <div class="filter-dropdown" id="filterDropdownAlertas"></div>
+                          <div class="filter-dropdown" id="filterDropdownUnidadAlertas"></div>
                           <div class="filter-tags" id="filterTagsAlertas"></div>
+                          <div class="filter-tags" id="filterTagsUnidadAlertas"></div>
                       </div>
                       <div id="tableSectionAlertas" class="table-section">
                           <table id="dataTableAlertas">
@@ -278,8 +284,11 @@ jobs:
                   <div id="incumplimientos" class="tab-content">
                       <div class="filter-section">
                           <button class="filter-btn" id="filterBtnIncumplimientos">Filtrar por Proyecto</button>
+                          <button class="filter-btn" id="filterBtnUnidadIncumplimientos" style="display: none; margin-left: 8px;">Filtrar por Unidad Estructural</button>
                           <div class="filter-dropdown" id="filterDropdownIncumplimientos"></div>
+                          <div class="filter-dropdown" id="filterDropdownUnidadIncumplimientos"></div>
                           <div class="filter-tags" id="filterTagsIncumplimientos"></div>
+                          <div class="filter-tags" id="filterTagsUnidadIncumplimientos"></div>
                       </div>
                       <div id="tableSectionIncumplimientos" class="table-section">
                           <table id="dataTableIncumplimientos">
@@ -320,6 +329,16 @@ jobs:
                   const filterTagsAlertas = document.getElementById('filterTagsAlertas');
                   const filterTagsIncumplimientos = document.getElementById('filterTagsIncumplimientos');
 
+                  const filterBtnUnidadConsolidado = document.getElementById('filterBtnUnidadConsolidado');
+                  const filterBtnUnidadAlertas = document.getElementById('filterBtnUnidadAlertas');
+                  const filterBtnUnidadIncumplimientos = document.getElementById('filterBtnUnidadIncumplimientos');
+                  const filterDropdownUnidadConsolidado = document.getElementById('filterDropdownUnidadConsolidado');
+                  const filterDropdownUnidadAlertas = document.getElementById('filterDropdownUnidadAlertas');
+                  const filterDropdownUnidadIncumplimientos = document.getElementById('filterDropdownUnidadIncumplimientos');
+                  const filterTagsUnidadConsolidado = document.getElementById('filterTagsUnidadConsolidado');
+                  const filterTagsUnidadAlertas = document.getElementById('filterTagsUnidadAlertas');
+                  const filterTagsUnidadIncumplimientos = document.getElementById('filterTagsUnidadIncumplimientos');
+
                   // Función para actualizar tags
                   function actualizarTags(tagsContainer, proyectosSeleccionados, onRemoveCallback) {{
                       tagsContainer.innerHTML = '';
@@ -340,6 +359,8 @@ jobs:
 
                   // Variable global para almacenar proyectos seleccionados (compartida entre pestañas)
                   let proyectosSeleccionados = [];
+                  // Variable global para almacenar unidades estructurales seleccionadas
+                  let unidadesEstructuralesSeleccionadas = [];
 
                   // Variables de paginación
                   const REGISTROS_POR_PAGINA = 150;
@@ -374,17 +395,38 @@ jobs:
                       return datos.filter(row => proyectosSeleccionados.includes(row['Proyecto']));
                   }}
 
+                  // Función para obtener unidades estructurales únicas de los datos filtrados por proyecto
+                  function obtenerUnidadesEstructuralesUnicas(datos, proyectosSeleccionados) {{
+                      const datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
+                      const unidades = new Set();
+                      datosFiltradores.forEach(row => {{
+                          if (row['UNIDAD ESTRUCTURAL'] && row['UNIDAD ESTRUCTURAL'].trim() !== '') {{
+                              unidades.add(row['UNIDAD ESTRUCTURAL']);
+                          }}
+                      }});
+                      return Array.from(unidades).sort();
+                  }}
+
+                  // Función para filtrar datos por proyectos y unidades estructurales
+                  function filtrarPorProyectosYUnidades(datos, proyectosSeleccionados, unidadesSeleccionadas) {{
+                      let datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
+                      if (unidadesSeleccionadas.length > 0) {{
+                          datosFiltradores = datosFiltradores.filter(row => unidadesSeleccionadas.includes(row['UNIDAD ESTRUCTURAL']));
+                      }}
+                      return datosFiltradores;
+                  }}
+
                   // Función para actualizar solo tablas (puede ser lenta)
                   function actualizarTablas() {{
-                      datosActualesConsolidado = filtrarPorProyectos(datosConsolidado, proyectosSeleccionados);
+                      datosActualesConsolidado = filtrarPorProyectosYUnidades(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas);
                       paginaConsolidado = 1;
                       renderizarTablaConsolidado();
 
-                      datosActualesAlertas = filtrarPorProyectos(datosAlertas, proyectosSeleccionados);
+                      datosActualesAlertas = filtrarPorProyectosYUnidades(datosAlertas, proyectosSeleccionados, unidadesEstructuralesSeleccionadas);
                       paginaAlertas = 1;
                       renderizarTablaAlertas();
 
-                      datosActualesIncumplimientos = filtrarPorProyectos(datosIncumplimientos, proyectosSeleccionados);
+                      datosActualesIncumplimientos = filtrarPorProyectosYUnidades(datosIncumplimientos, proyectosSeleccionados, unidadesEstructuralesSeleccionadas);
                       paginaIncumplimientos = 1;
                       renderizarTablaIncumplimientos();
                   }}
@@ -432,8 +474,10 @@ jobs:
                   function actualizarUIInmediata() {{
                       // Deduplicar proyectosSeleccionados
                       proyectosSeleccionados = Array.from(new Set(proyectosSeleccionados));
+                      // Deduplicar unidadesEstructuralesSeleccionadas
+                      unidadesEstructuralesSeleccionadas = Array.from(new Set(unidadesEstructuralesSeleccionadas));
 
-                      // Actualizar checkboxes en todas las pestañas
+                      // Actualizar checkboxes en todas las pestañas (proyectos)
                       [filterDropdownConsolidado, filterDropdownAlertas, filterDropdownIncumplimientos].forEach(dropdown => {{
                           const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
                           checkboxes.forEach(checkbox => {{
@@ -441,10 +485,62 @@ jobs:
                           }});
                       }});
 
-                      // Actualizar tags en todas las pestañas
+                      // Mostrar/ocultar botones de Unidad Estructural según si hay proyectos seleccionados
+                      const mostrarUnidadBtn = proyectosSeleccionados.length > 0;
+                      filterBtnUnidadConsolidado.style.display = mostrarUnidadBtn ? 'inline-block' : 'none';
+                      filterBtnUnidadAlertas.style.display = mostrarUnidadBtn ? 'inline-block' : 'none';
+                      filterBtnUnidadIncumplimientos.style.display = mostrarUnidadBtn ? 'inline-block' : 'none';
+
+                      // Actualizar dropdowns de Unidad Estructural con opciones filtradas por proyectos
+                      const unidadesConsolidado = obtenerUnidadesEstructuralesUnicas(datosConsolidado, proyectosSeleccionados);
+                      const unidadesAlertas = obtenerUnidadesEstructuralesUnicas(datosAlertas, proyectosSeleccionados);
+                      const unidadesIncumplimientos = obtenerUnidadesEstructuralesUnicas(datosIncumplimientos, proyectosSeleccionados);
+
+                      llenarDropdown(filterDropdownUnidadConsolidado, unidadesConsolidado, (unidad, isChecked) => {{
+                          if (isChecked) {{
+                              unidadesEstructuralesSeleccionadas.push(unidad);
+                          }} else {{
+                              unidadesEstructuralesSeleccionadas = unidadesEstructuralesSeleccionadas.filter(u => u !== unidad);
+                          }}
+                          actualizarUIInmediata();
+                          requestAnimationFrame(actualizarTablas);
+                      }});
+                      llenarDropdown(filterDropdownUnidadAlertas, unidadesAlertas, (unidad, isChecked) => {{
+                          if (isChecked) {{
+                              unidadesEstructuralesSeleccionadas.push(unidad);
+                          }} else {{
+                              unidadesEstructuralesSeleccionadas = unidadesEstructuralesSeleccionadas.filter(u => u !== unidad);
+                          }}
+                          actualizarUIInmediata();
+                          requestAnimationFrame(actualizarTablas);
+                      }});
+                      llenarDropdown(filterDropdownUnidadIncumplimientos, unidadesIncumplimientos, (unidad, isChecked) => {{
+                          if (isChecked) {{
+                              unidadesEstructuralesSeleccionadas.push(unidad);
+                          }} else {{
+                              unidadesEstructuralesSeleccionadas = unidadesEstructuralesSeleccionadas.filter(u => u !== unidad);
+                          }}
+                          actualizarUIInmediata();
+                          requestAnimationFrame(actualizarTablas);
+                      }});
+
+                      // Actualizar checkboxes de Unidad Estructural
+                      [filterDropdownUnidadConsolidado, filterDropdownUnidadAlertas, filterDropdownUnidadIncumplimientos].forEach(dropdown => {{
+                          const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+                          checkboxes.forEach(checkbox => {{
+                              checkbox.checked = unidadesEstructuralesSeleccionadas.includes(checkbox.value);
+                          }});
+                      }});
+
+                      // Actualizar tags en todas las pestañas (proyectos)
                       actualizarTags(filterTagsConsolidado, proyectosSeleccionados, removerProyecto);
                       actualizarTags(filterTagsAlertas, proyectosSeleccionados, removerProyecto);
                       actualizarTags(filterTagsIncumplimientos, proyectosSeleccionados, removerProyecto);
+
+                      // Actualizar tags de Unidad Estructural
+                      actualizarTags(filterTagsUnidadConsolidado, unidadesEstructuralesSeleccionadas, removerUnidadEstructural);
+                      actualizarTags(filterTagsUnidadAlertas, unidadesEstructuralesSeleccionadas, removerUnidadEstructural);
+                      actualizarTags(filterTagsUnidadIncumplimientos, unidadesEstructuralesSeleccionadas, removerUnidadEstructural);
                   }}
 
                   // Función para actualizar todos los filtros (UI inmediata + tablas asincrónicas)
@@ -459,6 +555,14 @@ jobs:
                   // Función para remover un proyecto de la selección global
                   function removerProyecto(proyecto) {{
                       proyectosSeleccionados = proyectosSeleccionados.filter(p => p !== proyecto);
+                      // Limpiar unidades estructurales seleccionadas cuando se deselecciona un proyecto
+                      unidadesEstructuralesSeleccionadas = [];
+                      actualizarTodosFiltros();
+                  }}
+
+                  // Función para remover una unidad estructural de la selección global
+                  function removerUnidadEstructural(unidad) {{
+                      unidadesEstructuralesSeleccionadas = unidadesEstructuralesSeleccionadas.filter(u => u !== unidad);
                       actualizarTodosFiltros();
                   }}
 
@@ -869,12 +973,43 @@ jobs:
                       filterDropdownAlertas.classList.remove('open');
                   }});
 
+                  // Listeners para botones de filtro de Unidad Estructural
+                  filterBtnUnidadConsolidado.addEventListener('click', () => {{
+                      filterDropdownUnidadConsolidado.classList.toggle('open');
+                      filterDropdownUnidadAlertas.classList.remove('open');
+                      filterDropdownUnidadIncumplimientos.classList.remove('open');
+                      filterDropdownConsolidado.classList.remove('open');
+                      filterDropdownAlertas.classList.remove('open');
+                      filterDropdownIncumplimientos.classList.remove('open');
+                  }});
+
+                  filterBtnUnidadAlertas.addEventListener('click', () => {{
+                      filterDropdownUnidadAlertas.classList.toggle('open');
+                      filterDropdownUnidadConsolidado.classList.remove('open');
+                      filterDropdownUnidadIncumplimientos.classList.remove('open');
+                      filterDropdownConsolidado.classList.remove('open');
+                      filterDropdownAlertas.classList.remove('open');
+                      filterDropdownIncumplimientos.classList.remove('open');
+                  }});
+
+                  filterBtnUnidadIncumplimientos.addEventListener('click', () => {{
+                      filterDropdownUnidadIncumplimientos.classList.toggle('open');
+                      filterDropdownUnidadConsolidado.classList.remove('open');
+                      filterDropdownUnidadAlertas.classList.remove('open');
+                      filterDropdownConsolidado.classList.remove('open');
+                      filterDropdownAlertas.classList.remove('open');
+                      filterDropdownIncumplimientos.classList.remove('open');
+                  }});
+
                   // Cerrar dropdown al hacer click fuera
                   document.addEventListener('click', (e) => {{
                       if (!e.target.closest('.filter-section')) {{
                           filterDropdownConsolidado.classList.remove('open');
                           filterDropdownAlertas.classList.remove('open');
                           filterDropdownIncumplimientos.classList.remove('open');
+                          filterDropdownUnidadConsolidado.classList.remove('open');
+                          filterDropdownUnidadAlertas.classList.remove('open');
+                          filterDropdownUnidadIncumplimientos.classList.remove('open');
                       }}
                   }});
 
