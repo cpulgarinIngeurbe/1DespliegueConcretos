@@ -381,6 +381,7 @@ jobs:
 
                   // Función para renderizar tabla de Consolidado con paginación
                   function renderizarTablaConsolidado() {{
+                      window.scrollTo({{top: 0, behavior: 'smooth'}});
                       const inicio = (paginaConsolidado - 1) * REGISTROS_POR_PAGINA;
                       const fin = inicio + REGISTROS_POR_PAGINA;
                       const datosPage = datosActualesConsolidado.slice(inicio, fin);
@@ -389,11 +390,11 @@ jobs:
                           paginaConsolidado = nuevaPagina;
                           renderizarTablaConsolidado();
                       }});
-                      document.getElementById('tableSectionConsolidado').scrollIntoView({{behavior: 'smooth'}});
                   }}
 
                   // Función para renderizar tabla de Alertas con paginación
                   function renderizarTablaAlertas() {{
+                      window.scrollTo({{top: 0, behavior: 'smooth'}});
                       const inicio = (paginaAlertas - 1) * REGISTROS_POR_PAGINA;
                       const fin = inicio + REGISTROS_POR_PAGINA;
                       const datosPage = datosActualesAlertas.slice(inicio, fin);
@@ -402,11 +403,11 @@ jobs:
                           paginaAlertas = nuevaPagina;
                           renderizarTablaAlertas();
                       }});
-                      document.getElementById('tableSectionAlertas').scrollIntoView({{behavior: 'smooth'}});
                   }}
 
                   // Función para renderizar tabla de Incumplimientos con paginación
                   function renderizarTablaIncumplimientos() {{
+                      window.scrollTo({{top: 0, behavior: 'smooth'}});
                       const inicio = (paginaIncumplimientos - 1) * REGISTROS_POR_PAGINA;
                       const fin = inicio + REGISTROS_POR_PAGINA;
                       const datosPage = datosActualesIncumplimientos.slice(inicio, fin);
@@ -415,7 +416,6 @@ jobs:
                           paginaIncumplimientos = nuevaPagina;
                           renderizarTablaIncumplimientos();
                       }});
-                      document.getElementById('tableSectionIncumplimientos').scrollIntoView({{behavior: 'smooth'}});
                   }}
 
                   // Función para actualizar UI inmediatamente (tags y checkboxes)
