@@ -208,6 +208,7 @@ jobs:
                   .red-negative {{ background-color: rgba(255, 0, 0, 0.15); }}
                   .green-bg {{ background-color: #f0f8f0; }}
                   .yellow-bg {{ background-color: #fffacd; }}
+                  .group-separator td {{ border-top: 2.5px solid #000 !important; }}
               </style>
           </head>
           <body>
@@ -565,6 +566,7 @@ jobs:
                           thead.appendChild(headerRow);
 
                           // Generar filas de datos
+                          let grupoAnterior = null;
                           datos.forEach(row => {{
                               const tr = document.createElement('tr');
                               headers.forEach(header => {{
@@ -633,6 +635,14 @@ jobs:
 
                                   tr.appendChild(td);
                               }});
+
+                              // Aplicar separador de grupo si cambió PROYECTO + CILINDRO N°
+                              const grupoActual = (row['Proyecto'] || '') + '|' + (row['Cilindro N°'] || '');
+                              if (grupoActual !== grupoAnterior) {{
+                                  tr.classList.add('group-separator');
+                                  grupoAnterior = grupoActual;
+                              }}
+
                               tbody.appendChild(tr);
                           }});
 
@@ -927,6 +937,7 @@ jobs:
                           }});
                           thead.appendChild(headerRow);
 
+                          let grupoAnterior = null;
                           datos.forEach(row => {{
                               const tr = document.createElement('tr');
                               headers.forEach(header => {{
@@ -977,6 +988,14 @@ jobs:
 
                                   tr.appendChild(td);
                               }});
+
+                              // Aplicar separador de grupo si cambió PROYECTO + CILINDRO N°
+                              const grupoActual = (row['Proyecto'] || '') + '|' + (row['Cilindro N°'] || '');
+                              if (grupoActual !== grupoAnterior) {{
+                                  tr.classList.add('group-separator');
+                                  grupoAnterior = grupoActual;
+                              }}
+
                               tbody.appendChild(tr);
                           }});
 
@@ -1188,6 +1207,7 @@ jobs:
                           }});
                           thead.appendChild(headerRow);
 
+                          let grupoAnterior = null;
                           datos.forEach(row => {{
                               const tr = document.createElement('tr');
                               headers.forEach(header => {{
@@ -1238,6 +1258,14 @@ jobs:
 
                                   tr.appendChild(td);
                               }});
+
+                              // Aplicar separador de grupo si cambió PROYECTO + CILINDRO N°
+                              const grupoActual = (row['Proyecto'] || '') + '|' + (row['Cilindro N°'] || '');
+                              if (grupoActual !== grupoAnterior) {{
+                                  tr.classList.add('group-separator');
+                                  grupoAnterior = grupoActual;
+                              }}
+
                               tbody.appendChild(tr);
                           }});
 
