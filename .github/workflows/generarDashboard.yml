@@ -558,6 +558,16 @@ jobs:
                       return valor;
                   }}
 
+                  // Función para mapear nombres de columnas a sus etiquetas de visualización
+                  function mapearNombreColumna(nombreOriginal) {{
+                      const mapeo = {{
+                          'Toma': 'FECHA TOMA',
+                          'Rotura': 'FECHA ROTURA',
+                          'ID Vista': 'ID'
+                      }};
+                      return mapeo[nombreOriginal] || nombreOriginal;
+                  }}
+
                   // Función para generar tabla de Consolidado
                   function generarTabla(datos, conDelay = false, datosCompletos = null) {{
                       const thead = dataTableConsolidado.querySelector('thead');
@@ -572,11 +582,11 @@ jobs:
                               const headers = Object.keys(datosParaHeaders[0]).filter(h => !columnasOcultasConsolidado.includes(h));
                               const headerRow = document.createElement('tr');
                               const thId = document.createElement('th');
-                              thId.textContent = 'ID Vista';
+                              thId.textContent = 'ID';
                               headerRow.appendChild(thId);
                               headers.forEach(header => {{
                                   const th = document.createElement('th');
-                                  th.textContent = header;
+                                  th.textContent = mapearNombreColumna(header);
                                   headerRow.appendChild(th);
                               }});
                               thead.appendChild(headerRow);
@@ -666,11 +676,11 @@ jobs:
                               const headers = Object.keys(datosParaHeaders[0]).filter(h => !columnasOcultasAlertas.includes(h));
                               const headerRow = document.createElement('tr');
                               const thId = document.createElement('th');
-                              thId.textContent = 'ID Vista';
+                              thId.textContent = 'ID';
                               headerRow.appendChild(thId);
                               headers.forEach(header => {{
                                   const th = document.createElement('th');
-                                  th.textContent = header;
+                                  th.textContent = mapearNombreColumna(header);
                                   headerRow.appendChild(th);
                               }});
                               thead.appendChild(headerRow);
@@ -748,11 +758,11 @@ jobs:
                               const headers = Object.keys(datosParaHeaders[0]).filter(h => !columnasOcultasIncumplimientos.includes(h));
                               const headerRow = document.createElement('tr');
                               const thId = document.createElement('th');
-                              thId.textContent = 'ID Vista';
+                              thId.textContent = 'ID';
                               headerRow.appendChild(thId);
                               headers.forEach(header => {{
                                   const th = document.createElement('th');
-                                  th.textContent = header;
+                                  th.textContent = mapearNombreColumna(header);
                                   headerRow.appendChild(th);
                               }});
                               thead.appendChild(headerRow);
