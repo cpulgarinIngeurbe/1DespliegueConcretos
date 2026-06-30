@@ -489,7 +489,7 @@ jobs:
                       btnAnterior.addEventListener('click', () => callback(paginaActual - 1));
 
                       const spanPagina = document.createElement('span');
-                      spanPagina.textContent = `Página ${paginaActual} de ${totalPaginas}`;
+                      spanPagina.textContent = 'Página ' + paginaActual + ' de ' + totalPaginas;
 
                       const btnSiguiente = document.createElement('button');
                       btnSiguiente.textContent = 'Siguiente →';
