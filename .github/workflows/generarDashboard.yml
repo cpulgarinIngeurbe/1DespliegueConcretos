@@ -220,31 +220,6 @@ jobs:
                   </div>
 
                   <div id="consolidado" class="tab-content active">
-                      <div class="proyecto-input-row">
-                          <div class="proyecto-input-wrapper">
-                              <label class="selector-label">Seleccione el proyecto</label>
-                              <input type="text" id="proyectoInputConsolidado" class="selector-dropdown" placeholder="Buscar proyecto..." list="proyectoListConsolidado" autocomplete="off" />
-                              <datalist id="proyectoListConsolidado">
-                                  {opciones_html}
-                              </datalist>
-                          </div>
-                          <button id="btnResetConsolidado" class="btn-reset">Restaurar</button>
-                      </div>
-                      <div id="filtersRowConsolidado" class="filters-row" style="display: none; opacity: 0;">
-                          <div id="cilindroSectionConsolidado" class="selector-section">
-                              <label class="selector-label">Cilindro N°</label>
-                              <input type="text" id="cilindroSelectorConsolidado" class="selector-dropdown" placeholder="Buscar cilindro..." list="cilindroListConsolidado" autocomplete="off" />
-                              <datalist id="cilindroListConsolidado"></datalist>
-                          </div>
-                          <div id="localizacionSectionConsolidado" class="selector-section">
-                              <label class="selector-label">Localización</label>
-                              <select id="localizacionSelectorConsolidado" class="selector-dropdown"></select>
-                          </div>
-                          <div id="tomaSectionConsolidado" class="selector-section">
-                              <label class="selector-label">Toma</label>
-                              <select id="tomaSelectorConsolidado" class="selector-dropdown"></select>
-                          </div>
-                      </div>
                       <div id="tableSectionConsolidado" class="table-section">
                           <table id="dataTableConsolidado">
                               <thead></thead>
@@ -254,35 +229,6 @@ jobs:
                   </div>
 
                   <div id="alertas" class="tab-content">
-                      <div class="proyecto-input-row">
-                          <div class="proyecto-input-wrapper">
-                              <label class="selector-label">Seleccione el proyecto</label>
-                              <input type="text" id="proyectoInputAlertas" class="selector-dropdown" placeholder="Buscar proyecto..." list="proyectoListAlertas" autocomplete="off" />
-                              <datalist id="proyectoListAlertas">
-                                  {opciones_html}
-                              </datalist>
-                          </div>
-                          <button id="btnResetAlertas" class="btn-reset">Restaurar</button>
-                      </div>
-                      <div id="filtersRowAlertas" class="filters-row" style="display: none; opacity: 0;">
-                          <div id="cilindroSectionAlertas" class="selector-section">
-                              <label class="selector-label">Cilindro N°</label>
-                              <input type="text" id="cilindroSelectorAlertas" class="selector-dropdown" placeholder="Buscar cilindro..." list="cilindroListAlertas" autocomplete="off" />
-                              <datalist id="cilindroListAlertas"></datalist>
-                          </div>
-                          <div id="localizacionSectionAlertas" class="selector-section">
-                              <label class="selector-label">Localización</label>
-                              <select id="localizacionSelectorAlertas" class="selector-dropdown"></select>
-                          </div>
-                          <div id="tomaSectionAlertas" class="selector-section">
-                              <label class="selector-label">Toma</label>
-                              <select id="tomaSelectorAlertas" class="selector-dropdown"></select>
-                          </div>
-                          <div id="resistenciaNominalSectionAlertas" class="selector-section">
-                              <label class="selector-label">Resistencia nominal (MPa)</label>
-                              <select id="resistenciaNominalSelectorAlertas" class="selector-dropdown"></select>
-                          </div>
-                      </div>
                       <div id="tableSectionAlertas" class="table-section">
                           <table id="dataTableAlertas">
                               <thead></thead>
@@ -292,35 +238,6 @@ jobs:
                   </div>
 
                   <div id="incumplimientos" class="tab-content">
-                      <div class="proyecto-input-row">
-                          <div class="proyecto-input-wrapper">
-                              <label class="selector-label">Seleccione el proyecto</label>
-                              <input type="text" id="proyectoInputIncumplimientos" class="selector-dropdown" placeholder="Buscar proyecto..." list="proyectoListIncumplimientos" autocomplete="off" />
-                              <datalist id="proyectoListIncumplimientos">
-                                  {opciones_html}
-                              </datalist>
-                          </div>
-                          <button id="btnResetIncumplimientos" class="btn-reset">Restaurar</button>
-                      </div>
-                      <div id="filtersRowIncumplimientos" class="filters-row" style="display: none; opacity: 0;">
-                          <div id="cilindroSectionIncumplimientos" class="selector-section">
-                              <label class="selector-label">Cilindro N°</label>
-                              <input type="text" id="cilindroSelectorIncumplimientos" class="selector-dropdown" placeholder="Buscar cilindro..." list="cilindroListIncumplimientos" autocomplete="off" />
-                              <datalist id="cilindroListIncumplimientos"></datalist>
-                          </div>
-                          <div id="localizacionSectionIncumplimientos" class="selector-section">
-                              <label class="selector-label">Localización</label>
-                              <select id="localizacionSelectorIncumplimientos" class="selector-dropdown"></select>
-                          </div>
-                          <div id="tomaSectionIncumplimientos" class="selector-section">
-                              <label class="selector-label">Toma</label>
-                              <select id="tomaSelectorIncumplimientos" class="selector-dropdown"></select>
-                          </div>
-                          <div id="resistenciaNominalSectionIncumplimientos" class="selector-section">
-                              <label class="selector-label">Resistencia nominal (MPa)</label>
-                              <select id="resistenciaNominalSelectorIncumplimientos" class="selector-dropdown"></select>
-                          </div>
-                      </div>
                       <div id="tableSectionIncumplimientos" class="table-section">
                           <table id="dataTableIncumplimientos">
                               <thead></thead>
@@ -331,178 +248,20 @@ jobs:
               </div>
 
               <script>
+                  // Datos de las tres pestañas
                   const datosConsolidado = {datos_tabs['consolidado']};
                   const datosAlertas = {datos_tabs['alertas']};
                   const datosIncumplimientos = {datos_tabs['incumplimientos']};
-                  // Elementos de la pestaña Consolidado
-                  const proyectoInput = document.getElementById('proyectoInputConsolidado');
-                  const selectorCilindro = document.getElementById('cilindroSelectorConsolidado');
-                  const selectorLocalizacion = document.getElementById('localizacionSelectorConsolidado');
-                  const selectorToma = document.getElementById('tomaSelectorConsolidado');
-                  const filtersRow = document.getElementById('filtersRowConsolidado');
-                  const tableSection = document.getElementById('tableSectionConsolidado');
-                  const dataTable = document.getElementById('dataTableConsolidado');
-                  const btnReset = document.getElementById('btnResetConsolidado');
 
-                  // Elementos de pestañas
+                  // Referencias a elementos del DOM
                   const tabButtons = document.querySelectorAll('.tab-button');
                   const tabContents = document.querySelectorAll('.tab-content');
-
-                  let datosFiltrados = [];
-                  let tablaVisible = false;
-                  const proyectos = [...new Set(datosConsolidado.map(row => row['Proyecto']))].filter(p => p).sort();
-
-                  // Función para cambiar pestañas
-                  let pestanaActual = 'consolidado';
-                  let filtrosGlobales = {{
-                      proyecto: ''
-                  }};
-                  let filtrosPorPestana = {{
-                      consolidado: {{ cilindro: '', localizacion: '', toma: '' }},
-                      alertas: {{ cilindro: '', localizacion: '', toma: '', resistenciaNominal: '' }},
-                      incumplimientos: {{ cilindro: '', localizacion: '', toma: '', resistenciaNominal: '' }}
-                  }};
-
-
-                  function cambiarPestana(nombrePestana) {{
-                      // Guardar filtros secundarios de la pestaña actual
-                      if (pestanaActual === 'consolidado') {{
-                          filtrosPorPestana.consolidado.cilindro = document.getElementById('cilindroSelectorConsolidado').value || '';
-                          filtrosPorPestana.consolidado.localizacion = document.getElementById('localizacionSelectorConsolidado').value || '';
-                          filtrosPorPestana.consolidado.toma = document.getElementById('tomaSelectorConsolidado').value || '';
-                      }} else if (pestanaActual === 'alertas') {{
-                          filtrosPorPestana.alertas.cilindro = document.getElementById('cilindroSelectorAlertas').value || '';
-                          filtrosPorPestana.alertas.localizacion = document.getElementById('localizacionSelectorAlertas').value || '';
-                          filtrosPorPestana.alertas.toma = document.getElementById('tomaSelectorAlertas').value || '';
-                          filtrosPorPestana.alertas.resistenciaNominal = document.getElementById('resistenciaNominalSelectorAlertas').value || '';
-                      }} else if (pestanaActual === 'incumplimientos') {{
-                          filtrosPorPestana.incumplimientos.cilindro = document.getElementById('cilindroSelectorIncumplimientos').value || '';
-                          filtrosPorPestana.incumplimientos.localizacion = document.getElementById('localizacionSelectorIncumplimientos').value || '';
-                          filtrosPorPestana.incumplimientos.toma = document.getElementById('tomaSelectorIncumplimientos').value || '';
-                          filtrosPorPestana.incumplimientos.resistenciaNominal = document.getElementById('resistenciaNominalSelectorIncumplimientos').value || '';
-                      }}
-
-                      // Cambiar a la nueva pestaña
-                      tabContents.forEach(tab => tab.classList.remove('active'));
-                      tabButtons.forEach(btn => btn.classList.remove('active'));
-
-                      document.getElementById(nombrePestana).classList.add('active');
-                      document.querySelector('[data-tab="' + nombrePestana + '"]').classList.add('active');
-
-                      // Aplicar proyecto guardado a la nueva pestaña
-                      if (nombrePestana === 'alertas') {{
-                          document.getElementById('proyectoInputAlertas').value = filtrosGlobales.proyecto;
-                          if (filtrosGlobales.proyecto) {{
-                              document.getElementById('proyectoInputAlertas').dispatchEvent(new Event('input', {{ bubbles: true }}));
-                          }}
-                          // Regenerar filtros secundarios
-                          setTimeout(() => {{
-                              if (typeof recalcularOpcionesAlertas === 'function') {{
-                                  recalcularOpcionesAlertas();
-                              }}
-                              // Restaurar filtros guardados
-                              if (filtrosPorPestana.alertas.cilindro) document.getElementById('cilindroSelectorAlertas').value = filtrosPorPestana.alertas.cilindro;
-                              if (filtrosPorPestana.alertas.localizacion) document.getElementById('localizacionSelectorAlertas').value = filtrosPorPestana.alertas.localizacion;
-                              if (filtrosPorPestana.alertas.toma) document.getElementById('tomaSelectorAlertas').value = filtrosPorPestana.alertas.toma;
-                              if (filtrosPorPestana.alertas.resistenciaNominal) document.getElementById('resistenciaNominalSelectorAlertas').value = filtrosPorPestana.alertas.resistenciaNominal;
-                          }}, 100);
-                      }} else if (nombrePestana === 'incumplimientos') {{
-                          document.getElementById('proyectoInputIncumplimientos').value = filtrosGlobales.proyecto;
-                          if (filtrosGlobales.proyecto) {{
-                              document.getElementById('proyectoInputIncumplimientos').dispatchEvent(new Event('input', {{ bubbles: true }}));
-                          }}
-                          // Regenerar filtros secundarios
-                          setTimeout(() => {{
-                              if (typeof recalcularOpcionesIncumplimientos === 'function') {{
-                                  recalcularOpcionesIncumplimientos();
-                              }}
-                              // Restaurar filtros guardados
-                              if (filtrosPorPestana.incumplimientos.cilindro) document.getElementById('cilindroSelectorIncumplimientos').value = filtrosPorPestana.incumplimientos.cilindro;
-                              if (filtrosPorPestana.incumplimientos.localizacion) document.getElementById('localizacionSelectorIncumplimientos').value = filtrosPorPestana.incumplimientos.localizacion;
-                              if (filtrosPorPestana.incumplimientos.toma) document.getElementById('tomaSelectorIncumplimientos').value = filtrosPorPestana.incumplimientos.toma;
-                              if (filtrosPorPestana.incumplimientos.resistenciaNominal) document.getElementById('resistenciaNominalSelectorIncumplimientos').value = filtrosPorPestana.incumplimientos.resistenciaNominal;
-                          }}, 100);
-                      }} else if (nombrePestana === 'consolidado') {{
-                          document.getElementById('proyectoInputConsolidado').value = filtrosGlobales.proyecto;
-                          if (filtrosGlobales.proyecto) {{
-                              document.getElementById('proyectoInputConsolidado').dispatchEvent(new Event('input', {{ bubbles: true }}));
-                          }}
-                          // Regenerar filtros secundarios
-                          setTimeout(() => {{
-                              if (typeof recalcularOpcionesFiltros === 'function') {{
-                                  recalcularOpcionesFiltros();
-                              }}
-                              // Restaurar filtros guardados
-                              if (filtrosPorPestana.consolidado.cilindro) document.getElementById('cilindroSelectorConsolidado').value = filtrosPorPestana.consolidado.cilindro;
-                              if (filtrosPorPestana.consolidado.localizacion) document.getElementById('localizacionSelectorConsolidado').value = filtrosPorPestana.consolidado.localizacion;
-                              if (filtrosPorPestana.consolidado.toma) document.getElementById('tomaSelectorConsolidado').value = filtrosPorPestana.consolidado.toma;
-                          }}, 100);
-                      }}
-
-                      pestanaActual = nombrePestana;
-                  }}
-
-                  tabButtons.forEach(btn => {{
-                      btn.addEventListener('click', () => cambiarPestana(btn.dataset.tab));
-                  }});
-
-                  function recalcularOpcionesFiltros() {{
-                      const cilindroSeleccionado = selectorCilindro.value;
-                      const localizacionSeleccionada = selectorLocalizacion.value;
-                      const tomaSeleccionada = selectorToma.value;
-
-                      // Filtrar datos basándose en los filtros actuales
-                      let datosTemp = datosFiltrados;
-
-                      if (cilindroSeleccionado) {{
-                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindroSeleccionado);
-                      }}
-                      if (localizacionSeleccionada) {{
-                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacionSeleccionada);
-                      }}
-                      if (tomaSeleccionada) {{
-                          datosTemp = datosTemp.filter(row => row['Toma'] === tomaSeleccionada);
-                      }}
-
-                      // Obtener opciones disponibles para cada filtro basándose en datosTemp
-                      const cilindrosDisponibles = [...new Set(datosTemp.map(row => row['Cilindro N°']))].filter(c => c).sort();
-                      const localizacionesDisponibles = [...new Set(datosTemp.map(row => row['Localización']))].filter(l => l).sort();
-                      const tomasDisponibles = [...new Set(datosTemp.map(row => row['Toma']))].filter(t => t).sort();
-
-                      // Actualizar datalist para cilindro
-                      const cilindroActual = selectorCilindro.value;
-                      const cilindroDatalist = document.getElementById('cilindroListConsolidado');
-                      cilindroDatalist.innerHTML = '';
-                      cilindrosDisponibles.forEach(cilindro => {{
-                          const option = document.createElement('option');
-                          option.value = cilindro;
-                          cilindroDatalist.appendChild(option);
-                      }});
-                      selectorCilindro.value = cilindroActual;
-
-                      const localizacionActual = selectorLocalizacion.value;
-                      selectorLocalizacion.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
-                      localizacionesDisponibles.forEach(localizacion => {{
-                          const option = document.createElement('option');
-                          option.value = localizacion;
-                          option.textContent = localizacion;
-                          selectorLocalizacion.appendChild(option);
-                      }});
-                      selectorLocalizacion.value = localizacionActual;
-
-                      const tomaActual = selectorToma.value;
-                      selectorToma.innerHTML = '<option value="">-- Todas las tomas --</option>';
-                      tomasDisponibles.forEach(toma => {{
-                          const option = document.createElement('option');
-                          option.value = toma;
-                          option.textContent = formatearFecha(toma);
-                          selectorToma.appendChild(option);
-                      }});
-                      selectorToma.value = tomaActual;
-
-                      // Actualizar tabla con filtros aplicados
-                      actualizarFiltros();
-                  }}
+                  const tableSectionConsolidado = document.getElementById('tableSectionConsolidado');
+                  const tableSectionAlertas = document.getElementById('tableSectionAlertas');
+                  const tableSectionIncumplimientos = document.getElementById('tableSectionIncumplimientos');
+                  const dataTableConsolidado = document.getElementById('dataTableConsolidado');
+                  const dataTableAlertas = document.getElementById('dataTableAlertas');
+                  const dataTableIncumplimientos = document.getElementById('dataTableIncumplimientos');
 
                   // Función para formatear fechas
                   function formatearFecha(valor) {{
@@ -546,16 +305,15 @@ jobs:
                       return valor;
                   }}
 
+                  // Función para generar tabla de Consolidado
                   function generarTabla(datos, conDelay = false) {{
                       if (datos.length > 0) {{
-                          const thead = dataTable.querySelector('thead');
-                          const tbody = dataTable.querySelector('tbody');
+                          const thead = dataTableConsolidado.querySelector('thead');
+                          const tbody = dataTableConsolidado.querySelector('tbody');
 
-                          // Limpiar tabla
                           thead.innerHTML = '';
                           tbody.innerHTML = '';
 
-                          // Generar encabezados
                           const headers = Object.keys(datos[0]);
                           const headerRow = document.createElement('tr');
                           headers.forEach(header => {{
@@ -565,7 +323,6 @@ jobs:
                           }});
                           thead.appendChild(headerRow);
 
-                          // Generar filas de datos
                           let grupoAnterior = null;
                           datos.forEach(row => {{
                               const tr = document.createElement('tr');
@@ -578,7 +335,7 @@ jobs:
                                       valor = formatearFecha(valor);
                                   }}
 
-                                  // Formatear valores numéricos a 2 decimales para columnas específicas
+                                  // Formatear valores numéricos a 2 decimales
                                   const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)'];
                                   if (columnasDecimales.includes(header) && valor !== '') {{
                                       if (typeof valor === 'number' && !isNaN(valor)) {{
@@ -627,7 +384,7 @@ jobs:
                                       }}
                                   }}
 
-                                  // Colorear con fondo verde claro columnas específicas (excepto Resistencia (MPa) que se maneja arriba)
+                                  // Colorear con fondo verde claro columnas específicas
                                   const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia Teórica (MPa)'];
                                   if (columnasVerdes.includes(header)) {{
                                       td.classList.add('green-bg');
@@ -646,280 +403,17 @@ jobs:
                               tbody.appendChild(tr);
                           }});
 
-                          // Mostrar tabla con delay si es primera vez
-                          if (conDelay && !tablaVisible) {{
+                          if (conDelay) {{
                               setTimeout(() => {{
-                                  tableSection.classList.add('active');
-                                  tablaVisible = true;
+                                  tableSectionConsolidado.classList.add('active');
                               }}, 800);
                           }} else {{
-                              tableSection.classList.add('active');
-                              tablaVisible = true;
+                              tableSectionConsolidado.classList.add('active');
                           }}
                       }}
                   }}
 
-                  function generarTablaSimple(datos, tableElement, conDelay = false) {{
-                      if (datos && datos.length > 0) {{
-                          const thead = tableElement.querySelector('thead');
-                          const tbody = tableElement.querySelector('tbody');
-
-                          // Limpiar tabla
-                          thead.innerHTML = '';
-                          tbody.innerHTML = '';
-
-                          // Generar encabezados
-                          const headers = Object.keys(datos[0]);
-                          const headerRow = document.createElement('tr');
-                          headers.forEach(header => {{
-                              const th = document.createElement('th');
-                              th.textContent = header;
-                              headerRow.appendChild(th);
-                          }});
-                          thead.appendChild(headerRow);
-
-                          // Generar filas de datos
-                          datos.forEach(row => {{
-                              const tr = document.createElement('tr');
-                              headers.forEach(header => {{
-                                  const td = document.createElement('td');
-                                  let valor = row[header] !== null ? row[header] : '';
-
-                                  // Formatear fechas para columnas específicas
-                                  if ((header === 'Rotura' || header === 'Toma' || header === 'Fecha Descarga') && valor !== '') {{
-                                      valor = formatearFecha(valor);
-                                  }}
-
-                                  // Formatear valores numéricos a 2 decimales para columnas específicas
-                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)'];
-                                  if (columnasDecimales.includes(header) && valor !== '') {{
-                                      if (typeof valor === 'number' && !isNaN(valor)) {{
-                                          valor = valor.toFixed(2);
-                                      }} else if (typeof valor === 'string') {{
-                                          const numValue = parseFloat(valor);
-                                          if (!isNaN(numValue) && isFinite(numValue)) {{
-                                              valor = numValue.toFixed(2);
-                                          }}
-                                      }}
-                                  }}
-
-                                  td.textContent = valor;
-                                  tr.appendChild(td);
-                              }});
-                              tbody.appendChild(tr);
-                          }});
-                      }}
-                  }}
-
-                  function actualizarFiltros() {{
-                      const cilindro = selectorCilindro.value;
-                      const localizacion = selectorLocalizacion.value;
-                      const toma = selectorToma.value;
-
-                      let datosTemp = datosFiltrados;
-
-                      if (cilindro) {{
-                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindro);
-                      }}
-                      if (localizacion) {{
-                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacion);
-                      }}
-                      if (toma) {{
-                          datosTemp = datosTemp.filter(row => row['Toma'] === toma);
-                      }}
-
-                      generarTabla(datosTemp);
-                  }}
-
-                  function mostrarFiltrosConDelay() {{
-                      // Mostrar fila de filtros con fade-in
-                      filtersRow.style.opacity = '0';
-                      filtersRow.style.display = 'flex';
-                      setTimeout(() => {{
-                          filtersRow.style.transition = 'opacity 1500ms ease-in-out';
-                          filtersRow.style.opacity = '1';
-                      }}, 0);
-                  }}
-
-                  proyectoInput.addEventListener('input', function() {{
-                      filtrosGlobales.proyecto = this.value.trim();
-                      const valor = this.value.trim();
-
-                      if (!valor || !proyectos.includes(valor)) {{
-                          tableSection.classList.remove('active');
-                          filtersRow.style.display = 'none';
-                          return;
-                      }}
-
-                      // Filtrar por proyecto
-                      datosFiltrados = datosConsolidado.filter(row => row['Proyecto'] === valor);
-
-                      // Resetear selectores
-                      selectorCilindro.value = '';
-                      selectorLocalizacion.value = '';
-                      selectorToma.value = '';
-
-                      // Obtener valores únicos para cada filtro
-                      const cilindros = [...new Set(datosFiltrados.map(row => row['Cilindro N°']))].filter(c => c).sort();
-                      const localizaciones = [...new Set(datosFiltrados.map(row => row['Localización']))].filter(l => l).sort();
-                      const tomas = [...new Set(datosFiltrados.map(row => row['Toma']))].filter(t => t).sort();
-
-                      // Llenar datalist para cilindro
-                      const cilindroDatalist = document.getElementById('cilindroListConsolidado');
-                      cilindroDatalist.innerHTML = '';
-                      cilindros.forEach(cilindro => {{
-                          const option = document.createElement('option');
-                          option.value = cilindro;
-                          cilindroDatalist.appendChild(option);
-                      }});
-
-                      selectorLocalizacion.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
-                      localizaciones.forEach(localizacion => {{
-                          const option = document.createElement('option');
-                          option.value = localizacion;
-                          option.textContent = localizacion;
-                          selectorLocalizacion.appendChild(option);
-                      }});
-
-                      selectorToma.innerHTML = '<option value="">-- Todas las tomas --</option>';
-                      tomas.forEach(toma => {{
-                          const option = document.createElement('option');
-                          option.value = toma;
-                          option.textContent = formatearFecha(toma);
-                          selectorToma.appendChild(option);
-                      }});
-
-                      // Mostrar filtros con delay
-                      mostrarFiltrosConDelay();
-
-                      // Generar tabla con delay
-                      generarTabla(datosFiltrados, true);
-                  }});
-
-                  // Listeners para cambios en filtros secundarios
-                  selectorCilindro.addEventListener('input', recalcularOpcionesFiltros);
-                  selectorLocalizacion.addEventListener('change', recalcularOpcionesFiltros);
-                  selectorToma.addEventListener('change', recalcularOpcionesFiltros);
-
-                  // Listener para botón de reset
-                  btnReset.addEventListener('click', function() {{
-                      proyectoInput.value = '';
-                      selectorCilindro.value = '';
-                      selectorLocalizacion.value = '';
-                      selectorToma.value = '';
-                      filtersRow.style.display = 'none';
-                      tableSection.classList.remove('active');
-                      tablaVisible = false;
-                      proyectoInput.focus();
-                  }});
-
-                  // ========== PESTAÑA ALERTAS ==========
-                  const proyectoInputAlertas = document.getElementById('proyectoInputAlertas');
-                  const selectorCilindroAlertas = document.getElementById('cilindroSelectorAlertas');
-                  const selectorLocalizacionAlertas = document.getElementById('localizacionSelectorAlertas');
-                  const selectorTomaAlertas = document.getElementById('tomaSelectorAlertas');
-                  const selectorResistenciaNominalAlertas = document.getElementById('resistenciaNominalSelectorAlertas');
-                  const filtersRowAlertas = document.getElementById('filtersRowAlertas');
-                  const tableSectionAlertas = document.getElementById('tableSectionAlertas');
-                  const dataTableAlertas = document.getElementById('dataTableAlertas');
-                  const btnResetAlertas = document.getElementById('btnResetAlertas');
-
-                  let datosFiltradosAlertas = [];
-                  const proyectosAlertas = [...new Set(datosAlertas.map(row => row['Proyecto']))].filter(p => p).sort();
-
-                  function recalcularOpcionesAlertas() {{
-                      const cilindroSeleccionado = selectorCilindroAlertas.value;
-                      const localizacionSeleccionada = selectorLocalizacionAlertas.value;
-                      const tomaSeleccionada = selectorTomaAlertas.value;
-                      const resistenciaNominalSeleccionada = selectorResistenciaNominalAlertas.value;
-
-                      let datosTemp = datosFiltradosAlertas;
-
-                      if (cilindroSeleccionado) {{
-                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindroSeleccionado);
-                      }}
-                      if (localizacionSeleccionada) {{
-                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacionSeleccionada);
-                      }}
-                      if (tomaSeleccionada) {{
-                          datosTemp = datosTemp.filter(row => row['Toma'] === tomaSeleccionada);
-                      }}
-                      if (resistenciaNominalSeleccionada) {{
-                          datosTemp = datosTemp.filter(row => row['Resistencia nominal (MPa)'] == resistenciaNominalSeleccionada);
-                      }}
-
-                      const cilindrosDisponibles = [...new Set(datosTemp.map(row => row['Cilindro N°']))].filter(c => c).sort();
-                      const localizacionesDisponibles = [...new Set(datosTemp.map(row => row['Localización']))].filter(l => l).sort();
-                      const tomasDisponibles = [...new Set(datosTemp.map(row => row['Toma']))].filter(t => t).sort();
-                      const resistenciasNominalesDisponibles = [...new Set(datosTemp.map(row => row['Resistencia nominal (MPa)']))].filter(r => r !== null && r !== undefined).sort((a,b) => a - b);
-
-                      const cilindroActual = selectorCilindroAlertas.value;
-                      const cilindroDatalistAlertas = document.getElementById('cilindroListAlertas');
-                      cilindroDatalistAlertas.innerHTML = '';
-                      cilindrosDisponibles.forEach(cilindro => {{
-                          const option = document.createElement('option');
-                          option.value = cilindro;
-                          cilindroDatalistAlertas.appendChild(option);
-                      }});
-                      selectorCilindroAlertas.value = cilindroActual;
-
-                      const localizacionActual = selectorLocalizacionAlertas.value;
-                      selectorLocalizacionAlertas.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
-                      localizacionesDisponibles.forEach(localizacion => {{
-                          const option = document.createElement('option');
-                          option.value = localizacion;
-                          option.textContent = localizacion;
-                          selectorLocalizacionAlertas.appendChild(option);
-                      }});
-                      selectorLocalizacionAlertas.value = localizacionActual;
-
-                      const tomaActual = selectorTomaAlertas.value;
-                      selectorTomaAlertas.innerHTML = '<option value="">-- Todas las tomas --</option>';
-                      tomasDisponibles.forEach(toma => {{
-                          const option = document.createElement('option');
-                          option.value = toma;
-                          option.textContent = toma;
-                          selectorTomaAlertas.appendChild(option);
-                      }});
-                      selectorTomaAlertas.value = tomaActual;
-
-                      const resistenciaNominalActual = selectorResistenciaNominalAlertas.value;
-                      selectorResistenciaNominalAlertas.innerHTML = '<option value="">-- Todas las resistencias --</option>';
-                      resistenciasNominalesDisponibles.forEach(resistencia => {{
-                          const option = document.createElement('option');
-                          option.value = resistencia;
-                          option.textContent = resistencia;
-                          selectorResistenciaNominalAlertas.appendChild(option);
-                      }});
-                      selectorResistenciaNominalAlertas.value = resistenciaNominalActual;
-
-                      actualizarTablaAlertas();
-                  }}
-
-                  function actualizarTablaAlertas() {{
-                      const cilindro = selectorCilindroAlertas.value;
-                      const localizacion = selectorLocalizacionAlertas.value;
-                      const toma = selectorTomaAlertas.value;
-                      const resistenciaNominal = selectorResistenciaNominalAlertas.value;
-
-                      let datosTemp = datosFiltradosAlertas;
-
-                      if (cilindro) {{
-                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindro);
-                      }}
-                      if (localizacion) {{
-                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacion);
-                      }}
-                      if (toma) {{
-                          datosTemp = datosTemp.filter(row => row['Toma'] === toma);
-                      }}
-                      if (resistenciaNominal) {{
-                          datosTemp = datosTemp.filter(row => row['Resistencia nominal (MPa)'] == resistenciaNominal);
-                      }}
-
-                      generarTablaAlertas(datosTemp);
-                  }}
-
+                  // Función para generar tabla de Alertas
                   function generarTablaAlertas(datos) {{
                       if (datos.length > 0) {{
                           const thead = dataTableAlertas.querySelector('thead');
@@ -948,7 +442,7 @@ jobs:
                                       valor = formatearFecha(valor);
                                   }}
 
-                                  // Formatear valores numéricos a 2 decimales para columnas específicas
+                                  // Formatear valores numéricos a 2 decimales
                                   const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)'];
                                   if (columnasDecimales.includes(header) && valor !== '') {{
                                       if (typeof valor === 'number' && !isNaN(valor)) {{
@@ -1003,193 +497,7 @@ jobs:
                       }}
                   }}
 
-                  proyectoInputAlertas.addEventListener('input', function() {{
-                      filtrosGlobales.proyecto = this.value.trim();
-                      const valor = this.value.trim();
-
-                      if (!valor || !proyectosAlertas.includes(valor)) {{
-                          tableSectionAlertas.classList.remove('active');
-                          filtersRowAlertas.style.display = 'none';
-                          return;
-                      }}
-
-                      datosFiltradosAlertas = datosAlertas.filter(row => row['Proyecto'] === valor);
-
-                      selectorCilindroAlertas.value = '';
-                      selectorLocalizacionAlertas.value = '';
-                      selectorTomaAlertas.value = '';
-                      selectorResistenciaNominalAlertas.value = '';
-
-                      const cilindros = [...new Set(datosFiltradosAlertas.map(row => row['Cilindro N°']))].filter(c => c).sort();
-                      const localizaciones = [...new Set(datosFiltradosAlertas.map(row => row['Localización']))].filter(l => l).sort();
-                      const tomas = [...new Set(datosFiltradosAlertas.map(row => row['Toma']))].filter(t => t).sort();
-                      const resistenciasNominales = [...new Set(datosFiltradosAlertas.map(row => row['Resistencia nominal (MPa)']))].filter(r => r !== null && r !== undefined).sort((a,b) => a - b);
-
-                      const cilindroDatalistAlertas = document.getElementById('cilindroListAlertas');
-                      cilindroDatalistAlertas.innerHTML = '';
-                      cilindros.forEach(cilindro => {{
-                          const option = document.createElement('option');
-                          option.value = cilindro;
-                          cilindroDatalistAlertas.appendChild(option);
-                      }});
-
-                      selectorLocalizacionAlertas.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
-                      localizaciones.forEach(localizacion => {{
-                          const option = document.createElement('option');
-                          option.value = localizacion;
-                          option.textContent = localizacion;
-                          selectorLocalizacionAlertas.appendChild(option);
-                      }});
-
-                      selectorTomaAlertas.innerHTML = '<option value="">-- Todas las tomas --</option>';
-                      tomas.forEach(toma => {{
-                          const option = document.createElement('option');
-                          option.value = toma;
-                          option.textContent = toma;
-                          selectorTomaAlertas.appendChild(option);
-                      }});
-
-                      selectorResistenciaNominalAlertas.innerHTML = '<option value="">-- Todas las resistencias --</option>';
-                      resistenciasNominales.forEach(resistencia => {{
-                          const option = document.createElement('option');
-                          option.value = resistencia;
-                          option.textContent = resistencia;
-                          selectorResistenciaNominalAlertas.appendChild(option);
-                      }});
-
-                      filtersRowAlertas.style.opacity = '0';
-                      filtersRowAlertas.style.display = 'flex';
-                      setTimeout(() => {{
-                          filtersRowAlertas.style.transition = 'opacity 1500ms ease-in-out';
-                          filtersRowAlertas.style.opacity = '1';
-                      }}, 0);
-
-                      generarTablaAlertas(datosFiltradosAlertas);
-                  }});
-
-                  selectorCilindroAlertas.addEventListener('input', recalcularOpcionesAlertas);
-                  selectorLocalizacionAlertas.addEventListener('change', recalcularOpcionesAlertas);
-                  selectorTomaAlertas.addEventListener('change', recalcularOpcionesAlertas);
-                  selectorResistenciaNominalAlertas.addEventListener('change', recalcularOpcionesAlertas);
-
-                  btnResetAlertas.addEventListener('click', function() {{
-                      proyectoInputAlertas.value = '';
-                      selectorCilindroAlertas.value = '';
-                      selectorLocalizacionAlertas.value = '';
-                      selectorTomaAlertas.value = '';
-                      selectorResistenciaNominalAlertas.value = '';
-                      filtersRowAlertas.style.display = 'none';
-                      tableSectionAlertas.classList.remove('active');
-                      proyectoInputAlertas.focus();
-                  }});
-
-                  // ========== PESTAÑA INCUMPLIMIENTOS ==========
-                  const proyectoInputIncumplimientos = document.getElementById('proyectoInputIncumplimientos');
-                  const selectorCilindroIncumplimientos = document.getElementById('cilindroSelectorIncumplimientos');
-                  const selectorLocalizacionIncumplimientos = document.getElementById('localizacionSelectorIncumplimientos');
-                  const selectorTomaIncumplimientos = document.getElementById('tomaSelectorIncumplimientos');
-                  const selectorResistenciaNominalIncumplimientos = document.getElementById('resistenciaNominalSelectorIncumplimientos');
-                  const filtersRowIncumplimientos = document.getElementById('filtersRowIncumplimientos');
-                  const tableSectionIncumplimientos = document.getElementById('tableSectionIncumplimientos');
-                  const dataTableIncumplimientos = document.getElementById('dataTableIncumplimientos');
-                  const btnResetIncumplimientos = document.getElementById('btnResetIncumplimientos');
-
-                  let datosFiltradosIncumplimientos = [];
-                  const proyectosIncumplimientos = [...new Set(datosIncumplimientos.map(row => row['Proyecto']))].filter(p => p).sort();
-
-                  function recalcularOpcionesIncumplimientos() {{
-                      const cilindroSeleccionado = selectorCilindroIncumplimientos.value;
-                      const localizacionSeleccionada = selectorLocalizacionIncumplimientos.value;
-                      const tomaSeleccionada = selectorTomaIncumplimientos.value;
-                      const resistenciaNominalSeleccionada = selectorResistenciaNominalIncumplimientos.value;
-
-                      let datosTemp = datosFiltradosIncumplimientos;
-
-                      if (cilindroSeleccionado) {{
-                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindroSeleccionado);
-                      }}
-                      if (localizacionSeleccionada) {{
-                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacionSeleccionada);
-                      }}
-                      if (tomaSeleccionada) {{
-                          datosTemp = datosTemp.filter(row => row['Toma'] === tomaSeleccionada);
-                      }}
-                      if (resistenciaNominalSeleccionada) {{
-                          datosTemp = datosTemp.filter(row => row['Resistencia nominal (MPa)'] == resistenciaNominalSeleccionada);
-                      }}
-
-                      const cilindrosDisponibles = [...new Set(datosTemp.map(row => row['Cilindro N°']))].filter(c => c).sort();
-                      const localizacionesDisponibles = [...new Set(datosTemp.map(row => row['Localización']))].filter(l => l).sort();
-                      const tomasDisponibles = [...new Set(datosTemp.map(row => row['Toma']))].filter(t => t).sort();
-                      const resistenciasNominalesDisponibles = [...new Set(datosTemp.map(row => row['Resistencia nominal (MPa)']))].filter(r => r !== null && r !== undefined).sort((a,b) => a - b);
-
-                      const cilindroActual = selectorCilindroIncumplimientos.value;
-                      const cilindroDatalistIncumplimientos = document.getElementById('cilindroListIncumplimientos');
-                      cilindroDatalistIncumplimientos.innerHTML = '';
-                      cilindrosDisponibles.forEach(cilindro => {{
-                          const option = document.createElement('option');
-                          option.value = cilindro;
-                          cilindroDatalistIncumplimientos.appendChild(option);
-                      }});
-                      selectorCilindroIncumplimientos.value = cilindroActual;
-
-                      const localizacionActual = selectorLocalizacionIncumplimientos.value;
-                      selectorLocalizacionIncumplimientos.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
-                      localizacionesDisponibles.forEach(localizacion => {{
-                          const option = document.createElement('option');
-                          option.value = localizacion;
-                          option.textContent = localizacion;
-                          selectorLocalizacionIncumplimientos.appendChild(option);
-                      }});
-                      selectorLocalizacionIncumplimientos.value = localizacionActual;
-
-                      const tomaActual = selectorTomaIncumplimientos.value;
-                      selectorTomaIncumplimientos.innerHTML = '<option value="">-- Todas las tomas --</option>';
-                      tomasDisponibles.forEach(toma => {{
-                          const option = document.createElement('option');
-                          option.value = toma;
-                          option.textContent = toma;
-                          selectorTomaIncumplimientos.appendChild(option);
-                      }});
-                      selectorTomaIncumplimientos.value = tomaActual;
-
-                      const resistenciaNominalActual = selectorResistenciaNominalIncumplimientos.value;
-                      selectorResistenciaNominalIncumplimientos.innerHTML = '<option value="">-- Todas las resistencias --</option>';
-                      resistenciasNominalesDisponibles.forEach(resistencia => {{
-                          const option = document.createElement('option');
-                          option.value = resistencia;
-                          option.textContent = resistencia;
-                          selectorResistenciaNominalIncumplimientos.appendChild(option);
-                      }});
-                      selectorResistenciaNominalIncumplimientos.value = resistenciaNominalActual;
-
-                      actualizarTablaIncumplimientos();
-                  }}
-
-                  function actualizarTablaIncumplimientos() {{
-                      const cilindro = selectorCilindroIncumplimientos.value;
-                      const localizacion = selectorLocalizacionIncumplimientos.value;
-                      const toma = selectorTomaIncumplimientos.value;
-                      const resistenciaNominal = selectorResistenciaNominalIncumplimientos.value;
-
-                      let datosTemp = datosFiltradosIncumplimientos;
-
-                      if (cilindro) {{
-                          datosTemp = datosTemp.filter(row => row['Cilindro N°'] === cilindro);
-                      }}
-                      if (localizacion) {{
-                          datosTemp = datosTemp.filter(row => row['Localización'] === localizacion);
-                      }}
-                      if (toma) {{
-                          datosTemp = datosTemp.filter(row => row['Toma'] === toma);
-                      }}
-                      if (resistenciaNominal) {{
-                          datosTemp = datosTemp.filter(row => row['Resistencia nominal (MPa)'] == resistenciaNominal);
-                      }}
-
-                      generarTablaIncumplimientos(datosTemp);
-                  }}
-
+                  // Función para generar tabla de Incumplimientos
                   function generarTablaIncumplimientos(datos) {{
                       if (datos.length > 0) {{
                           const thead = dataTableIncumplimientos.querySelector('thead');
@@ -1218,7 +526,7 @@ jobs:
                                       valor = formatearFecha(valor);
                                   }}
 
-                                  // Formatear valores numéricos a 2 decimales para columnas específicas
+                                  // Formatear valores numéricos a 2 decimales
                                   const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)'];
                                   if (columnasDecimales.includes(header) && valor !== '') {{
                                       if (typeof valor === 'number' && !isNaN(valor)) {{
@@ -1273,83 +581,33 @@ jobs:
                       }}
                   }}
 
-                  proyectoInputIncumplimientos.addEventListener('input', function() {{
-                      const valor = this.value.trim();
+                  // Función simplificada para cambiar pestaña (solo visualización)
+                  function cambiarPestana(nombrePestana) {{
+                      // Cambiar visualización de pestañas
+                      tabContents.forEach(tab => tab.classList.remove('active'));
+                      tabButtons.forEach(btn => btn.classList.remove('active'));
 
-                      if (!valor || !proyectosIncumplimientos.includes(valor)) {{
-                          tableSectionIncumplimientos.classList.remove('active');
-                          filtersRowIncumplimientos.style.display = 'none';
-                          return;
+                      document.getElementById(nombrePestana).classList.add('active');
+                      document.querySelector('[data-tab="' + nombrePestana + '"]').classList.add('active');
+
+                      // Generar tabla según la pestaña activa
+                      if (nombrePestana === 'consolidado') {{
+                          generarTabla(datosConsolidado, true);
+                      }} else if (nombrePestana === 'alertas') {{
+                          generarTablaAlertas(datosAlertas);
+                      }} else if (nombrePestana === 'incumplimientos') {{
+                          generarTablaIncumplimientos(datosIncumplimientos);
                       }}
+                  }}
 
-                      datosFiltradosIncumplimientos = datosIncumplimientos.filter(row => row['Proyecto'] === valor);
-
-                      selectorCilindroIncumplimientos.value = '';
-                      selectorLocalizacionIncumplimientos.value = '';
-                      selectorTomaIncumplimientos.value = '';
-                      selectorResistenciaNominalIncumplimientos.value = '';
-
-                      const cilindros = [...new Set(datosFiltradosIncumplimientos.map(row => row['Cilindro N°']))].filter(c => c).sort();
-                      const localizaciones = [...new Set(datosFiltradosIncumplimientos.map(row => row['Localización']))].filter(l => l).sort();
-                      const tomas = [...new Set(datosFiltradosIncumplimientos.map(row => row['Toma']))].filter(t => t).sort();
-                      const resistenciasNominales = [...new Set(datosFiltradosIncumplimientos.map(row => row['Resistencia nominal (MPa)']))].filter(r => r !== null && r !== undefined).sort((a,b) => a - b);
-
-                      const cilindroDatalistIncumplimientos = document.getElementById('cilindroListIncumplimientos');
-                      cilindroDatalistIncumplimientos.innerHTML = '';
-                      cilindros.forEach(cilindro => {{
-                          const option = document.createElement('option');
-                          option.value = cilindro;
-                          cilindroDatalistIncumplimientos.appendChild(option);
-                      }});
-
-                      selectorLocalizacionIncumplimientos.innerHTML = '<option value="">-- Todas las localizaciones --</option>';
-                      localizaciones.forEach(localizacion => {{
-                          const option = document.createElement('option');
-                          option.value = localizacion;
-                          option.textContent = localizacion;
-                          selectorLocalizacionIncumplimientos.appendChild(option);
-                      }});
-
-                      selectorTomaIncumplimientos.innerHTML = '<option value="">-- Todas las tomas --</option>';
-                      tomas.forEach(toma => {{
-                          const option = document.createElement('option');
-                          option.value = toma;
-                          option.textContent = toma;
-                          selectorTomaIncumplimientos.appendChild(option);
-                      }});
-
-                      selectorResistenciaNominalIncumplimientos.innerHTML = '<option value="">-- Todas las resistencias --</option>';
-                      resistenciasNominales.forEach(resistencia => {{
-                          const option = document.createElement('option');
-                          option.value = resistencia;
-                          option.textContent = resistencia;
-                          selectorResistenciaNominalIncumplimientos.appendChild(option);
-                      }});
-
-                      filtersRowIncumplimientos.style.opacity = '0';
-                      filtersRowIncumplimientos.style.display = 'flex';
-                      setTimeout(() => {{
-                          filtersRowIncumplimientos.style.transition = 'opacity 1500ms ease-in-out';
-                          filtersRowIncumplimientos.style.opacity = '1';
-                      }}, 0);
-
-                      generarTablaIncumplimientos(datosFiltradosIncumplimientos);
+                  // Listeners para cambio de pestaña
+                  tabButtons.forEach(btn => {{
+                      btn.addEventListener('click', () => cambiarPestana(btn.dataset.tab));
                   }});
 
-                  selectorCilindroIncumplimientos.addEventListener('input', recalcularOpcionesIncumplimientos);
-                  selectorLocalizacionIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
-                  selectorTomaIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
-                  selectorResistenciaNominalIncumplimientos.addEventListener('change', recalcularOpcionesIncumplimientos);
-
-                  btnResetIncumplimientos.addEventListener('click', function() {{
-                      proyectoInputIncumplimientos.value = '';
-                      selectorCilindroIncumplimientos.value = '';
-                      selectorLocalizacionIncumplimientos.value = '';
-                      selectorTomaIncumplimientos.value = '';
-                      selectorResistenciaNominalIncumplimientos.value = '';
-                      filtersRowIncumplimientos.style.display = 'none';
-                      tableSectionIncumplimientos.classList.remove('active');
-                      proyectoInputIncumplimientos.focus();
+                  // Mostrar tabla Consolidado al cargar el dashboard
+                  window.addEventListener('load', () => {{
+                      generarTabla(datosConsolidado, true);
                   }});
 
               </script>
