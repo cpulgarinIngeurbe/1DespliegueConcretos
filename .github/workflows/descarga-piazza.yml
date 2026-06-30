@@ -157,7 +157,16 @@ jobs:
                       # DESCARGAR EXCEL
                       await self.log('PASO', '8. Descargando Excel...')
                       await page.wait_for_load_state('networkidle')
-                      await asyncio.sleep(2)
+                      await asyncio.sleep(3)
+
+                      # Esperar a que haya datos en la tabla (filas visibles)
+                      await self.log('INFO', '   Esperando que los datos carguen en la tabla...')
+                      try:
+                          await page.locator('tbody tr').first.wait_for(timeout=10000)
+                          await asyncio.sleep(2)
+                          await self.log('EXITO', '   Datos cargados en la tabla')
+                      except:
+                          await self.log('EXITO', '   Continuando (puede que no haya datos o tabla diferente)')
 
                       # Buscar botón "More"
                       selectores = ['button[title="More"]', 'button[title="Mas"]', 'button[aria-label*="More"]']
