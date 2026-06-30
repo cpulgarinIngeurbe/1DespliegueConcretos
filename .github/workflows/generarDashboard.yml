@@ -503,38 +503,20 @@ jobs:
                       filterBtnUnidadAlertas.style.display = mostrarUnidadBtn ? 'inline-block' : 'none';
                       filterBtnUnidadIncumplimientos.style.display = mostrarUnidadBtn ? 'inline-block' : 'none';
 
-                      // Actualizar dropdowns de Unidad Estructural con opciones filtradas por proyectos
-                      if (proyectosSeleccionados.length > 0) {{
-                          const unidadesConsolidado = obtenerUnidadesEstructuralesUnicas(datosConsolidado, proyectosSeleccionados);
-                          const unidadesAlertas = obtenerUnidadesEstructuralesUnicas(datosAlertas, proyectosSeleccionados);
-                          const unidadesIncumplimientos = obtenerUnidadesEstructuralesUnicas(datosIncumplimientos, proyectosSeleccionados);
+                      // Actualizar solo los checkboxes de Unidad Estructural (no reconstruir)
+                      [filterDropdownUnidadConsolidado, filterDropdownUnidadAlertas, filterDropdownUnidadIncumplimientos].forEach(dropdown => {{
+                          const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+                          checkboxes.forEach(checkbox => {{
+                              checkbox.checked = unidadesEstructuralesSeleccionadas.includes(checkbox.value);
+                          }});
+                      }});
 
-                          llenarDropdown(filterDropdownUnidadConsolidado, unidadesConsolidado, () => {{
-                              unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
-                              actualizarTodosFiltros();
-                          }});
-                          llenarDropdown(filterDropdownUnidadAlertas, unidadesAlertas, () => {{
-                              unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadAlertas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
-                              actualizarTodosFiltros();
-                          }});
-                          llenarDropdown(filterDropdownUnidadIncumplimientos, unidadesIncumplimientos, () => {{
-                              unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
-                              actualizarTodosFiltros();
-                          }});
-
-                          // Actualizar checkboxes de Unidad Estructural
-                          [filterDropdownUnidadConsolidado, filterDropdownUnidadAlertas, filterDropdownUnidadIncumplimientos].forEach(dropdown => {{
-                              const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
-                              checkboxes.forEach(checkbox => {{
-                                  checkbox.checked = unidadesEstructuralesSeleccionadas.includes(checkbox.value);
-                              }});
-                          }});
-                      }} else {{
-                          // Limpiar dropdowns si no hay proyectos seleccionados
+                      // Limpiar selección de unidades si no hay proyectos
+                      if (proyectosSeleccionados.length === 0) {{
+                          unidadesEstructuralesSeleccionadas = [];
                           filterDropdownUnidadConsolidado.innerHTML = '';
                           filterDropdownUnidadAlertas.innerHTML = '';
                           filterDropdownUnidadIncumplimientos.innerHTML = '';
-                          unidadesEstructuralesSeleccionadas = [];
                       }}
 
                       // Actualizar tags en todas las pestañas (proyectos)
@@ -548,10 +530,43 @@ jobs:
                       actualizarTags(filterTagsUnidadIncumplimientos, unidadesEstructuralesSeleccionadas, removerUnidadEstructural);
                   }}
 
+                  // Función para actualizar opciones de Unidad Estructural (después de cambiar proyectos)
+                  function actualizarOpcionesUnidadEstructural() {{
+                      if (proyectosSeleccionados.length > 0) {{
+                          const unidadesConsolidado = obtenerUnidadesEstructuralesUnicas(datosConsolidado, proyectosSeleccionados);
+                          const unidadesAlertas = obtenerUnidadesEstructuralesUnicas(datosAlertas, proyectosSeleccionados);
+                          const unidadesIncumplimientos = obtenerUnidadesEstructuralesUnicas(datosIncumplimientos, proyectosSeleccionados);
+
+                          llenarDropdown(filterDropdownUnidadConsolidado, unidadesConsolidado, () => {{
+                              unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                              requestAnimationFrame(actualizarTablas);
+                          }});
+                          llenarDropdown(filterDropdownUnidadAlertas, unidadesAlertas, () => {{
+                              unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadAlertas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                              requestAnimationFrame(actualizarTablas);
+                          }});
+                          llenarDropdown(filterDropdownUnidadIncumplimientos, unidadesIncumplimientos, () => {{
+                              unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                              requestAnimationFrame(actualizarTablas);
+                          }});
+
+                          // Marcar checkboxes que estaban seleccionados
+                          [filterDropdownUnidadConsolidado, filterDropdownUnidadAlertas, filterDropdownUnidadIncumplimientos].forEach(dropdown => {{
+                              const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+                              checkboxes.forEach(checkbox => {{
+                                  checkbox.checked = unidadesEstructuralesSeleccionadas.includes(checkbox.value);
+                              }});
+                          }});
+                      }}
+                  }}
+
                   // Función para actualizar todos los filtros (UI inmediata + tablas asincrónicas)
                   function actualizarTodosFiltros() {{
                       // Actualizar UI inmediatamente
                       actualizarUIInmediata();
+
+                      // Actualizar opciones de Unidad Estructural basadas en proyectos seleccionados
+                      actualizarOpcionesUnidadEstructural();
 
                       // Actualizar tablas de forma asincrónica
                       requestAnimationFrame(actualizarTablas);
@@ -562,7 +577,9 @@ jobs:
                       proyectosSeleccionados = proyectosSeleccionados.filter(p => p !== proyecto);
                       // Limpiar unidades estructurales seleccionadas cuando se deselecciona un proyecto
                       unidadesEstructuralesSeleccionadas = [];
-                      actualizarTodosFiltros();
+                      actualizarUIInmediata();
+                      actualizarOpcionesUnidadEstructural();
+                      requestAnimationFrame(actualizarTablas);
                   }}
 
                   // Función para remover una unidad estructural de la selección global
