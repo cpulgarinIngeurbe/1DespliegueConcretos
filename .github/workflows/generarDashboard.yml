@@ -218,6 +218,10 @@ jobs:
                   .filter-option:hover {{ background-color: #f8f8f7; }}
                   .filter-option input[type="checkbox"] {{ cursor: pointer; accent-color: #4B4F1D; }}
                   .filter-option-label {{ flex: 1; font-size: 8px; cursor: pointer; }}
+                  .filter-tags {{ display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }}
+                  .filter-tag {{ background-color: #f0f5a0; border: 1px solid #A3C610; color: #3D4800; padding: 4px 8px; border-radius: 3px; font-size: 8px; display: flex; align-items: center; gap: 4px; }}
+                  .filter-tag-close {{ background: none; border: none; color: #3D4800; cursor: pointer; font-size: 10px; padding: 0; font-weight: bold; }}
+                  .filter-tag-close:hover {{ color: #2f3215; }}
               </style>
           </head>
           <body>
@@ -232,6 +236,7 @@ jobs:
                       <div class="filter-section">
                           <button class="filter-btn" id="filterBtnConsolidado">Filtrar por Proyecto</button>
                           <div class="filter-dropdown" id="filterDropdownConsolidado"></div>
+                          <div class="filter-tags" id="filterTagsConsolidado"></div>
                       </div>
                       <div id="tableSectionConsolidado" class="table-section">
                           <table id="dataTableConsolidado">
@@ -245,6 +250,7 @@ jobs:
                       <div class="filter-section">
                           <button class="filter-btn" id="filterBtnAlertas">Filtrar por Proyecto</button>
                           <div class="filter-dropdown" id="filterDropdownAlertas"></div>
+                          <div class="filter-tags" id="filterTagsAlertas"></div>
                       </div>
                       <div id="tableSectionAlertas" class="table-section">
                           <table id="dataTableAlertas">
@@ -258,6 +264,7 @@ jobs:
                       <div class="filter-section">
                           <button class="filter-btn" id="filterBtnIncumplimientos">Filtrar por Proyecto</button>
                           <div class="filter-dropdown" id="filterDropdownIncumplimientos"></div>
+                          <div class="filter-tags" id="filterTagsIncumplimientos"></div>
                       </div>
                       <div id="tableSectionIncumplimientos" class="table-section">
                           <table id="dataTableIncumplimientos">
@@ -290,6 +297,23 @@ jobs:
                   const filterDropdownConsolidado = document.getElementById('filterDropdownConsolidado');
                   const filterDropdownAlertas = document.getElementById('filterDropdownAlertas');
                   const filterDropdownIncumplimientos = document.getElementById('filterDropdownIncumplimientos');
+                  const filterTagsConsolidado = document.getElementById('filterTagsConsolidado');
+                  const filterTagsAlertas = document.getElementById('filterTagsAlertas');
+                  const filterTagsIncumplimientos = document.getElementById('filterTagsIncumplimientos');
+
+                  // Función para actualizar tags
+                  function actualizarTags(tagsContainer, proyectosSeleccionados, onRemoveCallback) {{
+                      tagsContainer.innerHTML = '';
+                      proyectosSeleccionados.forEach(proyecto => {{
+                          const tag = document.createElement('div');
+                          tag.className = 'filter-tag';
+                          tag.innerHTML = proyecto + ' <button class="filter-tag-close">×</button>';
+                          tag.querySelector('.filter-tag-close').addEventListener('click', () => {{
+                              onRemoveCallback(proyecto);
+                          }});
+                          tagsContainer.appendChild(tag);
+                      }});
+                  }}
 
                   // Variable para almacenar proyectos seleccionados
                   let proyectosSeleccionadosConsolidado = [];
@@ -713,18 +737,42 @@ jobs:
                       // Llenar dropdowns con proyectos
                       llenarDropdown(filterDropdownConsolidado, obtenerProyectosUnicos(datosConsolidado), () => {{
                           proyectosSeleccionadosConsolidado = Array.from(filterDropdownConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                          actualizarTags(filterTagsConsolidado, proyectosSeleccionadosConsolidado, (proyecto) => {{
+                              const checkbox = filterDropdownConsolidado.querySelector('input[value="' + proyecto + '"]');
+                              if (checkbox) checkbox.checked = false;
+                              proyectosSeleccionadosConsolidado = proyectosSeleccionadosConsolidado.filter(p => p !== proyecto);
+                              actualizarTags(filterTagsConsolidado, proyectosSeleccionadosConsolidado, arguments.callee);
+                              const datosFiltrados = filtrarPorProyectos(datosConsolidado, proyectosSeleccionadosConsolidado);
+                              generarTabla(datosFiltrados);
+                          }});
                           const datosFiltrados = filtrarPorProyectos(datosConsolidado, proyectosSeleccionadosConsolidado);
                           generarTabla(datosFiltrados);
                       }});
 
                       llenarDropdown(filterDropdownAlertas, obtenerProyectosUnicos(datosAlertas), () => {{
                           proyectosSeleccionadosAlertas = Array.from(filterDropdownAlertas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                          actualizarTags(filterTagsAlertas, proyectosSeleccionadosAlertas, (proyecto) => {{
+                              const checkbox = filterDropdownAlertas.querySelector('input[value="' + proyecto + '"]');
+                              if (checkbox) checkbox.checked = false;
+                              proyectosSeleccionadosAlertas = proyectosSeleccionadosAlertas.filter(p => p !== proyecto);
+                              actualizarTags(filterTagsAlertas, proyectosSeleccionadosAlertas, arguments.callee);
+                              const datosFiltrados = filtrarPorProyectos(datosAlertas, proyectosSeleccionadosAlertas);
+                              generarTablaAlertas(datosFiltrados);
+                          }});
                           const datosFiltrados = filtrarPorProyectos(datosAlertas, proyectosSeleccionadosAlertas);
                           generarTablaAlertas(datosFiltrados);
                       }});
 
                       llenarDropdown(filterDropdownIncumplimientos, obtenerProyectosUnicos(datosIncumplimientos), () => {{
                           proyectosSeleccionadosIncumplimientos = Array.from(filterDropdownIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                          actualizarTags(filterTagsIncumplimientos, proyectosSeleccionadosIncumplimientos, (proyecto) => {{
+                              const checkbox = filterDropdownIncumplimientos.querySelector('input[value="' + proyecto + '"]');
+                              if (checkbox) checkbox.checked = false;
+                              proyectosSeleccionadosIncumplimientos = proyectosSeleccionadosIncumplimientos.filter(p => p !== proyecto);
+                              actualizarTags(filterTagsIncumplimientos, proyectosSeleccionadosIncumplimientos, arguments.callee);
+                              const datosFiltrados = filtrarPorProyectos(datosIncumplimientos, proyectosSeleccionadosIncumplimientos);
+                              generarTablaIncumplimientos(datosFiltrados);
+                          }});
                           const datosFiltrados = filtrarPorProyectos(datosIncumplimientos, proyectosSeleccionadosIncumplimientos);
                           generarTablaIncumplimientos(datosFiltrados);
                       }});
