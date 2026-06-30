@@ -817,16 +817,19 @@ jobs:
                       document.getElementById(nombrePestana).classList.add('active');
                       document.querySelector('[data-tab="' + nombrePestana + '"]').classList.add('active');
 
-                      // Aplicar filtro global según la pestaña activa
+                      // Aplicar filtro global según la pestaña activa (con paginación)
                       if (nombrePestana === 'consolidado') {{
-                          const datosFiltrados = filtrarPorProyectos(datosConsolidado, proyectosSeleccionados);
-                          generarTabla(datosFiltrados, true, datosConsolidado);
+                          datosActualesConsolidado = filtrarPorProyectos(datosConsolidado, proyectosSeleccionados);
+                          paginaConsolidado = 1;
+                          renderizarTablaConsolidado();
                       }} else if (nombrePestana === 'alertas') {{
-                          const datosFiltrados = filtrarPorProyectos(datosAlertas, proyectosSeleccionados);
-                          generarTablaAlertas(datosFiltrados, datosAlertas);
+                          datosActualesAlertas = filtrarPorProyectos(datosAlertas, proyectosSeleccionados);
+                          paginaAlertas = 1;
+                          renderizarTablaAlertas();
                       }} else if (nombrePestana === 'incumplimientos') {{
-                          const datosFiltrados = filtrarPorProyectos(datosIncumplimientos, proyectosSeleccionados);
-                          generarTablaIncumplimientos(datosFiltrados, datosIncumplimientos);
+                          datosActualesIncumplimientos = filtrarPorProyectos(datosIncumplimientos, proyectosSeleccionados);
+                          paginaIncumplimientos = 1;
+                          renderizarTablaIncumplimientos();
                       }}
                   }}
 
