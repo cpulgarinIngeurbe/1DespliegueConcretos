@@ -405,19 +405,28 @@ jobs:
                   }}
 
                   // Función para generar tabla de Consolidado
-                  function generarTabla(datos, conDelay = false) {{
-                      if (datos.length === 0) {{
-                          dataTableConsolidado.innerHTML = '';
-                          tableSectionConsolidado.classList.remove('active');
-                          return;
-                      }}
-                      if (datos.length > 0) {{
-                          const thead = dataTableConsolidado.querySelector('thead');
-                          const tbody = dataTableConsolidado.querySelector('tbody');
+                  function generarTabla(datos, conDelay = false, datosCompletos = null) {{
+                      const thead = dataTableConsolidado.querySelector('thead');
+                      const tbody = dataTableConsolidado.querySelector('tbody');
 
+                      tbody.innerHTML = '';
+
+                      // Usar datosCompletos para extraer headers si se pasa, sino usar datos
+                      const datosParaHeaders = datosCompletos || datos || datosConsolidado;
+                      if (datosParaHeaders.length > 0 && thead.innerHTML === '') {{
                           thead.innerHTML = '';
-                          tbody.innerHTML = '';
+                          const headers = Object.keys(datosParaHeaders[0]);
+                          const headerRow = document.createElement('tr');
+                          headers.forEach(header => {{
+                              const th = document.createElement('th');
+                              th.textContent = header;
+                              headerRow.appendChild(th);
+                          }});
+                          thead.appendChild(headerRow);
+                      }}
 
+                      // Solo agregar filas si hay datos
+                      if (datos.length > 0) {{
                           const headers = Object.keys(datos[0]);
                           const headerRow = document.createElement('tr');
                           headers.forEach(header => {{
@@ -518,19 +527,28 @@ jobs:
                   }}
 
                   // Función para generar tabla de Alertas
-                  function generarTablaAlertas(datos) {{
-                      if (datos.length === 0) {{
-                          dataTableAlertas.innerHTML = '';
-                          tableSectionAlertas.classList.remove('active');
-                          return;
-                      }}
-                      if (datos.length > 0) {{
-                          const thead = dataTableAlertas.querySelector('thead');
-                          const tbody = dataTableAlertas.querySelector('tbody');
+                  function generarTablaAlertas(datos, datosCompletos = null) {{
+                      const thead = dataTableAlertas.querySelector('thead');
+                      const tbody = dataTableAlertas.querySelector('tbody');
 
+                      tbody.innerHTML = '';
+
+                      // Usar datosCompletos para extraer headers si se pasa, sino usar datos
+                      const datosParaHeaders = datosCompletos || datos || datosAlertas;
+                      if (datosParaHeaders.length > 0 && thead.innerHTML === '') {{
                           thead.innerHTML = '';
-                          tbody.innerHTML = '';
+                          const headers = Object.keys(datosParaHeaders[0]);
+                          const headerRow = document.createElement('tr');
+                          headers.forEach(header => {{
+                              const th = document.createElement('th');
+                              th.textContent = header;
+                              headerRow.appendChild(th);
+                          }});
+                          thead.appendChild(headerRow);
+                      }}
 
+                      // Solo agregar filas si hay datos
+                      if (datos.length > 0) {{
                           const headers = Object.keys(datos[0]);
                           const headerRow = document.createElement('tr');
                           headers.forEach(header => {{
@@ -607,19 +625,28 @@ jobs:
                   }}
 
                   // Función para generar tabla de Incumplimientos
-                  function generarTablaIncumplimientos(datos) {{
-                      if (datos.length === 0) {{
-                          dataTableIncumplimientos.innerHTML = '';
-                          tableSectionIncumplimientos.classList.remove('active');
-                          return;
-                      }}
-                      if (datos.length > 0) {{
-                          const thead = dataTableIncumplimientos.querySelector('thead');
-                          const tbody = dataTableIncumplimientos.querySelector('tbody');
+                  function generarTablaIncumplimientos(datos, datosCompletos = null) {{
+                      const thead = dataTableIncumplimientos.querySelector('thead');
+                      const tbody = dataTableIncumplimientos.querySelector('tbody');
 
+                      tbody.innerHTML = '';
+
+                      // Usar datosCompletos para extraer headers si se pasa, sino usar datos
+                      const datosParaHeaders = datosCompletos || datos || datosIncumplimientos;
+                      if (datosParaHeaders.length > 0 && thead.innerHTML === '') {{
                           thead.innerHTML = '';
-                          tbody.innerHTML = '';
+                          const headers = Object.keys(datosParaHeaders[0]);
+                          const headerRow = document.createElement('tr');
+                          headers.forEach(header => {{
+                              const th = document.createElement('th');
+                              th.textContent = header;
+                              headerRow.appendChild(th);
+                          }});
+                          thead.appendChild(headerRow);
+                      }}
 
+                      // Solo agregar filas si hay datos
+                      if (datos.length > 0) {{
                           const headers = Object.keys(datos[0]);
                           const headerRow = document.createElement('tr');
                           headers.forEach(header => {{
@@ -749,6 +776,11 @@ jobs:
 
                   // Inicializar al cargar
                   window.addEventListener('load', () => {{
+                      // Generar tablas vacías con encabezados al inicio
+                      generarTabla([], true, datosConsolidado);
+                      generarTablaAlertas([], datosAlertas);
+                      generarTablaIncumplimientos([], datosIncumplimientos);
+
                       // Llenar dropdowns con proyectos
                       llenarDropdown(filterDropdownConsolidado, obtenerProyectosUnicos(datosConsolidado), () => {{
                           proyectosSeleccionadosConsolidado = Array.from(filterDropdownConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
@@ -758,10 +790,10 @@ jobs:
                               proyectosSeleccionadosConsolidado = proyectosSeleccionadosConsolidado.filter(p => p !== proyecto);
                               actualizarTags(filterTagsConsolidado, proyectosSeleccionadosConsolidado, arguments.callee);
                               const datosFiltrados = filtrarPorProyectos(datosConsolidado, proyectosSeleccionadosConsolidado);
-                              generarTabla(datosFiltrados);
+                              generarTabla(datosFiltrados, false, datosConsolidado);
                           }});
                           const datosFiltrados = filtrarPorProyectos(datosConsolidado, proyectosSeleccionadosConsolidado);
-                          generarTabla(datosFiltrados);
+                          generarTabla(datosFiltrados, false, datosConsolidado);
                       }});
 
                       llenarDropdown(filterDropdownAlertas, obtenerProyectosUnicos(datosAlertas), () => {{
@@ -772,10 +804,10 @@ jobs:
                               proyectosSeleccionadosAlertas = proyectosSeleccionadosAlertas.filter(p => p !== proyecto);
                               actualizarTags(filterTagsAlertas, proyectosSeleccionadosAlertas, arguments.callee);
                               const datosFiltrados = filtrarPorProyectos(datosAlertas, proyectosSeleccionadosAlertas);
-                              generarTablaAlertas(datosFiltrados);
+                              generarTablaAlertas(datosFiltrados, datosAlertas);
                           }});
                           const datosFiltrados = filtrarPorProyectos(datosAlertas, proyectosSeleccionadosAlertas);
-                          generarTablaAlertas(datosFiltrados);
+                          generarTablaAlertas(datosFiltrados, datosAlertas);
                       }});
 
                       llenarDropdown(filterDropdownIncumplimientos, obtenerProyectosUnicos(datosIncumplimientos), () => {{
@@ -786,13 +818,11 @@ jobs:
                               proyectosSeleccionadosIncumplimientos = proyectosSeleccionadosIncumplimientos.filter(p => p !== proyecto);
                               actualizarTags(filterTagsIncumplimientos, proyectosSeleccionadosIncumplimientos, arguments.callee);
                               const datosFiltrados = filtrarPorProyectos(datosIncumplimientos, proyectosSeleccionadosIncumplimientos);
-                              generarTablaIncumplimientos(datosFiltrados);
+                              generarTablaIncumplimientos(datosFiltrados, datosIncumplimientos);
                           }});
                           const datosFiltrados = filtrarPorProyectos(datosIncumplimientos, proyectosSeleccionadosIncumplimientos);
-                          generarTablaIncumplimientos(datosFiltrados);
+                          generarTablaIncumplimientos(datosFiltrados, datosIncumplimientos);
                       }});
-
-                      // Las tablas comienzan vacías
                   }});
 
               </script>
