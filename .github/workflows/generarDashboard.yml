@@ -209,6 +209,15 @@ jobs:
                   .green-bg {{ background-color: #f0f8f0; }}
                   .yellow-bg {{ background-color: #fffacd; }}
                   .group-separator td {{ border-top: 2.5px solid #7CB342 !important; }}
+                  .filter-section {{ margin-bottom: 12px; position: relative; }}
+                  .filter-btn {{ padding: 6px 12px; background-color: #4B4F1D; color: #A3C610; border: 1px solid #A3C610; border-radius: 3px; font-size: 8px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; }}
+                  .filter-btn:hover {{ background-color: #3d401a; }}
+                  .filter-dropdown {{ display: none; position: absolute; background: #ffffff; border: 1px solid #4B4F1D; border-radius: 3px; min-width: 220px; max-height: 250px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.1); top: 32px; left: 0; }}
+                  .filter-dropdown.open {{ display: block; }}
+                  .filter-option {{ padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-bottom: 0.5px solid #e5e2dd; cursor: pointer; }}
+                  .filter-option:hover {{ background-color: #f8f8f7; }}
+                  .filter-option input[type="checkbox"] {{ cursor: pointer; accent-color: #4B4F1D; }}
+                  .filter-option-label {{ flex: 1; font-size: 8px; cursor: pointer; }}
               </style>
           </head>
           <body>
@@ -220,6 +229,10 @@ jobs:
                   </div>
 
                   <div id="consolidado" class="tab-content active">
+                      <div class="filter-section">
+                          <button class="filter-btn" id="filterBtnConsolidado">Filtrar por Proyecto</button>
+                          <div class="filter-dropdown" id="filterDropdownConsolidado"></div>
+                      </div>
                       <div id="tableSectionConsolidado" class="table-section">
                           <table id="dataTableConsolidado">
                               <thead></thead>
@@ -229,6 +242,10 @@ jobs:
                   </div>
 
                   <div id="alertas" class="tab-content">
+                      <div class="filter-section">
+                          <button class="filter-btn" id="filterBtnAlertas">Filtrar por Proyecto</button>
+                          <div class="filter-dropdown" id="filterDropdownAlertas"></div>
+                      </div>
                       <div id="tableSectionAlertas" class="table-section">
                           <table id="dataTableAlertas">
                               <thead></thead>
@@ -238,6 +255,10 @@ jobs:
                   </div>
 
                   <div id="incumplimientos" class="tab-content">
+                      <div class="filter-section">
+                          <button class="filter-btn" id="filterBtnIncumplimientos">Filtrar por Proyecto</button>
+                          <div class="filter-dropdown" id="filterDropdownIncumplimientos"></div>
+                      </div>
                       <div id="tableSectionIncumplimientos" class="table-section">
                           <table id="dataTableIncumplimientos">
                               <thead></thead>
@@ -262,6 +283,60 @@ jobs:
                   const dataTableConsolidado = document.getElementById('dataTableConsolidado');
                   const dataTableAlertas = document.getElementById('dataTableAlertas');
                   const dataTableIncumplimientos = document.getElementById('dataTableIncumplimientos');
+
+                  const filterBtnConsolidado = document.getElementById('filterBtnConsolidado');
+                  const filterBtnAlertas = document.getElementById('filterBtnAlertas');
+                  const filterBtnIncumplimientos = document.getElementById('filterBtnIncumplimientos');
+                  const filterDropdownConsolidado = document.getElementById('filterDropdownConsolidado');
+                  const filterDropdownAlertas = document.getElementById('filterDropdownAlertas');
+                  const filterDropdownIncumplimientos = document.getElementById('filterDropdownIncumplimientos');
+
+                  // Variable para almacenar proyectos seleccionados
+                  let proyectosSeleccionadosConsolidado = [];
+                  let proyectosSeleccionadosAlertas = [];
+                  let proyectosSeleccionadosIncumplimientos = [];
+
+                  // Función para obtener proyectos únicos
+                  function obtenerProyectosUnicos(datos) {{
+                      const proyectos = new Set();
+                      datos.forEach(row => {{
+                          if (row['Proyecto'] && row['Proyecto'].trim() !== '') {{
+                              proyectos.add(row['Proyecto']);
+                          }}
+                      }});
+                      return Array.from(proyectos).sort();
+                  }}
+
+                  // Función para filtrar datos por proyectos seleccionados
+                  function filtrarPorProyectos(datos, proyectosSeleccionados) {{
+                      if (proyectosSeleccionados.length === 0) {{
+                          return [];
+                      }}
+                      return datos.filter(row => proyectosSeleccionados.includes(row['Proyecto']));
+                  }}
+
+                  // Función para llenar dropdown con checkboxes
+                  function llenarDropdown(dropdownElement, proyectos, onChangeCallback) {{
+                      dropdownElement.innerHTML = '';
+                      proyectos.forEach(proyecto => {{
+                          const option = document.createElement('div');
+                          option.className = 'filter-option';
+
+                          const checkbox = document.createElement('input');
+                          checkbox.type = 'checkbox';
+                          checkbox.value = proyecto;
+
+                          const label = document.createElement('label');
+                          label.className = 'filter-option-label';
+                          label.textContent = proyecto;
+
+                          checkbox.addEventListener('change', onChangeCallback);
+
+                          option.appendChild(checkbox);
+                          option.appendChild(label);
+                          dropdownElement.appendChild(option);
+                      }});
+                  }}
 
                   // Función para formatear fechas
                   function formatearFecha(valor) {{
@@ -605,9 +680,56 @@ jobs:
                       btn.addEventListener('click', () => cambiarPestana(btn.dataset.tab));
                   }});
 
-                  // Mostrar tabla Consolidado al cargar el dashboard
+                  // Listeners para botones de filtro
+                  filterBtnConsolidado.addEventListener('click', () => {{
+                      filterDropdownConsolidado.classList.toggle('open');
+                      filterDropdownAlertas.classList.remove('open');
+                      filterDropdownIncumplimientos.classList.remove('open');
+                  }});
+
+                  filterBtnAlertas.addEventListener('click', () => {{
+                      filterDropdownAlertas.classList.toggle('open');
+                      filterDropdownConsolidado.classList.remove('open');
+                      filterDropdownIncumplimientos.classList.remove('open');
+                  }});
+
+                  filterBtnIncumplimientos.addEventListener('click', () => {{
+                      filterDropdownIncumplimientos.classList.toggle('open');
+                      filterDropdownConsolidado.classList.remove('open');
+                      filterDropdownAlertas.classList.remove('open');
+                  }});
+
+                  // Cerrar dropdown al hacer click fuera
+                  document.addEventListener('click', (e) => {{
+                      if (!e.target.closest('.filter-section')) {{
+                          filterDropdownConsolidado.classList.remove('open');
+                          filterDropdownAlertas.classList.remove('open');
+                          filterDropdownIncumplimientos.classList.remove('open');
+                      }}
+                  }});
+
+                  // Inicializar al cargar
                   window.addEventListener('load', () => {{
-                      generarTabla(datosConsolidado, true);
+                      // Llenar dropdowns con proyectos
+                      llenarDropdown(filterDropdownConsolidado, obtenerProyectosUnicos(datosConsolidado), () => {{
+                          proyectosSeleccionadosConsolidado = Array.from(filterDropdownConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                          const datosFiltrados = filtrarPorProyectos(datosConsolidado, proyectosSeleccionadosConsolidado);
+                          generarTabla(datosFiltrados);
+                      }});
+
+                      llenarDropdown(filterDropdownAlertas, obtenerProyectosUnicos(datosAlertas), () => {{
+                          proyectosSeleccionadosAlertas = Array.from(filterDropdownAlertas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                          const datosFiltrados = filtrarPorProyectos(datosAlertas, proyectosSeleccionadosAlertas);
+                          generarTablaAlertas(datosFiltrados);
+                      }});
+
+                      llenarDropdown(filterDropdownIncumplimientos, obtenerProyectosUnicos(datosIncumplimientos), () => {{
+                          proyectosSeleccionadosIncumplimientos = Array.from(filterDropdownIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                          const datosFiltrados = filtrarPorProyectos(datosIncumplimientos, proyectosSeleccionadosIncumplimientos);
+                          generarTablaIncumplimientos(datosFiltrados);
+                      }});
+
+                      // Las tablas comienzan vacías
                   }});
 
               </script>
