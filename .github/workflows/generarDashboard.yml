@@ -29,6 +29,12 @@ jobs:
           import re
           from datetime import datetime
 
+          # Leer versión actual
+          version = '1.0'
+          if os.path.exists('version.txt'):
+              with open('version.txt', 'r') as f:
+                  version = f.read().strip()
+
           def extraer_unidad_estructural(localizacion):
               """Extrae la unidad estructural del campo de Localización"""
               if pd.isna(localizacion):
@@ -222,6 +228,7 @@ jobs:
                   .filter-tag {{ background-color: #f0f5a0; border: 1px solid #A3C610; color: #3D4800; padding: 4px 8px; border-radius: 3px; font-size: 8px; display: flex; align-items: center; gap: 4px; }}
                   .filter-tag-close {{ background: none; border: none; color: #3D4800; cursor: pointer; font-size: 10px; padding: 0; font-weight: bold; }}
                   .filter-tag-close:hover {{ color: #2f3215; }}
+                  .footer {{ margin-top: 20px; padding: 10px 0; border-top: 1px solid #A3C610; text-align: right; font-size: 8px; color: #7CB342; }}
               </style>
           </head>
           <body>
@@ -272,6 +279,9 @@ jobs:
                               <tbody></tbody>
                           </table>
                       </div>
+                  </div>
+                  <div class="footer">
+                      Version {version}
                   </div>
               </div>
 
