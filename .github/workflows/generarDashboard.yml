@@ -347,8 +347,20 @@ jobs:
                       return datos.filter(row => proyectosSeleccionados.includes(row['Proyecto']));
                   }}
 
-                  // Función para actualizar todos los filtros en todas las pestañas
-                  function actualizarTodosFiltros() {{
+                  // Función para actualizar solo tablas (puede ser lenta)
+                  function actualizarTablas() {{
+                      const datosFiltradosConsolidado = filtrarPorProyectos(datosConsolidado, proyectosSeleccionados);
+                      generarTabla(datosFiltradosConsolidado, false, datosConsolidado);
+
+                      const datosFiltradosAlertas = filtrarPorProyectos(datosAlertas, proyectosSeleccionados);
+                      generarTablaAlertas(datosFiltradosAlertas, datosAlertas);
+
+                      const datosFiltradosIncumplimientos = filtrarPorProyectos(datosIncumplimientos, proyectosSeleccionados);
+                      generarTablaIncumplimientos(datosFiltradosIncumplimientos, datosIncumplimientos);
+                  }}
+
+                  // Función para actualizar UI inmediatamente (tags y checkboxes)
+                  function actualizarUIInmediata() {{
                       // Deduplicar proyectosSeleccionados
                       proyectosSeleccionados = Array.from(new Set(proyectosSeleccionados));
 
@@ -364,16 +376,15 @@ jobs:
                       actualizarTags(filterTagsConsolidado, proyectosSeleccionados, removerProyecto);
                       actualizarTags(filterTagsAlertas, proyectosSeleccionados, removerProyecto);
                       actualizarTags(filterTagsIncumplimientos, proyectosSeleccionados, removerProyecto);
+                  }}
 
-                      // Actualizar tablas
-                      const datosFiltradosConsolidado = filtrarPorProyectos(datosConsolidado, proyectosSeleccionados);
-                      generarTabla(datosFiltradosConsolidado, false, datosConsolidado);
+                  // Función para actualizar todos los filtros (UI inmediata + tablas asincrónicas)
+                  function actualizarTodosFiltros() {{
+                      // Actualizar UI inmediatamente
+                      actualizarUIInmediata();
 
-                      const datosFiltradosAlertas = filtrarPorProyectos(datosAlertas, proyectosSeleccionados);
-                      generarTablaAlertas(datosFiltradosAlertas, datosAlertas);
-
-                      const datosFiltradosIncumplimientos = filtrarPorProyectos(datosIncumplimientos, proyectosSeleccionados);
-                      generarTablaIncumplimientos(datosFiltradosIncumplimientos, datosIncumplimientos);
+                      // Actualizar tablas de forma asincrónica
+                      requestAnimationFrame(actualizarTablas);
                   }}
 
                   // Función para remover un proyecto de la selección global
