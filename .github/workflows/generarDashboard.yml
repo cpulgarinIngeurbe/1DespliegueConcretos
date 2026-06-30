@@ -26,7 +26,35 @@ jobs:
           python << 'PYTHON_SCRIPT'
           import pandas as pd
           import os
+          import re
           from datetime import datetime
+
+          def extraer_unidad_estructural(localizacion):
+              """Extrae la unidad estructural del campo de Localización"""
+              if pd.isna(localizacion):
+                  return ''
+
+              localizacion = str(localizacion).strip()
+
+              # Torre
+              if re.search(r'(?:TORRE|T)\s*(\d+)', localizacion, re.IGNORECASE):
+                  match = re.search(r'(?:TORRE|T)\s*(\d+)', localizacion, re.IGNORECASE)
+                  numero = match.group(1)
+                  return f"Torre {int(numero):02d}"
+
+              # Escaleras
+              if re.search(r'ESCALERA', localizacion, re.IGNORECASE):
+                  return 'Escalera'
+
+              # Semisótano → Sótano
+              if re.search(r'SEMISOTANO', localizacion, re.IGNORECASE):
+                  return 'Sótano'
+
+              # Pilotaje
+              if re.search(r'PILOTE|PILOTAJE', localizacion, re.IGNORECASE):
+                  return 'Pilotaje'
+
+              return ''
 
           archivo_consolidado = "desplegable/Consolidado.xlsx"
           archivo_alertas = "desplegable/ConsolidadoAlertas.xlsx"
@@ -40,6 +68,11 @@ jobs:
           if os.path.exists(archivo_consolidado):
               print(f'[*] Leyendo: {archivo_consolidado}')
               df_consolidado = pd.read_excel(archivo_consolidado)
+
+              # Crear columna UNIDAD ESTRUCTURAL
+              if 'Localización' in df_consolidado.columns:
+                  df_consolidado['UNIDAD ESTRUCTURAL'] = df_consolidado['Localización'].apply(extraer_unidad_estructural)
+                  print(f'  [+] Columna "UNIDAD ESTRUCTURAL" creada')
 
               # Limpiar primeros 6 registros de Promedio Móvil por Proyecto y Resistencia nominal
               if 'Promedio Móvil (MPa)' in df_consolidado.columns and 'Resistencia nominal (MPa)' in df_consolidado.columns:
@@ -67,6 +100,11 @@ jobs:
               print(f'[*] Leyendo: {archivo_alertas}')
               df_alertas = pd.read_excel(archivo_alertas)
 
+              # Crear columna UNIDAD ESTRUCTURAL
+              if 'Localización' in df_alertas.columns:
+                  df_alertas['UNIDAD ESTRUCTURAL'] = df_alertas['Localización'].apply(extraer_unidad_estructural)
+                  print(f'  [+] Columna "UNIDAD ESTRUCTURAL" creada')
+
               # Limpiar primeros 6 registros de Promedio Móvil por Proyecto y Resistencia nominal
               if 'Promedio Móvil (MPa)' in df_alertas.columns and 'Resistencia nominal (MPa)' in df_alertas.columns:
                   for proyecto in df_alertas['Proyecto'].unique():
@@ -91,6 +129,11 @@ jobs:
           if os.path.exists(archivo_incumplimientos):
               print(f'[*] Leyendo: {archivo_incumplimientos}')
               df_incumplimientos = pd.read_excel(archivo_incumplimientos)
+
+              # Crear columna UNIDAD ESTRUCTURAL
+              if 'Localización' in df_incumplimientos.columns:
+                  df_incumplimientos['UNIDAD ESTRUCTURAL'] = df_incumplimientos['Localización'].apply(extraer_unidad_estructural)
+                  print(f'  [+] Columna "UNIDAD ESTRUCTURAL" creada')
 
               # Redondear columnas numéricas a 2 decimales
               columnas_decimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)']
