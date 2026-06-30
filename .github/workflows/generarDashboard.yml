@@ -406,6 +406,11 @@ jobs:
 
                   // Función para generar tabla de Consolidado
                   function generarTabla(datos, conDelay = false) {{
+                      if (datos.length === 0) {{
+                          dataTableConsolidado.innerHTML = '';
+                          tableSectionConsolidado.classList.remove('active');
+                          return;
+                      }}
                       if (datos.length > 0) {{
                           const thead = dataTableConsolidado.querySelector('thead');
                           const tbody = dataTableConsolidado.querySelector('tbody');
@@ -514,6 +519,11 @@ jobs:
 
                   // Función para generar tabla de Alertas
                   function generarTablaAlertas(datos) {{
+                      if (datos.length === 0) {{
+                          dataTableAlertas.innerHTML = '';
+                          tableSectionAlertas.classList.remove('active');
+                          return;
+                      }}
                       if (datos.length > 0) {{
                           const thead = dataTableAlertas.querySelector('thead');
                           const tbody = dataTableAlertas.querySelector('tbody');
@@ -598,6 +608,11 @@ jobs:
 
                   // Función para generar tabla de Incumplimientos
                   function generarTablaIncumplimientos(datos) {{
+                      if (datos.length === 0) {{
+                          dataTableIncumplimientos.innerHTML = '';
+                          tableSectionIncumplimientos.classList.remove('active');
+                          return;
+                      }}
                       if (datos.length > 0) {{
                           const thead = dataTableIncumplimientos.querySelector('thead');
                           const tbody = dataTableIncumplimientos.querySelector('tbody');
