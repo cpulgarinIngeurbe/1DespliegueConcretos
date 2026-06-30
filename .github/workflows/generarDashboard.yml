@@ -1,4 +1,4 @@
-name: 📊 Generar Dashboard
+name: 📊 Generar Dashboard (Sin Filtros)
 
 on:
   workflow_dispatch:
