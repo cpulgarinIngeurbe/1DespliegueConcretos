@@ -270,7 +270,7 @@ jobs:
                               <button class="filter-btn" id="filterBtnUnidadIncumplimientos" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadIncumplimientos"></div>
                           </div>
-                          <button class="filter-btn" id="resetBtnIncumplimientos" style="align-self: center;">Restablecer Filtros</button>
+                          <button class="filter-btn" id="resetBtnIncumplimientos" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
                           <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
                               <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
