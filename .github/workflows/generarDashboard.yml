@@ -279,8 +279,8 @@ jobs:
                               <div id="analyticsCardIncumplimientos" class="analytics-card" style="display: none;">
                                   <div class="analytics-card-content">
                                       <div class="analytics-icon" id="analyticsIconIncumplimientos" style="display: none;">
-                                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                              <path d="M4 16l8-8m8-8l-16 16" stroke="#E53935" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                          <svg viewBox="0 0 24 24" fill="#E53935" xmlns="http://www.w3.org/2000/svg">
+                                              <path d="M3 18l6-9 6-6 5 0 0 5 1 2 2-1v-8H9l-6 9z"/>
                                           </svg>
                                       </div>
                                       <div class="analytics-info">
@@ -292,8 +292,8 @@ jobs:
                               <div id="analyticsCardIncumplimientosUltimoMes" class="analytics-card" style="display: none;">
                                   <div class="analytics-card-content">
                                       <div class="analytics-icon" id="analyticsIconUltimoMes" style="display: none;">
-                                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                              <path d="M4 16l8-8m8-8l-16 16" stroke="#E53935" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                          <svg viewBox="0 0 24 24" fill="#E53935" xmlns="http://www.w3.org/2000/svg">
+                                              <path d="M3 18l6-9 6-6 5 0 0 5 1 2 2-1v-8H9l-6 9z"/>
                                           </svg>
                                       </div>
                                       <div class="analytics-info">
