@@ -705,7 +705,10 @@ jobs:
                           'Toma': 'FECHA TOMA',
                           'Rotura': 'FECHA ROTURA',
                           'ID Vista': 'ID',
-                          'Cilindro N°': 'Muestra N°'
+                          'Cilindro N°': 'Muestra N°',
+                          'Resistencia nominal (MPa)': "f'c (MPA)",
+                          'Resistencia (MPa)': 'RESULTADO (MPA)',
+                          'Resistencia (%)': 'Resultado (%)'
                       }};
                       return mapeo[nombreOriginal] || nombreOriginal;
                   }}
