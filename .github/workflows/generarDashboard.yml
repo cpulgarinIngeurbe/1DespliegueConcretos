@@ -268,10 +268,18 @@ jobs:
                               <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
-                      <div id="analyticsCardIncumplimientos" class="analytics-card" style="display: none;">
-                          <div class="analytics-card-content">
-                              <div class="analytics-label">Registros Filtrados</div>
-                              <div class="analytics-value" id="analyticsCountIncumplimientos">0</div>
+                      <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px;">
+                          <div id="analyticsCardIncumplimientos" class="analytics-card" style="display: none; flex: 1; min-width: 250px;">
+                              <div class="analytics-card-content">
+                                  <div class="analytics-label">Consolidado de muestras con baja resistencia</div>
+                                  <div class="analytics-value" id="analyticsCountIncumplimientos">0</div>
+                              </div>
+                          </div>
+                          <div id="analyticsCardIncumplimientosUltimoMes" class="analytics-card" style="display: none; flex: 1; min-width: 250px;">
+                              <div class="analytics-card-content">
+                                  <div class="analytics-label">Muestras con baja resistencia del ultimo mes</div>
+                                  <div class="analytics-value" id="analyticsCountIncumplimientosUltimoMes">0</div>
+                              </div>
                           </div>
                       </div>
                       <div id="tableSectionIncumplimientos" class="table-section">
@@ -983,13 +991,61 @@ jobs:
                       // Actualizar tarjeta de analítica con el conteo total de registros filtrados
                       const analyticsCardIncumplimientos = document.getElementById('analyticsCardIncumplimientos');
                       const analyticsCountIncumplimientos = document.getElementById('analyticsCountIncumplimientos');
+                      const analyticsCardIncumplimientosUltimoMes = document.getElementById('analyticsCardIncumplimientosUltimoMes');
+                      const analyticsCountIncumplimientosUltimoMes = document.getElementById('analyticsCountIncumplimientosUltimoMes');
+
                       const totalRegistros = datosActualesIncumplimientos.length;
 
+                      // Calcular registros del último mes basándose en "Fecha Toma"
+                      const ahora = new Date();
+                      const haceMes = new Date(ahora.getFullYear(), ahora.getMonth() - 1, ahora.getDate());
+
+                      const registrosUltimoMes = datosActualesIncumplimientos.filter(row => {{
+                          const fechaToma = row['Toma'];
+                          if (!fechaToma) return false;
+
+                          let fecha;
+                          if (typeof fechaToma === 'string') {{
+                              // Intentar parsear diferentes formatos de fecha
+                              const formatos = [
+                                  /(\d{{2}})\/(\d{{2}})\/(\d{{4}})/,  // DD/MM/YYYY
+                                  /(\d{{4}})-(\d{{2}})-(\d{{2}})/,    // YYYY-MM-DD
+                                  /(\d{{1,2}})\/(\d{{1,2}})\/(\d{{4}})/ // D/M/YYYY o DD/MM/YYYY
+                              ];
+
+                              for (const formato of formatos) {{
+                                  const match = fechaToma.match(formato);
+                                  if (match) {{
+                                      if (formato.toString().includes('DD')) {{
+                                          // DD/MM/YYYY
+                                          fecha = new Date(match[3], parseInt(match[2]) - 1, match[1]);
+                                      }} else if (formato.toString().includes('YYYY-MM-DD')) {{
+                                          // YYYY-MM-DD
+                                          fecha = new Date(match[1], parseInt(match[2]) - 1, match[3]);
+                                      }} else {{
+                                          // D/M/YYYY
+                                          fecha = new Date(match[3], parseInt(match[2]) - 1, match[1]);
+                                      }}
+                                      break;
+                                  }}
+                              }}
+                          }} else if (typeof fechaToma === 'number') {{
+                              // Número de Excel (días desde 1900)
+                              fecha = new Date((fechaToma - 25569) * 86400 * 1000);
+                          }}
+
+                          return fecha && fecha >= haceMes && fecha <= ahora;
+                      }});
+
                       analyticsCountIncumplimientos.textContent = totalRegistros.toLocaleString();
+                      analyticsCountIncumplimientosUltimoMes.textContent = registrosUltimoMes.length.toLocaleString();
+
                       if (totalRegistros > 0 || (proyectosSeleccionados.length > 0 || unidadesEstructuralesSeleccionadas.length > 0)) {{
                           analyticsCardIncumplimientos.style.display = 'block';
+                          analyticsCardIncumplimientosUltimoMes.style.display = 'block';
                       }} else {{
                           analyticsCardIncumplimientos.style.display = 'none';
+                          analyticsCardIncumplimientosUltimoMes.style.display = 'none';
                       }}
                   }}
 
