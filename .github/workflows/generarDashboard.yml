@@ -272,10 +272,15 @@ jobs:
                               <button class="filter-btn" id="filterBtnUnidadIncumplimientos" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadIncumplimientos"></div>
                           </div>
+                          <div style="display: inline-block; position: relative;">
+                              <button class="filter-btn" id="filterBtnMuestraIncumplimientos" style="display: none;">Filtrar por Muestra</button>
+                              <div class="filter-dropdown" id="filterDropdownMuestraIncumplimientos"></div>
+                          </div>
                           <button class="filter-btn reset-btn" id="resetBtnIncumplimientos" style="align-self: center; margin-right: auto;">Restablecer Filtros</button>
                           <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
                               <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsMuestraIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
                       <div class="analytics-wrapper">
@@ -325,10 +330,15 @@ jobs:
                               <button class="filter-btn" id="filterBtnUnidadAlertas" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadAlertas"></div>
                           </div>
+                          <div style="display: inline-block; position: relative;">
+                              <button class="filter-btn" id="filterBtnMuestraAlertas" style="display: none;">Filtrar por Muestra</button>
+                              <div class="filter-dropdown" id="filterDropdownMuestraAlertas"></div>
+                          </div>
                           <button class="filter-btn" id="resetBtnAlertas" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
                           <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
                               <div class="filter-tags" id="filterTagsAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsUnidadAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsMuestraAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
                       <div id="tableSectionAlertas" class="table-section">
@@ -350,10 +360,15 @@ jobs:
                               <button class="filter-btn" id="filterBtnUnidadConsolidado" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadConsolidado"></div>
                           </div>
+                          <div style="display: inline-block; position: relative;">
+                              <button class="filter-btn" id="filterBtnMuestraConsolidado" style="display: none;">Filtrar por Muestra</button>
+                              <div class="filter-dropdown" id="filterDropdownMuestraConsolidado"></div>
+                          </div>
                           <button class="filter-btn" id="resetBtnConsolidado" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
                           <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
                               <div class="filter-tags" id="filterTagsConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsUnidadConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsMuestraConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
                       <div id="tableSectionConsolidado" class="table-section">
@@ -398,12 +413,21 @@ jobs:
                   const filterBtnUnidadConsolidado = document.getElementById('filterBtnUnidadConsolidado');
                   const filterBtnUnidadAlertas = document.getElementById('filterBtnUnidadAlertas');
                   const filterBtnUnidadIncumplimientos = document.getElementById('filterBtnUnidadIncumplimientos');
+                  const filterBtnMuestraConsolidado = document.getElementById('filterBtnMuestraConsolidado');
+                  const filterBtnMuestraAlertas = document.getElementById('filterBtnMuestraAlertas');
+                  const filterBtnMuestraIncumplimientos = document.getElementById('filterBtnMuestraIncumplimientos');
                   const filterDropdownUnidadConsolidado = document.getElementById('filterDropdownUnidadConsolidado');
                   const filterDropdownUnidadAlertas = document.getElementById('filterDropdownUnidadAlertas');
                   const filterDropdownUnidadIncumplimientos = document.getElementById('filterDropdownUnidadIncumplimientos');
+                  const filterDropdownMuestraConsolidado = document.getElementById('filterDropdownMuestraConsolidado');
+                  const filterDropdownMuestraAlertas = document.getElementById('filterDropdownMuestraAlertas');
+                  const filterDropdownMuestraIncumplimientos = document.getElementById('filterDropdownMuestraIncumplimientos');
                   const filterTagsUnidadConsolidado = document.getElementById('filterTagsUnidadConsolidado');
                   const filterTagsUnidadAlertas = document.getElementById('filterTagsUnidadAlertas');
                   const filterTagsUnidadIncumplimientos = document.getElementById('filterTagsUnidadIncumplimientos');
+                  const filterTagsMuestraConsolidado = document.getElementById('filterTagsMuestraConsolidado');
+                  const filterTagsMuestraAlertas = document.getElementById('filterTagsMuestraAlertas');
+                  const filterTagsMuestraIncumplimientos = document.getElementById('filterTagsMuestraIncumplimientos');
 
                   // Función para actualizar tags
                   function actualizarTags(tagsContainer, proyectosSeleccionados, onRemoveCallback) {{
@@ -427,6 +451,8 @@ jobs:
                   let proyectosSeleccionados = [];
                   // Variable global para almacenar unidades estructurales seleccionadas
                   let unidadesEstructuralesSeleccionadas = [];
+                  // Variable global para almacenar muestras seleccionadas
+                  let muestrasSeleccionadas = [];
 
                   // Variables de paginación
                   const REGISTROS_POR_PAGINA = 150;
