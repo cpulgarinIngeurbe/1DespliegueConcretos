@@ -249,7 +249,7 @@ jobs:
                   </div>
 
                   <div id="consolidado" class="tab-content active">
-                      <div class="filter-section" style="display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
+                      <div class="filter-section" style="display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px; position: relative;">
                           <div style="display: inline-block; position: relative;">
                               <button class="filter-btn" id="filterBtnConsolidado">Filtrar por Proyecto</button>
                               <div class="filter-dropdown" id="filterDropdownConsolidado"></div>
@@ -258,6 +258,7 @@ jobs:
                               <button class="filter-btn" id="filterBtnUnidadConsolidado" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadConsolidado"></div>
                           </div>
+                          <button class="filter-btn" id="resetBtnConsolidado" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
                           <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
                               <div class="filter-tags" id="filterTagsConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsUnidadConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -273,7 +274,7 @@ jobs:
                   </div>
 
                   <div id="alertas" class="tab-content">
-                      <div class="filter-section" style="display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
+                      <div class="filter-section" style="display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px; position: relative;">
                           <div style="display: inline-block; position: relative;">
                               <button class="filter-btn" id="filterBtnAlertas">Filtrar por Proyecto</button>
                               <div class="filter-dropdown" id="filterDropdownAlertas"></div>
@@ -282,6 +283,7 @@ jobs:
                               <button class="filter-btn" id="filterBtnUnidadAlertas" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadAlertas"></div>
                           </div>
+                          <button class="filter-btn" id="resetBtnAlertas" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
                           <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
                               <div class="filter-tags" id="filterTagsAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsUnidadAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -297,7 +299,7 @@ jobs:
                   </div>
 
                   <div id="incumplimientos" class="tab-content">
-                      <div class="filter-section" style="display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
+                      <div class="filter-section" style="display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px; position: relative;">
                           <div style="display: inline-block; position: relative;">
                               <button class="filter-btn" id="filterBtnIncumplimientos">Filtrar por Proyecto</button>
                               <div class="filter-dropdown" id="filterDropdownIncumplimientos"></div>
@@ -306,6 +308,7 @@ jobs:
                               <button class="filter-btn" id="filterBtnUnidadIncumplimientos" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadIncumplimientos"></div>
                           </div>
+                          <button class="filter-btn" id="resetBtnIncumplimientos" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
                           <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
                               <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -1034,6 +1037,27 @@ jobs:
                       filterDropdownAlertas.classList.remove('open');
                       filterDropdownIncumplimientos.classList.remove('open');
                   }});
+
+                  // Función para restablecer todos los filtros
+                  function restablecerFiltros() {{
+                      proyectosSeleccionados = [];
+                      unidadesEstructuralesSeleccionadas = [];
+                      paginaConsolidado = 1;
+                      paginaAlertas = 1;
+                      paginaIncumplimientos = 1;
+                      actualizarUIInmediata();
+                      actualizarOpcionesUnidadEstructural();
+                      requestAnimationFrame(actualizarTablas);
+                  }}
+
+                  // Listeners para botones de reset
+                  const resetBtnConsolidado = document.getElementById('resetBtnConsolidado');
+                  const resetBtnAlertas = document.getElementById('resetBtnAlertas');
+                  const resetBtnIncumplimientos = document.getElementById('resetBtnIncumplimientos');
+
+                  resetBtnConsolidado.addEventListener('click', restablecerFiltros);
+                  resetBtnAlertas.addEventListener('click', restablecerFiltros);
+                  resetBtnIncumplimientos.addEventListener('click', restablecerFiltros);
 
                   // Cerrar dropdown al hacer click fuera
                   document.addEventListener('click', (e) => {{
