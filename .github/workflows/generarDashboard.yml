@@ -248,11 +248,11 @@ jobs:
                   <div id="consolidado" class="tab-content active">
                       <div class="filter-section">
                           <div style="display: inline-block; position: relative;">
-                              <button class="filter-btn" id="filterBtnConsolidado">Filtrar por Proyecto</button>
+                              <button class="filter-btn" id="filterBtnConsolidado">Filtrar por Proyecto ▼</button>
                               <div class="filter-dropdown" id="filterDropdownConsolidado"></div>
                           </div>
                           <div style="display: inline-block; position: relative; margin-left: 8px;">
-                              <button class="filter-btn" id="filterBtnUnidadConsolidado" style="display: none;">Filtrar por Unidad Estructural</button>
+                              <button class="filter-btn" id="filterBtnUnidadConsolidado" style="display: none;">Filtrar por Unidad Estructural ▼</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadConsolidado"></div>
                           </div>
                           <div class="filter-tags" id="filterTagsConsolidado"></div>
@@ -270,11 +270,11 @@ jobs:
                   <div id="alertas" class="tab-content">
                       <div class="filter-section">
                           <div style="display: inline-block; position: relative;">
-                              <button class="filter-btn" id="filterBtnAlertas">Filtrar por Proyecto</button>
+                              <button class="filter-btn" id="filterBtnAlertas">Filtrar por Proyecto ▼</button>
                               <div class="filter-dropdown" id="filterDropdownAlertas"></div>
                           </div>
                           <div style="display: inline-block; position: relative; margin-left: 8px;">
-                              <button class="filter-btn" id="filterBtnUnidadAlertas" style="display: none;">Filtrar por Unidad Estructural</button>
+                              <button class="filter-btn" id="filterBtnUnidadAlertas" style="display: none;">Filtrar por Unidad Estructural ▼</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadAlertas"></div>
                           </div>
                           <div class="filter-tags" id="filterTagsAlertas"></div>
@@ -292,11 +292,11 @@ jobs:
                   <div id="incumplimientos" class="tab-content">
                       <div class="filter-section">
                           <div style="display: inline-block; position: relative;">
-                              <button class="filter-btn" id="filterBtnIncumplimientos">Filtrar por Proyecto</button>
+                              <button class="filter-btn" id="filterBtnIncumplimientos">Filtrar por Proyecto ▼</button>
                               <div class="filter-dropdown" id="filterDropdownIncumplimientos"></div>
                           </div>
                           <div style="display: inline-block; position: relative; margin-left: 8px;">
-                              <button class="filter-btn" id="filterBtnUnidadIncumplimientos" style="display: none;">Filtrar por Unidad Estructural</button>
+                              <button class="filter-btn" id="filterBtnUnidadIncumplimientos" style="display: none;">Filtrar por Unidad Estructural ▼</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadIncumplimientos"></div>
                           </div>
                           <div class="filter-tags" id="filterTagsIncumplimientos"></div>
