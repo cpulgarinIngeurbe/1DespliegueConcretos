@@ -278,9 +278,9 @@ jobs:
                           <div class="analytics-cards-column">
                               <div id="analyticsCardIncumplimientos" class="analytics-card" style="display: none;">
                                   <div class="analytics-card-content">
-                                      <div class="analytics-icon">
+                                      <div class="analytics-icon" id="analyticsIconIncumplimientos" style="display: none;">
                                           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                              <path d="M7 17L17 7M17 7H7M17 7V17" stroke="#7CB342" stroke-linecap="round" stroke-linejoin="round"/>
+                                              <path d="M12 5v14M5 12l7-7 7 7" stroke="#E53935" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                           </svg>
                                       </div>
                                       <div class="analytics-info">
@@ -291,9 +291,9 @@ jobs:
                               </div>
                               <div id="analyticsCardIncumplimientosUltimoMes" class="analytics-card" style="display: none;">
                                   <div class="analytics-card-content">
-                                      <div class="analytics-icon" id="analyticsIconUltimoMes">
+                                      <div class="analytics-icon" id="analyticsIconUltimoMes" style="display: none;">
                                           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                              <path d="M7 17L17 7M17 7H7M17 7V17" stroke="#7CB342" stroke-linecap="round" stroke-linejoin="round"/>
+                                              <path d="M12 5v14M5 12l7-7 7 7" stroke="#E53935" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                           </svg>
                                       </div>
                                       <div class="analytics-info">
@@ -1062,18 +1062,20 @@ jobs:
                       analyticsCountIncumplimientos.textContent = totalRegistros.toLocaleString();
                       analyticsCountIncumplimientosUltimoMes.textContent = registrosUltimoMes.length.toLocaleString();
 
-                      // Colorear el ícono en rojo si hay registros en el último mes
+                      // Mostrar/ocultar ícono en tarjeta de Consolidado
+                      const analyticsIconIncumplimientos = document.getElementById('analyticsIconIncumplimientos');
+                      if (totalRegistros > 0) {{
+                          analyticsIconIncumplimientos.style.display = 'block';
+                      }} else {{
+                          analyticsIconIncumplimientos.style.display = 'none';
+                      }}
+
+                      // Mostrar/ocultar ícono en tarjeta del último mes
                       const analyticsIconUltimoMes = document.getElementById('analyticsIconUltimoMes');
                       if (registrosUltimoMes.length > 0) {{
-                          const svg = analyticsIconUltimoMes.querySelector('svg path');
-                          if (svg) {{
-                              svg.setAttribute('stroke', '#D32F2F');
-                          }}
+                          analyticsIconUltimoMes.style.display = 'block';
                       }} else {{
-                          const svg = analyticsIconUltimoMes.querySelector('svg path');
-                          if (svg) {{
-                              svg.setAttribute('stroke', '#7CB342');
-                          }}
+                          analyticsIconUltimoMes.style.display = 'none';
                       }}
 
                       if (totalRegistros > 0 || (proyectosSeleccionados.length > 0 || unidadesEstructuralesSeleccionadas.length > 0)) {{
