@@ -503,11 +503,27 @@ jobs:
                   function obtenerMuestrasUnicas(datos, proyectosSeleccionados) {{
                       const datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
                       const muestras = new Set();
-                      datosFiltradores.forEach(row => {{
-                          if (row['MUESTRA Nº'] && row['MUESTRA Nº'].toString().trim() !== '') {{
-                              muestras.add(row['MUESTRA Nº'].toString().trim());
-                          }}
-                      }});
+
+                      // Detectar el nombre exacto de la columna de muestra
+                      let nombreColumnamuestra = null;
+                      if (datosFiltradores.length > 0) {{
+                          const primerRegistro = datosFiltradores[0];
+                          const columnasDisponibles = Object.keys(primerRegistro);
+                          nombreColumnaMuestra = columnasDisponibles.find(col =>
+                              col.toLowerCase().includes('muestra') && (col.includes('Nº') || col.includes('N°') || col.includes('Nº'))
+                          );
+                          console.log('Columnas disponibles:', columnasDisponibles);
+                          console.log('Nombre de columna de muestra detectado:', nombreColumnaMuestra);
+                      }}
+
+                      if (nombreColumnaMuestra) {{
+                          datosFiltradores.forEach(row => {{
+                              if (row[nombreColumnaMuestra] && row[nombreColumnaMuestra].toString().trim() !== '') {{
+                                  muestras.add(row[nombreColumnaMuestra].toString().trim());
+                              }}
+                          }});
+                      }}
+
                       return Array.from(muestras).sort((a, b) => a.localeCompare(b, undefined, {{numeric: true}}));
                   }}
 
@@ -523,8 +539,17 @@ jobs:
                   // Función para filtrar datos por proyectos, unidades y muestras
                   function filtrarPorProyectosUnidadesYMuestras(datos, proyectosSeleccionados, unidadesSeleccionadas, muestrasSeleccionadas) {{
                       let datosFiltradores = filtrarPorProyectosYUnidades(datos, proyectosSeleccionados, unidadesSeleccionadas);
-                      if (muestrasSeleccionadas.length > 0) {{
-                          datosFiltradores = datosFiltradores.filter(row => muestrasSeleccionadas.includes(row['MUESTRA Nº'].toString().trim()));
+                      if (muestrasSeleccionadas.length > 0 && datosFiltradores.length > 0) {{
+                          // Detectar el nombre exacto de la columna de muestra
+                          const primerRegistro = datosFiltradores[0];
+                          const columnasDisponibles = Object.keys(primerRegistro);
+                          const nombreColumnaMuestra = columnasDisponibles.find(col =>
+                              col.toLowerCase().includes('muestra') && (col.includes('Nº') || col.includes('N°') || col.includes('Nº'))
+                          );
+
+                          if (nombreColumnaMuestra) {{
+                              datosFiltradores = datosFiltradores.filter(row => muestrasSeleccionadas.includes(row[nombreColumnaMuestra].toString().trim()));
+                          }}
                       }}
                       return datosFiltradores;
                   }}
