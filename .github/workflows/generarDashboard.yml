@@ -294,7 +294,7 @@ jobs:
                                       </svg>
                                   </div>
                                   <div class="analytics-info">
-                                      <div class="analytics-label">Muestras con baja resistencia del ultimo mes</div>
+                                      <div class="analytics-label">Muestras con baja resistencia del último mes</div>
                                       <div class="analytics-value" id="analyticsCountIncumplimientosUltimoMes">0</div>
                                   </div>
                               </div>
