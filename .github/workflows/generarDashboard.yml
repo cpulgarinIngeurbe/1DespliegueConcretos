@@ -181,7 +181,6 @@ jobs:
               <meta content="width=device-width, initial-scale=1.0" name="viewport">
               <title>Dashboard de Resistencias</title>
               <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-              <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
               <style>
                   body {{ background-color: #ffffff; color: #141311; margin: 0; padding: 6px; font-family: 'Inter', sans-serif; font-size: 10px; zoom: 110%; }}
                   .container {{ max-width: 100%; margin: 0 auto; }}
@@ -248,9 +247,6 @@ jobs:
                   .analytics-value {{ font-size: 18px; font-weight: 800; color: #2f3215; letter-spacing: -0.5px; }}
                   .analytics-wrapper {{ display: flex; gap: 10px; align-items: flex-start; margin-top: 4px; }}
                   .analytics-cards-column {{ display: flex; flex-direction: column; gap: 8px; flex: 0 0 auto; }}
-                  .analytics-chart-container {{ background: linear-gradient(135deg, #f8fbf4 0%, #eff4e8 100%); border: 1.5px solid #7CB342; border-radius: 8px; padding: 8px; flex: 1; min-height: 150px; max-width: 600px; display: none; }}
-                  .analytics-chart-container.active {{ display: block; }}
-                  .chart-canvas-wrapper {{ position: relative; height: 120px; }}
                   .footer {{ margin-top: 20px; padding: 10px 0; border-top: 1px solid #A3C610; text-align: right; font-size: 8px; color: #7CB342; }}
               </style>
           </head>
@@ -305,11 +301,6 @@ jobs:
                                           <div class="analytics-value" id="analyticsCountIncumplimientosUltimoMes">0</div>
                                       </div>
                                   </div>
-                              </div>
-                          </div>
-                          <div id="analyticsChartContainer" class="analytics-chart-container">
-                              <div class="chart-canvas-wrapper">
-                                  <canvas id="chartIncumplimientos"></canvas>
                               </div>
                           </div>
                       </div>
@@ -1088,12 +1079,9 @@ jobs:
                       if (totalRegistros > 0 || (proyectosSeleccionados.length > 0 || unidadesEstructuralesSeleccionadas.length > 0)) {{
                           analyticsCardIncumplimientos.style.display = 'block';
                           analyticsCardIncumplimientosUltimoMes.style.display = 'block';
-                          document.getElementById('analyticsChartContainer').classList.add('active');
-                          requestAnimationFrame(actualizarGraficoIncumplimientos);
                       }} else {{
                           analyticsCardIncumplimientos.style.display = 'none';
                           analyticsCardIncumplimientosUltimoMes.style.display = 'none';
-                          document.getElementById('analyticsChartContainer').classList.remove('active');
                       }}
                   }}
 
@@ -1167,147 +1155,6 @@ jobs:
                       filterDropdownAlertas.classList.remove('open');
                       filterDropdownIncumplimientos.classList.remove('open');
                   }});
-
-                  // Función para actualizar gráfico de Incumplimientos
-                  let chartIncumplimientosInstance = null;
-
-                  function actualizarGraficoIncumplimientos() {{
-                      const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-                      const ahora = new Date();
-                      const ahonoAno = ahora.getFullYear();
-                      const anoAnterior = ahonoAno - 1;
-
-                      const datosEsteAno = new Array(12).fill(0);
-                      const datosAnoAnterior = new Array(12).fill(0);
-
-                      datosActualesIncumplimientos.forEach(row => {{
-                          const fechaToma = row['Toma'];
-                          if (!fechaToma) return;
-
-                          let fecha;
-                          if (typeof fechaToma === 'string') {{
-                              const formatos = [/(\d{{2}})\/(\d{{2}})\/(\d{{4}})/, /(\d{{4}})-(\d{{2}})-(\d{{2}})/];
-                              for (const formato of formatos) {{
-                                  const match = fechaToma.match(formato);
-                                  if (match) {{
-                                      if (formato.toString().includes('DD')) {{
-                                          fecha = new Date(match[3], parseInt(match[2]) - 1, match[1]);
-                                      }} else {{
-                                          fecha = new Date(match[1], parseInt(match[2]) - 1, match[3]);
-                                      }}
-                                      break;
-                                  }}
-                              }}
-                          }} else if (typeof fechaToma === 'number') {{
-                              fecha = new Date((fechaToma - 25569) * 86400 * 1000);
-                          }}
-
-                          if (fecha) {{
-                              const mesIndex = fecha.getMonth();
-                              const ano = fecha.getFullYear();
-                              if (ano === ahonoAno) {{
-                                  datosEsteAno[mesIndex]++;
-                              }} else if (ano === anoAnterior) {{
-                                  datosAnoAnterior[mesIndex]++;
-                              }}
-                          }}
-                      }});
-
-                      const ctx = document.getElementById('chartIncumplimientos');
-                      if (!ctx) return;
-
-                      if (chartIncumplimientosInstance) {{
-                          chartIncumplimientosInstance.destroy();
-                      }}
-
-                      chartIncumplimientosInstance = new Chart(ctx, {{
-                          type: 'line',
-                          data: {{
-                              labels: meses,
-                              datasets: [
-                                  {{
-                                      label: 'Este año',
-                                      data: datosEsteAno,
-                                      borderColor: '#3D4800',
-                                      borderWidth: 2.5,
-                                      backgroundColor: 'rgba(61, 72, 0, 0.05)',
-                                      fill: true,
-                                      tension: 0.4,
-                                      pointRadius: 0,
-                                      pointHoverRadius: 5,
-                                      pointBackgroundColor: '#3D4800'
-                                  }},
-                                  {{
-                                      label: 'Año anterior',
-                                      data: datosAnoAnterior,
-                                      borderColor: '#A3C610',
-                                      borderWidth: 2,
-                                      borderDash: [5, 5],
-                                      backgroundColor: 'transparent',
-                                      fill: false,
-                                      tension: 0.4,
-                                      pointRadius: 0,
-                                      pointHoverRadius: 5,
-                                      pointBackgroundColor: '#A3C610'
-                                  }}
-                              ]
-                          }},
-                          options: {{
-                              responsive: true,
-                              maintainAspectRatio: false,
-                              plugins: {{
-                                  legend: {{
-                                      display: true,
-                                      position: 'top',
-                                      labels: {{
-                                          boxWidth: 6,
-                                          usePointStyle: true,
-                                          pointStyle: 'circle',
-                                          padding: 15,
-                                          font: {{
-                                              size: 11,
-                                              weight: '500'
-                                          }},
-                                          color: '#5A8C3A'
-                                      }}
-                                  }},
-                                  tooltip: {{
-                                      callbacks: {{
-                                          label: function(context) {{
-                                              return context.dataset.label + ': ' + context.parsed.y;
-                                          }}
-                                      }},
-                                      backgroundColor: 'rgba(93, 140, 58, 0.9)',
-                                      titleFont: {{ size: 11 }},
-                                      bodyFont: {{ size: 10 }},
-                                      padding: 8,
-                                      borderRadius: 4
-                                  }}
-                              }},
-                              scales: {{
-                                  y: {{
-                                      beginAtZero: true,
-                                      ticks: {{
-                                          color: '#5A8C3A',
-                                          font: {{ size: 10 }}
-                                      }},
-                                      grid: {{
-                                          color: 'rgba(122, 179, 66, 0.1)'
-                                      }}
-                                  }},
-                                  x: {{
-                                      ticks: {{
-                                          color: '#5A8C3A',
-                                          font: {{ size: 10 }}
-                                      }},
-                                      grid: {{
-                                          display: false
-                                      }}
-                                  }}
-                              }}
-                          }}
-                      }});
-                  }}
 
                   // Función para restablecer todos los filtros
                   function restablecerFiltros() {{
