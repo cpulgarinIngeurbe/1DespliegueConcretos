@@ -499,6 +499,18 @@ jobs:
                       return Array.from(unidades).sort();
                   }}
 
+                  // Función para obtener muestras únicas de los datos filtrados por proyecto
+                  function obtenerMuestrasUnicas(datos, proyectosSeleccionados) {{
+                      const datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
+                      const muestras = new Set();
+                      datosFiltradores.forEach(row => {{
+                          if (row['MUESTRA Nº'] && row['MUESTRA Nº'].toString().trim() !== '') {{
+                              muestras.add(row['MUESTRA Nº'].toString().trim());
+                          }}
+                      }});
+                      return Array.from(muestras).sort((a, b) => a.localeCompare(b, undefined, {{numeric: true}}));
+                  }}
+
                   // Función para filtrar datos por proyectos y unidades estructurales
                   function filtrarPorProyectosYUnidades(datos, proyectosSeleccionados, unidadesSeleccionadas) {{
                       let datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
@@ -508,17 +520,26 @@ jobs:
                       return datosFiltradores;
                   }}
 
+                  // Función para filtrar datos por proyectos, unidades y muestras
+                  function filtrarPorProyectosUnidadesYMuestras(datos, proyectosSeleccionados, unidadesSeleccionadas, muestrasSeleccionadas) {{
+                      let datosFiltradores = filtrarPorProyectosYUnidades(datos, proyectosSeleccionados, unidadesSeleccionadas);
+                      if (muestrasSeleccionadas.length > 0) {{
+                          datosFiltradores = datosFiltradores.filter(row => muestrasSeleccionadas.includes(row['MUESTRA Nº'].toString().trim()));
+                      }}
+                      return datosFiltradores;
+                  }}
+
                   // Función para actualizar solo tablas (puede ser lenta)
                   function actualizarTablas() {{
-                      datosActualesConsolidado = filtrarPorProyectosYUnidades(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas);
+                      datosActualesConsolidado = filtrarPorProyectosUnidadesYMuestras(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
                       paginaConsolidado = 1;
                       renderizarTablaConsolidado();
 
-                      datosActualesAlertas = filtrarPorProyectosYUnidades(datosAlertas, proyectosSeleccionados, unidadesEstructuralesSeleccionadas);
+                      datosActualesAlertas = filtrarPorProyectosUnidadesYMuestras(datosAlertas, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
                       paginaAlertas = 1;
                       renderizarTablaAlertas();
 
-                      datosActualesIncumplimientos = filtrarPorProyectosYUnidades(datosIncumplimientos, proyectosSeleccionados, unidadesEstructuralesSeleccionadas);
+                      datosActualesIncumplimientos = filtrarPorProyectosUnidadesYMuestras(datosIncumplimientos, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
                       paginaIncumplimientos = 1;
                       renderizarTablaIncumplimientos();
                   }}
@@ -583,6 +604,12 @@ jobs:
                       filterBtnUnidadAlertas.style.display = mostrarUnidadBtn ? 'inline-block' : 'none';
                       filterBtnUnidadIncumplimientos.style.display = mostrarUnidadBtn ? 'inline-block' : 'none';
 
+                      // Mostrar/ocultar botones de Muestra según si hay proyectos seleccionados
+                      const mostrarMuestraBtn = proyectosSeleccionados.length > 0;
+                      filterBtnMuestraConsolidado.style.display = mostrarMuestraBtn ? 'inline-block' : 'none';
+                      filterBtnMuestraAlertas.style.display = mostrarMuestraBtn ? 'inline-block' : 'none';
+                      filterBtnMuestraIncumplimientos.style.display = mostrarMuestraBtn ? 'inline-block' : 'none';
+
                       // Actualizar solo los checkboxes de Unidad Estructural (no reconstruir)
                       [filterDropdownUnidadConsolidado, filterDropdownUnidadAlertas, filterDropdownUnidadIncumplimientos].forEach(dropdown => {{
                           const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
@@ -591,12 +618,16 @@ jobs:
                           }});
                       }});
 
-                      // Limpiar selección de unidades si no hay proyectos
+                      // Limpiar selección de unidades y muestras si no hay proyectos
                       if (proyectosSeleccionados.length === 0) {{
                           unidadesEstructuralesSeleccionadas = [];
+                          muestrasSeleccionadas = [];
                           filterDropdownUnidadConsolidado.innerHTML = '';
                           filterDropdownUnidadAlertas.innerHTML = '';
                           filterDropdownUnidadIncumplimientos.innerHTML = '';
+                          filterDropdownMuestraConsolidado.innerHTML = '';
+                          filterDropdownMuestraAlertas.innerHTML = '';
+                          filterDropdownMuestraIncumplimientos.innerHTML = '';
                       }}
 
                       // Actualizar tags en todas las pestañas (proyectos)
@@ -608,6 +639,11 @@ jobs:
                       actualizarTags(filterTagsUnidadConsolidado, unidadesEstructuralesSeleccionadas, removerUnidadEstructural);
                       actualizarTags(filterTagsUnidadAlertas, unidadesEstructuralesSeleccionadas, removerUnidadEstructural);
                       actualizarTags(filterTagsUnidadIncumplimientos, unidadesEstructuralesSeleccionadas, removerUnidadEstructural);
+
+                      // Actualizar tags de Muestra
+                      actualizarTags(filterTagsMuestraConsolidado, muestrasSeleccionadas, removerMuestra);
+                      actualizarTags(filterTagsMuestraAlertas, muestrasSeleccionadas, removerMuestra);
+                      actualizarTags(filterTagsMuestraIncumplimientos, muestrasSeleccionadas, removerMuestra);
                   }}
 
                   // Función para actualizar opciones de Unidad Estructural (después de cambiar proyectos)
@@ -643,6 +679,39 @@ jobs:
                       }}
                   }}
 
+                  // Función para actualizar opciones de Muestra (después de cambiar proyectos)
+                  function actualizarOpcionesMuestra() {{
+                      if (proyectosSeleccionados.length > 0) {{
+                          const muestrasConsolidado = obtenerMuestrasUnicas(datosConsolidado, proyectosSeleccionados);
+                          const muestrasAlertas = obtenerMuestrasUnicas(datosAlertas, proyectosSeleccionados);
+                          const muestrasIncumplimientos = obtenerMuestrasUnicas(datosIncumplimientos, proyectosSeleccionados);
+
+                          llenarDropdown(filterDropdownMuestraConsolidado, muestrasConsolidado, () => {{
+                              muestrasSeleccionadas = Array.from(filterDropdownMuestraConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                              actualizarUIInmediata();
+                              requestAnimationFrame(actualizarTablas);
+                          }});
+                          llenarDropdown(filterDropdownMuestraAlertas, muestrasAlertas, () => {{
+                              muestrasSeleccionadas = Array.from(filterDropdownMuestraAlertas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                              actualizarUIInmediata();
+                              requestAnimationFrame(actualizarTablas);
+                          }});
+                          llenarDropdown(filterDropdownMuestraIncumplimientos, muestrasIncumplimientos, () => {{
+                              muestrasSeleccionadas = Array.from(filterDropdownMuestraIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                              actualizarUIInmediata();
+                              requestAnimationFrame(actualizarTablas);
+                          }});
+
+                          // Marcar checkboxes que estaban seleccionados
+                          [filterDropdownMuestraConsolidado, filterDropdownMuestraAlertas, filterDropdownMuestraIncumplimientos].forEach(dropdown => {{
+                              const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+                              checkboxes.forEach(checkbox => {{
+                                  checkbox.checked = muestrasSeleccionadas.includes(checkbox.value);
+                              }});
+                          }});
+                      }}
+                  }}
+
                   // Función para actualizar todos los filtros (UI inmediata + tablas asincrónicas)
                   function actualizarTodosFiltros() {{
                       // Actualizar UI inmediatamente
@@ -651,6 +720,9 @@ jobs:
                       // Actualizar opciones de Unidad Estructural basadas en proyectos seleccionados
                       actualizarOpcionesUnidadEstructural();
 
+                      // Actualizar opciones de Muestra basadas en proyectos seleccionados
+                      actualizarOpcionesMuestra();
+
                       // Actualizar tablas de forma asincrónica
                       requestAnimationFrame(actualizarTablas);
                   }}
@@ -658,16 +730,23 @@ jobs:
                   // Función para remover un proyecto de la selección global
                   function removerProyecto(proyecto) {{
                       proyectosSeleccionados = proyectosSeleccionados.filter(p => p !== proyecto);
-                      // Limpiar unidades estructurales seleccionadas cuando se deselecciona un proyecto
+                      // Limpiar unidades estructurales y muestras seleccionadas cuando se deselecciona un proyecto
                       unidadesEstructuralesSeleccionadas = [];
+                      muestrasSeleccionadas = [];
                       actualizarUIInmediata();
                       actualizarOpcionesUnidadEstructural();
+                      actualizarOpcionesMuestra();
                       requestAnimationFrame(actualizarTablas);
                   }}
 
                   // Función para remover una unidad estructural de la selección global
                   function removerUnidadEstructural(unidad) {{
                       unidadesEstructuralesSeleccionadas = unidadesEstructuralesSeleccionadas.filter(u => u !== unidad);
+                      actualizarTodosFiltros();
+                  }}
+
+                  function removerMuestra(muestra) {{
+                      muestrasSeleccionadas = muestrasSeleccionadas.filter(m => m !== muestra);
                       actualizarTodosFiltros();
                   }}
 
@@ -1202,11 +1281,13 @@ jobs:
                   function restablecerFiltros() {{
                       proyectosSeleccionados = [];
                       unidadesEstructuralesSeleccionadas = [];
+                      muestrasSeleccionadas = [];
                       paginaConsolidado = 1;
                       paginaAlertas = 1;
                       paginaIncumplimientos = 1;
                       actualizarUIInmediata();
                       actualizarOpcionesUnidadEstructural();
+                      actualizarOpcionesMuestra();
                       requestAnimationFrame(actualizarTablas);
                   }}
 
