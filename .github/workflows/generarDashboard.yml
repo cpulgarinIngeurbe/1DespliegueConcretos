@@ -246,7 +246,9 @@ jobs:
                   .analytics-info {{ display: flex; flex-direction: column; gap: 2px; flex: 1; }}
                   .analytics-label {{ font-size: 8px; color: #5A8C3A; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }}
                   .analytics-value {{ font-size: 18px; font-weight: 800; color: #2f3215; letter-spacing: -0.5px; }}
-                  .analytics-chart-container {{ background: linear-gradient(135deg, #f8fbf4 0%, #eff4e8 100%); border: 1.5px solid #7CB342; border-radius: 8px; padding: 10px; width: 100%; min-height: 180px; display: none; margin-top: 8px; }}
+                  .analytics-wrapper {{ display: flex; gap: 10px; align-items: flex-start; margin-top: 4px; }}
+                  .analytics-cards-column {{ display: flex; flex-direction: column; gap: 8px; flex: 0 0 auto; }}
+                  .analytics-chart-container {{ background: linear-gradient(135deg, #f8fbf4 0%, #eff4e8 100%); border: 1.5px solid #7CB342; border-radius: 8px; padding: 10px; flex: 1; min-height: 180px; display: none; }}
                   .analytics-chart-container.active {{ display: block; }}
                   .chart-canvas-wrapper {{ position: relative; height: 160px; }}
                   .footer {{ margin-top: 20px; padding: 10px 0; border-top: 1px solid #A3C610; text-align: right; font-size: 8px; color: #7CB342; }}
@@ -276,30 +278,32 @@ jobs:
                               <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
-                      <div style="display: flex; gap: 8px; flex-wrap: nowrap; margin-top: 4px;">
-                          <div id="analyticsCardIncumplimientos" class="analytics-card" style="display: none; flex: 1; min-width: 0;">
-                              <div class="analytics-card-content">
-                                  <div class="analytics-icon">
-                                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M7 17L17 7M17 7H7M17 7V17" stroke="#7CB342" stroke-linecap="round" stroke-linejoin="round"/>
-                                      </svg>
-                                  </div>
-                                  <div class="analytics-info">
-                                      <div class="analytics-label">Consolidado de muestras con baja resistencia</div>
-                                      <div class="analytics-value" id="analyticsCountIncumplimientos">0</div>
+                      <div class="analytics-wrapper">
+                          <div class="analytics-cards-column">
+                              <div id="analyticsCardIncumplimientos" class="analytics-card" style="display: none;">
+                                  <div class="analytics-card-content">
+                                      <div class="analytics-icon">
+                                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                              <path d="M7 17L17 7M17 7H7M17 7V17" stroke="#7CB342" stroke-linecap="round" stroke-linejoin="round"/>
+                                          </svg>
+                                      </div>
+                                      <div class="analytics-info">
+                                          <div class="analytics-label">Consolidado de muestras con baja resistencia</div>
+                                          <div class="analytics-value" id="analyticsCountIncumplimientos">0</div>
+                                      </div>
                                   </div>
                               </div>
-                          </div>
-                          <div id="analyticsCardIncumplimientosUltimoMes" class="analytics-card" style="display: none; flex: 1; min-width: 0;">
-                              <div class="analytics-card-content">
-                                  <div class="analytics-icon" id="analyticsIconUltimoMes">
-                                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M7 17L17 7M17 7H7M17 7V17" stroke="#7CB342" stroke-linecap="round" stroke-linejoin="round"/>
-                                      </svg>
-                                  </div>
-                                  <div class="analytics-info">
-                                      <div class="analytics-label">Muestras con baja resistencia del último mes</div>
-                                      <div class="analytics-value" id="analyticsCountIncumplimientosUltimoMes">0</div>
+                              <div id="analyticsCardIncumplimientosUltimoMes" class="analytics-card" style="display: none;">
+                                  <div class="analytics-card-content">
+                                      <div class="analytics-icon" id="analyticsIconUltimoMes">
+                                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                              <path d="M7 17L17 7M17 7H7M17 7V17" stroke="#7CB342" stroke-linecap="round" stroke-linejoin="round"/>
+                                          </svg>
+                                      </div>
+                                      <div class="analytics-info">
+                                          <div class="analytics-label">Muestras con baja resistencia del último mes</div>
+                                          <div class="analytics-value" id="analyticsCountIncumplimientosUltimoMes">0</div>
+                                      </div>
                                   </div>
                               </div>
                           </div>
