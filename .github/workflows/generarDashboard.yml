@@ -276,7 +276,7 @@ jobs:
                               <button class="filter-btn" id="filterBtnMuestraIncumplimientos" style="display: none;">Filtrar por Muestra</button>
                               <div class="filter-dropdown" id="filterDropdownMuestraIncumplimientos"></div>
                           </div>
-                          <button class="filter-btn reset-btn" id="resetBtnIncumplimientos" style="align-self: center; margin-right: auto;">Restablecer Filtros</button>
+                          <button class="filter-btn reset-btn" id="resetBtnIncumplimientos" style="align-self: center; margin-right: auto; display: none;">Restablecer Filtros</button>
                           <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
                               <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -609,6 +609,12 @@ jobs:
                       filterBtnMuestraConsolidado.style.display = mostrarMuestraBtn ? 'inline-block' : 'none';
                       filterBtnMuestraAlertas.style.display = mostrarMuestraBtn ? 'inline-block' : 'none';
                       filterBtnMuestraIncumplimientos.style.display = mostrarMuestraBtn ? 'inline-block' : 'none';
+
+                      // Mostrar/ocultar botones de Reset según si hay proyectos seleccionados
+                      const mostrarResetBtn = proyectosSeleccionados.length > 0;
+                      resetBtnConsolidado.style.display = mostrarResetBtn ? 'inline-block' : 'none';
+                      resetBtnAlertas.style.display = mostrarResetBtn ? 'inline-block' : 'none';
+                      resetBtnIncumplimientos.style.display = mostrarResetBtn ? 'inline-block' : 'none';
 
                       // Actualizar solo los checkboxes de Unidad Estructural (no reconstruir)
                       [filterDropdownUnidadConsolidado, filterDropdownUnidadAlertas, filterDropdownUnidadIncumplimientos].forEach(dropdown => {{
@@ -1275,6 +1281,45 @@ jobs:
                       filterDropdownConsolidado.classList.remove('open');
                       filterDropdownAlertas.classList.remove('open');
                       filterDropdownIncumplimientos.classList.remove('open');
+                      filterDropdownMuestraConsolidado.classList.remove('open');
+                      filterDropdownMuestraAlertas.classList.remove('open');
+                      filterDropdownMuestraIncumplimientos.classList.remove('open');
+                  }});
+
+                  filterBtnMuestraConsolidado.addEventListener('click', () => {{
+                      filterDropdownMuestraConsolidado.classList.toggle('open');
+                      filterDropdownMuestraAlertas.classList.remove('open');
+                      filterDropdownMuestraIncumplimientos.classList.remove('open');
+                      filterDropdownConsolidado.classList.remove('open');
+                      filterDropdownAlertas.classList.remove('open');
+                      filterDropdownIncumplimientos.classList.remove('open');
+                      filterDropdownUnidadConsolidado.classList.remove('open');
+                      filterDropdownUnidadAlertas.classList.remove('open');
+                      filterDropdownUnidadIncumplimientos.classList.remove('open');
+                  }});
+
+                  filterBtnMuestraAlertas.addEventListener('click', () => {{
+                      filterDropdownMuestraAlertas.classList.toggle('open');
+                      filterDropdownMuestraConsolidado.classList.remove('open');
+                      filterDropdownMuestraIncumplimientos.classList.remove('open');
+                      filterDropdownConsolidado.classList.remove('open');
+                      filterDropdownAlertas.classList.remove('open');
+                      filterDropdownIncumplimientos.classList.remove('open');
+                      filterDropdownUnidadConsolidado.classList.remove('open');
+                      filterDropdownUnidadAlertas.classList.remove('open');
+                      filterDropdownUnidadIncumplimientos.classList.remove('open');
+                  }});
+
+                  filterBtnMuestraIncumplimientos.addEventListener('click', () => {{
+                      filterDropdownMuestraIncumplimientos.classList.toggle('open');
+                      filterDropdownMuestraConsolidado.classList.remove('open');
+                      filterDropdownMuestraAlertas.classList.remove('open');
+                      filterDropdownConsolidado.classList.remove('open');
+                      filterDropdownAlertas.classList.remove('open');
+                      filterDropdownIncumplimientos.classList.remove('open');
+                      filterDropdownUnidadConsolidado.classList.remove('open');
+                      filterDropdownUnidadAlertas.classList.remove('open');
+                      filterDropdownUnidadIncumplimientos.classList.remove('open');
                   }});
 
                   // Función para restablecer todos los filtros
