@@ -252,7 +252,7 @@ jobs:
               </style>
           </head>
           <body>
-              <img src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/inge.png" alt="Logo Ingeurbe" style="position: absolute; top: 60px; right: 120px; height: 50px; width: auto;">
+              <img src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/inge.png" alt="Logo Ingeurbe" style="position: absolute; top: 30px; right: 10px; height: 50px; width: auto;">
               <div class="container">
                   <div class="tabs-container">
                       <button class="tab-button active" data-tab="incumplimientos">Alertas Incumplimientos</button>
