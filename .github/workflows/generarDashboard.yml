@@ -221,6 +221,8 @@ jobs:
                   .filter-btn:active {{ transform: scale(0.98); }}
                   .filter-btn:hover .dropdown-arrow {{ opacity: 1; }}
                   .filter-btn:hover .dropdown-arrow {{ opacity: 1; color: #6BA82A; }}
+                  .reset-btn {{ background-color: #4B7C2D; color: #ffffff; border-color: #4B7C2D; }}
+                  .reset-btn:hover {{ background-color: #3a5f23; border-color: #3a5f23; color: #ffffff; }}
                   .filter-dropdown {{ display: none; position: absolute; background: #ffffff; border: 1px solid #4B4F1D; border-radius: 3px; min-width: 220px; max-height: 250px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.1); top: 32px; left: 0; }}
                   .filter-dropdown.open {{ display: block; }}
                   .filter-option {{ padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-bottom: 0.5px solid #e5e2dd; cursor: pointer; }}
@@ -270,7 +272,7 @@ jobs:
                               <button class="filter-btn" id="filterBtnUnidadIncumplimientos" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadIncumplimientos"></div>
                           </div>
-                          <button class="filter-btn" id="resetBtnIncumplimientos" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
+                          <button class="filter-btn reset-btn" id="resetBtnIncumplimientos" style="align-self: center;">Restablecer Filtros</button>
                           <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
                               <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
