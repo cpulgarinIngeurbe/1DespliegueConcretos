@@ -548,14 +548,17 @@ jobs:
 
                           llenarDropdown(filterDropdownUnidadConsolidado, unidadesConsolidado, () => {{
                               unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                              actualizarUIInmediata();
                               requestAnimationFrame(actualizarTablas);
                           }});
                           llenarDropdown(filterDropdownUnidadAlertas, unidadesAlertas, () => {{
                               unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadAlertas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                              actualizarUIInmediata();
                               requestAnimationFrame(actualizarTablas);
                           }});
                           llenarDropdown(filterDropdownUnidadIncumplimientos, unidadesIncumplimientos, () => {{
                               unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                              actualizarUIInmediata();
                               requestAnimationFrame(actualizarTablas);
                           }});
 
