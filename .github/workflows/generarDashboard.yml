@@ -503,47 +503,11 @@ jobs:
                   function obtenerMuestrasUnicas(datos, proyectosSeleccionados) {{
                       const datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
                       const muestras = new Set();
-
-                      if (datosFiltradores.length > 0) {{
-                          const primerRegistro = datosFiltradores[0];
-                          const columnasDisponibles = Object.keys(primerRegistro);
-                          console.log('=== OBTENER MUESTRAS ÚNICAS ===');
-                          console.log('Columnas disponibles:', columnasDisponibles);
-
-                          // Buscar columna de muestra - probar múltiples variaciones
-                          let nombreColumnaMuestra = null;
-
-                          // Búsquedas progresivas
-                          const variaciones = [
-                              col => col.toLowerCase().includes('muestra') && col.toLowerCase().includes('nº'),
-                              col => col.toLowerCase().includes('muestra') && col.toLowerCase().includes('n°'),
-                              col => col.toLowerCase() === 'muestra nº',
-                              col => col.toLowerCase() === 'muestra n°',
-                              col => col.toLowerCase().includes('muestra') && col.includes('º'),
-                              col => col.toLowerCase().includes('muestra')
-                          ];
-
-                          for (let variacion of variaciones) {{
-                              nombreColumnaMuestra = columnasDisponibles.find(variacion);
-                              if (nombreColumnaMuestra) {{
-                                  console.log('Columna de muestra encontrada:', nombreColumnaMuestra);
-                                  break;
-                              }}
+                      datosFiltradores.forEach(row => {{
+                          if (row['Cilindro N°'] !== undefined && row['Cilindro N°'] !== null && row['Cilindro N°'].toString().trim() !== '') {{
+                              muestras.add(row['Cilindro N°'].toString().trim());
                           }}
-
-                          if (!nombreColumnaMuestra) {{
-                              console.warn('⚠️ No se encontró columna de muestra. Columnas disponibles:', columnasDisponibles);
-                              return [];
-                          }}
-
-                          datosFiltradores.forEach(row => {{
-                              if (row[nombreColumnaMuestra] && row[nombreColumnaMuestra].toString().trim() !== '') {{
-                                  muestras.add(row[nombreColumnaMuestra].toString().trim());
-                              }}
-                          }});
-                      }}
-
-                      console.log('Muestras encontradas:', Array.from(muestras));
+                      }});
                       return Array.from(muestras).sort((a, b) => a.localeCompare(b, undefined, {{numeric: true}}));
                   }}
 
@@ -559,29 +523,8 @@ jobs:
                   // Función para filtrar datos por proyectos, unidades y muestras
                   function filtrarPorProyectosUnidadesYMuestras(datos, proyectosSeleccionados, unidadesSeleccionadas, muestrasSeleccionadas) {{
                       let datosFiltradores = filtrarPorProyectosYUnidades(datos, proyectosSeleccionados, unidadesSeleccionadas);
-                      if (muestrasSeleccionadas.length > 0 && datosFiltradores.length > 0) {{
-                          const primerRegistro = datosFiltradores[0];
-                          const columnasDisponibles = Object.keys(primerRegistro);
-
-                          // Buscar columna de muestra
-                          let nombreColumnaMuestra = null;
-                          const variaciones = [
-                              col => col.toLowerCase().includes('muestra') && col.toLowerCase().includes('nº'),
-                              col => col.toLowerCase().includes('muestra') && col.toLowerCase().includes('n°'),
-                              col => col.toLowerCase() === 'muestra nº',
-                              col => col.toLowerCase() === 'muestra n°',
-                              col => col.toLowerCase().includes('muestra') && col.includes('º'),
-                              col => col.toLowerCase().includes('muestra')
-                          ];
-
-                          for (let variacion of variaciones) {{
-                              nombreColumnaMuestra = columnasDisponibles.find(variacion);
-                              if (nombreColumnaMuestra) break;
-                          }}
-
-                          if (nombreColumnaMuestra) {{
-                              datosFiltradores = datosFiltradores.filter(row => muestrasSeleccionadas.includes(row[nombreColumnaMuestra].toString().trim()));
-                          }}
+                      if (muestrasSeleccionadas.length > 0) {{
+                          datosFiltradores = datosFiltradores.filter(row => muestrasSeleccionadas.includes(row['Cilindro N°'].toString().trim()));
                       }}
                       return datosFiltradores;
                   }}
