@@ -243,33 +243,33 @@ jobs:
           <body>
               <div class="container">
                   <div class="tabs-container">
-                      <button class="tab-button active" data-tab="consolidado">Consolidado</button>
+                      <button class="tab-button active" data-tab="incumplimientos">Alertas Incumplimientos</button>
                       <button class="tab-button" data-tab="alertas">Control 28 Días</button>
-                      <button class="tab-button" data-tab="incumplimientos">Alertas Incumplimientos</button>
+                      <button class="tab-button" data-tab="consolidado">Consolidado</button>
                   </div>
 
-                  <div id="consolidado" class="tab-content active">
+                  <div id="incumplimientos" class="tab-content active">
                       <div class="filter-section" style="display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px; position: relative;">
                           <div style="display: inline-block; position: relative;">
-                              <button class="filter-btn" id="filterBtnConsolidado">Filtrar por Proyecto</button>
-                              <div class="filter-dropdown" id="filterDropdownConsolidado"></div>
+                              <button class="filter-btn" id="filterBtnIncumplimientos">Filtrar por Proyecto</button>
+                              <div class="filter-dropdown" id="filterDropdownIncumplimientos"></div>
                           </div>
                           <div style="display: inline-block; position: relative;">
-                              <button class="filter-btn" id="filterBtnUnidadConsolidado" style="display: none;">Filtrar por Unidad Estructural</button>
-                              <div class="filter-dropdown" id="filterDropdownUnidadConsolidado"></div>
+                              <button class="filter-btn" id="filterBtnUnidadIncumplimientos" style="display: none;">Filtrar por Unidad Estructural</button>
+                              <div class="filter-dropdown" id="filterDropdownUnidadIncumplimientos"></div>
                           </div>
-                          <button class="filter-btn" id="resetBtnConsolidado" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
+                          <button class="filter-btn" id="resetBtnIncumplimientos" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
                           <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
-                              <div class="filter-tags" id="filterTagsConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
-                              <div class="filter-tags" id="filterTagsUnidadConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
-                      <div id="tableSectionConsolidado" class="table-section">
-                          <table id="dataTableConsolidado">
+                      <div id="tableSectionIncumplimientos" class="table-section">
+                          <table id="dataTableIncumplimientos">
                               <thead></thead>
                               <tbody></tbody>
                           </table>
-                          <div class="pagination" id="paginationConsolidado"></div>
+                          <div class="pagination" id="paginationIncumplimientos"></div>
                       </div>
                   </div>
 
@@ -298,28 +298,28 @@ jobs:
                       </div>
                   </div>
 
-                  <div id="incumplimientos" class="tab-content">
+                  <div id="consolidado" class="tab-content">
                       <div class="filter-section" style="display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px; position: relative;">
                           <div style="display: inline-block; position: relative;">
-                              <button class="filter-btn" id="filterBtnIncumplimientos">Filtrar por Proyecto</button>
-                              <div class="filter-dropdown" id="filterDropdownIncumplimientos"></div>
+                              <button class="filter-btn" id="filterBtnConsolidado">Filtrar por Proyecto</button>
+                              <div class="filter-dropdown" id="filterDropdownConsolidado"></div>
                           </div>
                           <div style="display: inline-block; position: relative;">
-                              <button class="filter-btn" id="filterBtnUnidadIncumplimientos" style="display: none;">Filtrar por Unidad Estructural</button>
-                              <div class="filter-dropdown" id="filterDropdownUnidadIncumplimientos"></div>
+                              <button class="filter-btn" id="filterBtnUnidadConsolidado" style="display: none;">Filtrar por Unidad Estructural</button>
+                              <div class="filter-dropdown" id="filterDropdownUnidadConsolidado"></div>
                           </div>
-                          <button class="filter-btn" id="resetBtnIncumplimientos" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
+                          <button class="filter-btn" id="resetBtnConsolidado" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
                           <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
-                              <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
-                              <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsUnidadConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
-                      <div id="tableSectionIncumplimientos" class="table-section">
-                          <table id="dataTableIncumplimientos">
+                      <div id="tableSectionConsolidado" class="table-section">
+                          <table id="dataTableConsolidado">
                               <thead></thead>
                               <tbody></tbody>
                           </table>
-                          <div class="pagination" id="paginationIncumplimientos"></div>
+                          <div class="pagination" id="paginationConsolidado"></div>
                       </div>
                   </div>
                   <div class="footer">
