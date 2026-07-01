@@ -237,6 +237,10 @@ jobs:
                   .pagination button:hover {{ background-color: #3d401a; }}
                   .pagination button:disabled {{ opacity: 0.5; cursor: not-allowed; }}
                   .pagination span {{ font-size: 8px; color: #7CB342; }}
+                  .analytics-card {{ background: linear-gradient(135deg, #f5f9f0 0%, #e8f1e1 100%); border: 1px solid #A3C610; border-radius: 8px; padding: 16px; margin: 12px 0; box-shadow: 0 2px 4px rgba(75, 79, 29, 0.1); }}
+                  .analytics-card-content {{ display: flex; flex-direction: column; gap: 8px; }}
+                  .analytics-label {{ font-size: 11px; color: #5A8C3A; font-weight: 500; letter-spacing: 0.5px; }}
+                  .analytics-value {{ font-size: 24px; font-weight: 700; color: #3D4800; }}
                   .footer {{ margin-top: 20px; padding: 10px 0; border-top: 1px solid #A3C610; text-align: right; font-size: 8px; color: #7CB342; }}
               </style>
           </head>
@@ -262,6 +266,12 @@ jobs:
                           <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
                               <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                          </div>
+                      </div>
+                      <div id="analyticsCardIncumplimientos" class="analytics-card" style="display: none;">
+                          <div class="analytics-card-content">
+                              <div class="analytics-label">Registros Filtrados</div>
+                              <div class="analytics-value" id="analyticsCountIncumplimientos">0</div>
                           </div>
                       </div>
                       <div id="tableSectionIncumplimientos" class="table-section">
@@ -968,6 +978,18 @@ jobs:
 
                           tbody.appendChild(fragment);
                           tableSectionIncumplimientos.classList.add('active');
+                      }}
+
+                      // Actualizar tarjeta de analítica con el conteo total de registros filtrados
+                      const analyticsCardIncumplimientos = document.getElementById('analyticsCardIncumplimientos');
+                      const analyticsCountIncumplimientos = document.getElementById('analyticsCountIncumplimientos');
+                      const totalRegistros = datosActualesIncumplimientos.length;
+
+                      analyticsCountIncumplimientos.textContent = totalRegistros.toLocaleString();
+                      if (totalRegistros > 0 || (proyectosSeleccionados.length > 0 || unidadesEstructuralesSeleccionadas.length > 0)) {{
+                          analyticsCardIncumplimientos.style.display = 'block';
+                      }} else {{
+                          analyticsCardIncumplimientos.style.display = 'none';
                       }}
                   }}
 
