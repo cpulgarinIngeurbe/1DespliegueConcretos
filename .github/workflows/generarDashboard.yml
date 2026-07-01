@@ -238,17 +238,17 @@ jobs:
                   .pagination button:hover {{ background-color: #3d401a; }}
                   .pagination button:disabled {{ opacity: 0.5; cursor: not-allowed; }}
                   .pagination span {{ font-size: 8px; color: #7CB342; }}
-                  .analytics-card {{ background: linear-gradient(135deg, #f8fbf4 0%, #eff4e8 100%); border: 1.5px solid #7CB342; border-radius: 12px; padding: 20px; margin: 12px 0; box-shadow: 0 4px 12px rgba(75, 79, 29, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5); transition: all 0.3s ease; }}
-                  .analytics-card:hover {{ box-shadow: 0 6px 16px rgba(75, 79, 29, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.5); transform: translateY(-2px); }}
-                  .analytics-card-content {{ display: flex; align-items: flex-start; gap: 12px; }}
-                  .analytics-icon {{ flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }}
-                  .analytics-icon svg {{ width: 28px; height: 28px; stroke-width: 2.5; }}
-                  .analytics-info {{ display: flex; flex-direction: column; gap: 6px; flex: 1; }}
-                  .analytics-label {{ font-size: 11px; color: #5A8C3A; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }}
-                  .analytics-value {{ font-size: 32px; font-weight: 800; color: #2f3215; letter-spacing: -1px; }}
-                  .analytics-chart-container {{ background: linear-gradient(135deg, #f8fbf4 0%, #eff4e8 100%); border: 1.5px solid #7CB342; border-radius: 12px; padding: 20px; flex: 1; min-width: 300px; min-height: 280px; display: none; }}
+                  .analytics-card {{ background: linear-gradient(135deg, #f8fbf4 0%, #eff4e8 100%); border: 1.5px solid #7CB342; border-radius: 8px; padding: 12px; margin: 8px 0; box-shadow: 0 2px 6px rgba(75, 79, 29, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5); transition: all 0.3s ease; }}
+                  .analytics-card:hover {{ box-shadow: 0 4px 10px rgba(75, 79, 29, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.5); transform: translateY(-1px); }}
+                  .analytics-card-content {{ display: flex; align-items: flex-start; gap: 8px; }}
+                  .analytics-icon {{ flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; }}
+                  .analytics-icon svg {{ width: 18px; height: 18px; stroke-width: 2.5; }}
+                  .analytics-info {{ display: flex; flex-direction: column; gap: 4px; flex: 1; }}
+                  .analytics-label {{ font-size: 9px; color: #5A8C3A; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; }}
+                  .analytics-value {{ font-size: 22px; font-weight: 800; color: #2f3215; letter-spacing: -0.5px; }}
+                  .analytics-chart-container {{ background: linear-gradient(135deg, #f8fbf4 0%, #eff4e8 100%); border: 1.5px solid #7CB342; border-radius: 8px; padding: 12px; flex: 1; min-width: 200px; min-height: 180px; display: none; }}
                   .analytics-chart-container.active {{ display: block; }}
-                  .chart-canvas-wrapper {{ position: relative; height: 250px; }}
+                  .chart-canvas-wrapper {{ position: relative; height: 150px; }}
                   .footer {{ margin-top: 20px; padding: 10px 0; border-top: 1px solid #A3C610; text-align: right; font-size: 8px; color: #7CB342; }}
               </style>
           </head>
@@ -276,8 +276,8 @@ jobs:
                               <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
-                      <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px;">
-                          <div id="analyticsCardIncumplimientos" class="analytics-card" style="display: none; flex: 1; min-width: 280px;">
+                      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;">
+                          <div id="analyticsCardIncumplimientos" class="analytics-card" style="display: none; flex: 1; min-width: 180px;">
                               <div class="analytics-card-content">
                                   <div class="analytics-icon">
                                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -290,7 +290,7 @@ jobs:
                                   </div>
                               </div>
                           </div>
-                          <div id="analyticsCardIncumplimientosUltimoMes" class="analytics-card" style="display: none; flex: 1; min-width: 280px;">
+                          <div id="analyticsCardIncumplimientosUltimoMes" class="analytics-card" style="display: none; flex: 1; min-width: 180px;">
                               <div class="analytics-card-content">
                                   <div class="analytics-icon" id="analyticsIconUltimoMes">
                                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
