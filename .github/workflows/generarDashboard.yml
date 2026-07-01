@@ -279,7 +279,8 @@ jobs:
                               <div id="analyticsCardIncumplimientos" class="analytics-card" style="display: none;">
                                   <div class="analytics-card-content">
                                       <div class="analytics-icon" id="analyticsIconIncumplimientos" style="display: none;">
-                                          <img src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/ArrowRise.png" alt="Tendencia" style="width: 100%; height: 100%;">
+                                          <img id="analyticsIconIncumplimientosPositivo" src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/ArrowRise.png" alt="Tendencia positiva" style="width: 100%; height: 100%; display: none;">
+                                          <img id="analyticsIconIncumplimientosNulo" src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/ArrowRiseNulo.png" alt="Sin tendencia" style="width: 100%; height: 100%; display: none;">
                                       </div>
                                       <div class="analytics-info">
                                           <div class="analytics-label">Consolidado de muestras con baja resistencia</div>
@@ -290,9 +291,8 @@ jobs:
                               <div id="analyticsCardIncumplimientosUltimoMes" class="analytics-card" style="display: none;">
                                   <div class="analytics-card-content">
                                       <div class="analytics-icon" id="analyticsIconUltimoMes" style="display: none;">
-                                          <svg viewBox="0 0 24 24" fill="#E53935" xmlns="http://www.w3.org/2000/svg">
-                                              <path d="M3 18l6-9 6-6 5 0 0 5 1 2 2-1v-8H9l-6 9z"/>
-                                          </svg>
+                                          <img id="analyticsIconUltimoMesPositivo" src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/ArrowRise.png" alt="Tendencia positiva" style="width: 100%; height: 100%; display: none;">
+                                          <img id="analyticsIconUltimoMesNulo" src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/ArrowRiseNulo.png" alt="Sin tendencia" style="width: 100%; height: 100%; display: none;">
                                       </div>
                                       <div class="analytics-info">
                                           <div class="analytics-label">Muestras con baja resistencia del último mes</div>
@@ -1062,18 +1062,30 @@ jobs:
 
                       // Mostrar/ocultar ícono en tarjeta de Consolidado
                       const analyticsIconIncumplimientos = document.getElementById('analyticsIconIncumplimientos');
+                      const analyticsIconIncumplimientosPositivo = document.getElementById('analyticsIconIncumplimientosPositivo');
+                      const analyticsIconIncumplimientosNulo = document.getElementById('analyticsIconIncumplimientosNulo');
                       if (totalRegistros > 0) {{
                           analyticsIconIncumplimientos.style.display = 'block';
+                          analyticsIconIncumplimientosPositivo.style.display = 'block';
+                          analyticsIconIncumplimientosNulo.style.display = 'none';
                       }} else {{
-                          analyticsIconIncumplimientos.style.display = 'none';
+                          analyticsIconIncumplimientos.style.display = 'block';
+                          analyticsIconIncumplimientosPositivo.style.display = 'none';
+                          analyticsIconIncumplimientosNulo.style.display = 'block';
                       }}
 
                       // Mostrar/ocultar ícono en tarjeta del último mes
                       const analyticsIconUltimoMes = document.getElementById('analyticsIconUltimoMes');
+                      const analyticsIconUltimoMesPositivo = document.getElementById('analyticsIconUltimoMesPositivo');
+                      const analyticsIconUltimoMesNulo = document.getElementById('analyticsIconUltimoMesNulo');
                       if (registrosUltimoMes.length > 0) {{
                           analyticsIconUltimoMes.style.display = 'block';
+                          analyticsIconUltimoMesPositivo.style.display = 'block';
+                          analyticsIconUltimoMesNulo.style.display = 'none';
                       }} else {{
-                          analyticsIconUltimoMes.style.display = 'none';
+                          analyticsIconUltimoMes.style.display = 'block';
+                          analyticsIconUltimoMesPositivo.style.display = 'none';
+                          analyticsIconUltimoMesNulo.style.display = 'block';
                       }}
 
                       if (totalRegistros > 0 || (proyectosSeleccionados.length > 0 || unidadesEstructuralesSeleccionadas.length > 0)) {{
