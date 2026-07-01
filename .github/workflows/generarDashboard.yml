@@ -216,13 +216,9 @@ jobs:
                   .yellow-bg {{ background-color: #fffacd; }}
                   .group-separator td {{ border-top: 2.5px solid #7CB342 !important; }}
                   .filter-section {{ margin-bottom: 12px; position: relative; }}
-                  .filter-btn {{ padding: 4px 11px; background: transparent; color: #5A8C3A; border: 0.6px solid rgba(122, 179, 66, 0.5); border-radius: 5px; font-size: 12px; font-weight: 400; cursor: pointer; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; display: inline-flex; align-items: center; justify-content: space-between; gap: 4px; box-shadow: none; transition: all 0.15s ease; line-height: 1; height: auto; white-space: nowrap; }}
+                  .filter-btn {{ padding: 4px 10px; background: transparent; color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5); border-radius: 4px; font-size: 11px; font-weight: 400; cursor: pointer; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; display: inline-flex; align-items: center; justify-content: center; box-shadow: none; transition: all 0.15s ease; line-height: 1; height: auto; white-space: nowrap; }}
                   .filter-btn:hover {{ background: #5A8C3A; border-color: #5A8C3A; color: #ffffff; }}
-                  .filter-btn:hover svg {{ color: #ffffff; }}
-                  .filter-btn:hover .dropdown-arrow {{ opacity: 1; color: #ffffff; }}
                   .filter-btn:active {{ transform: scale(0.98); }}
-                  .filter-btn svg {{ color: #5A8C3A; opacity: 1; flex-shrink: 0; width: 12px; height: 12px; }}
-                  .dropdown-arrow {{ flex-shrink: 0; width: 9px; height: 9px; opacity: 0.6; transition: all 0.15s ease; display: inline-flex; align-items: center; justify-content: center; color: #5A8C3A; }}
                   .filter-btn:hover .dropdown-arrow {{ opacity: 1; }}
                   .filter-btn:hover .dropdown-arrow {{ opacity: 1; color: #6BA82A; }}
                   .filter-dropdown {{ display: none; position: absolute; background: #ffffff; border: 1px solid #4B4F1D; border-radius: 3px; min-width: 220px; max-height: 250px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.1); top: 32px; left: 0; }}
@@ -255,33 +251,11 @@ jobs:
                   <div id="consolidado" class="tab-content active">
                       <div class="filter-section" style="display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
                           <div style="display: inline-block; position: relative;">
-                              <button class="filter-btn" id="filterBtnConsolidado">
-                                  <span style="display: flex; align-items: center; gap: 2px;">
-                                      <svg style="width: 6px; height: 6px; flex-shrink: 0;" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                          <path d="M16 21V5C16 4.46957 15.7893 3.96086 15.4142 3.58579C15.0391 3.21071 14.5304 3 14 3H10C9.46957 3 8.96086 3.21071 8.58579 3.58579C8.21071 3.96086 8 4.46957 8 5V21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                      </svg>
-                                      <span>Filtrar por Proyecto</span>
-                                  </span>
-                                  <svg class="dropdown-arrow" fill="none" height="14" viewBox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg">
-                                      <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                  </svg>
-                              </button>
+                              <button class="filter-btn" id="filterBtnConsolidado">Filtrar por Proyecto</button>
                               <div class="filter-dropdown" id="filterDropdownConsolidado"></div>
                           </div>
                           <div style="display: inline-block; position: relative;">
-                              <button class="filter-btn" id="filterBtnUnidadConsolidado" style="display: none;">
-                                  <span style="display: flex; align-items: center; gap: 2px;">
-                                      <svg style="width: 6px; height: 6px; flex-shrink: 0;" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                          <path d="M16 21V5C16 4.46957 15.7893 3.96086 15.4142 3.58579C15.0391 3.21071 14.5304 3 14 3H10C9.46957 3 8.96086 3.21071 8.58579 3.58579C8.21071 3.96086 8 4.46957 8 5V21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                      </svg>
-                                      <span>Filtrar por Unidad Estructural</span>
-                                  </span>
-                                  <svg class="dropdown-arrow" fill="none" height="14" viewBox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg">
-                                      <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                  </svg>
-                              </button>
+                              <button class="filter-btn" id="filterBtnUnidadConsolidado" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadConsolidado"></div>
                           </div>
                           <div style="flex-basis: 100%; display: flex; gap: 6px;">
@@ -301,33 +275,11 @@ jobs:
                   <div id="alertas" class="tab-content">
                       <div class="filter-section" style="display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
                           <div style="display: inline-block; position: relative;">
-                              <button class="filter-btn" id="filterBtnAlertas">
-                                  <span style="display: flex; align-items: center; gap: 2px;">
-                                      <svg style="width: 6px; height: 6px; flex-shrink: 0;" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                          <path d="M16 21V5C16 4.46957 15.7893 3.96086 15.4142 3.58579C15.0391 3.21071 14.5304 3 14 3H10C9.46957 3 8.96086 3.21071 8.58579 3.58579C8.21071 3.96086 8 4.46957 8 5V21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                      </svg>
-                                      <span>Filtrar por Proyecto</span>
-                                  </span>
-                                  <svg class="dropdown-arrow" fill="none" height="14" viewBox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg">
-                                      <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                  </svg>
-                              </button>
+                              <button class="filter-btn" id="filterBtnAlertas">Filtrar por Proyecto</button>
                               <div class="filter-dropdown" id="filterDropdownAlertas"></div>
                           </div>
                           <div style="display: inline-block; position: relative;">
-                              <button class="filter-btn" id="filterBtnUnidadAlertas" style="display: none;">
-                                  <span style="display: flex; align-items: center; gap: 2px;">
-                                      <svg style="width: 6px; height: 6px; flex-shrink: 0;" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                          <path d="M16 21V5C16 4.46957 15.7893 3.96086 15.4142 3.58579C15.0391 3.21071 14.5304 3 14 3H10C9.46957 3 8.96086 3.21071 8.58579 3.58579C8.21071 3.96086 8 4.46957 8 5V21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                      </svg>
-                                      <span>Filtrar por Unidad Estructural</span>
-                                  </span>
-                                  <svg class="dropdown-arrow" fill="none" height="14" viewBox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg">
-                                      <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                  </svg>
-                              </button>
+                              <button class="filter-btn" id="filterBtnUnidadAlertas" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadAlertas"></div>
                           </div>
                           <div style="flex-basis: 100%; display: flex; gap: 6px;">
@@ -347,33 +299,11 @@ jobs:
                   <div id="incumplimientos" class="tab-content">
                       <div class="filter-section" style="display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
                           <div style="display: inline-block; position: relative;">
-                              <button class="filter-btn" id="filterBtnIncumplimientos">
-                                  <span style="display: flex; align-items: center; gap: 2px;">
-                                      <svg style="width: 6px; height: 6px; flex-shrink: 0;" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                          <path d="M16 21V5C16 4.46957 15.7893 3.96086 15.4142 3.58579C15.0391 3.21071 14.5304 3 14 3H10C9.46957 3 8.96086 3.21071 8.58579 3.58579C8.21071 3.96086 8 4.46957 8 5V21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                      </svg>
-                                      <span>Filtrar por Proyecto</span>
-                                  </span>
-                                  <svg class="dropdown-arrow" fill="none" height="14" viewBox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg">
-                                      <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                  </svg>
-                              </button>
+                              <button class="filter-btn" id="filterBtnIncumplimientos">Filtrar por Proyecto</button>
                               <div class="filter-dropdown" id="filterDropdownIncumplimientos"></div>
                           </div>
                           <div style="display: inline-block; position: relative;">
-                              <button class="filter-btn" id="filterBtnUnidadIncumplimientos" style="display: none;">
-                                  <span style="display: flex; align-items: center; gap: 2px;">
-                                      <svg style="width: 6px; height: 6px; flex-shrink: 0;" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                          <path d="M16 21V5C16 4.46957 15.7893 3.96086 15.4142 3.58579C15.0391 3.21071 14.5304 3 14 3H10C9.46957 3 8.96086 3.21071 8.58579 3.58579C8.21071 3.96086 8 4.46957 8 5V21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                      </svg>
-                                      <span>Filtrar por Unidad Estructural</span>
-                                  </span>
-                                  <svg class="dropdown-arrow" fill="none" height="14" viewBox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg">
-                                      <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-                                  </svg>
-                              </button>
+                              <button class="filter-btn" id="filterBtnUnidadIncumplimientos" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadIncumplimientos"></div>
                           </div>
                           <div style="flex-basis: 100%; display: flex; gap: 6px;">
