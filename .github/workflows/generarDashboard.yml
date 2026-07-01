@@ -390,7 +390,7 @@ jobs:
                   const REGISTROS_POR_PAGINA = 150;
 
                   // Columnas a ocultar por tabla
-                  const columnasOcultasConsolidado = ['Tipo de mezcla', 'Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Fecha Primera Aparición'];
+                  const columnasOcultasConsolidado = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Fecha Primera Aparición'];
                   const columnasOcultasAlertas = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Estado', 'Fecha Primera Aparición'];
                   const columnasOcultasIncumplimientos = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Estado', 'Fecha Primera Aparición'];
                   let paginaConsolidado = 1;
@@ -704,7 +704,8 @@ jobs:
                       const mapeo = {{
                           'Toma': 'FECHA TOMA',
                           'Rotura': 'FECHA ROTURA',
-                          'ID Vista': 'ID'
+                          'ID Vista': 'ID',
+                          'Cilindro N°': 'Muestra N°'
                       }};
                       return mapeo[nombreOriginal] || nombreOriginal;
                   }}
