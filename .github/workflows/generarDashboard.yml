@@ -42,9 +42,9 @@ jobs:
 
               localizacion = str(localizacion).strip()
 
-              # Torre
-              if re.search(r'(?:TORRE|T)\s*(\d+)', localizacion, re.IGNORECASE):
-                  match = re.search(r'(?:TORRE|T)\s*(\d+)', localizacion, re.IGNORECASE)
+              # Torre (solo si no hay letra antes de T/TORRE)
+              if re.search(r'(?<![A-Za-z])(?:TORRE|T)\s*(\d+)', localizacion, re.IGNORECASE):
+                  match = re.search(r'(?<![A-Za-z])(?:TORRE|T)\s*(\d+)', localizacion, re.IGNORECASE)
                   numero = match.group(1)
                   return f"Torre {int(numero):02d}"
 
