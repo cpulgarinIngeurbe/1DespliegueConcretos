@@ -504,19 +504,38 @@ jobs:
                       const datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
                       const muestras = new Set();
 
-                      // Detectar el nombre exacto de la columna de muestra
-                      let nombreColumnamuestra = null;
                       if (datosFiltradores.length > 0) {{
                           const primerRegistro = datosFiltradores[0];
                           const columnasDisponibles = Object.keys(primerRegistro);
-                          nombreColumnaMuestra = columnasDisponibles.find(col =>
-                              col.toLowerCase().includes('muestra') && (col.includes('Nº') || col.includes('N°') || col.includes('Nº'))
-                          );
+                          console.log('=== OBTENER MUESTRAS ÚNICAS ===');
                           console.log('Columnas disponibles:', columnasDisponibles);
-                          console.log('Nombre de columna de muestra detectado:', nombreColumnaMuestra);
-                      }}
 
-                      if (nombreColumnaMuestra) {{
+                          // Buscar columna de muestra - probar múltiples variaciones
+                          let nombreColumnaMuestra = null;
+
+                          // Búsquedas progresivas
+                          const variaciones = [
+                              col => col.toLowerCase().includes('muestra') && col.toLowerCase().includes('nº'),
+                              col => col.toLowerCase().includes('muestra') && col.toLowerCase().includes('n°'),
+                              col => col.toLowerCase() === 'muestra nº',
+                              col => col.toLowerCase() === 'muestra n°',
+                              col => col.toLowerCase().includes('muestra') && col.includes('º'),
+                              col => col.toLowerCase().includes('muestra')
+                          ];
+
+                          for (let variacion of variaciones) {{
+                              nombreColumnaMuestra = columnasDisponibles.find(variacion);
+                              if (nombreColumnaMuestra) {{
+                                  console.log('Columna de muestra encontrada:', nombreColumnaMuestra);
+                                  break;
+                              }}
+                          }}
+
+                          if (!nombreColumnaMuestra) {{
+                              console.warn('⚠️ No se encontró columna de muestra. Columnas disponibles:', columnasDisponibles);
+                              return [];
+                          }}
+
                           datosFiltradores.forEach(row => {{
                               if (row[nombreColumnaMuestra] && row[nombreColumnaMuestra].toString().trim() !== '') {{
                                   muestras.add(row[nombreColumnaMuestra].toString().trim());
@@ -524,6 +543,7 @@ jobs:
                           }});
                       }}
 
+                      console.log('Muestras encontradas:', Array.from(muestras));
                       return Array.from(muestras).sort((a, b) => a.localeCompare(b, undefined, {{numeric: true}}));
                   }}
 
@@ -540,12 +560,24 @@ jobs:
                   function filtrarPorProyectosUnidadesYMuestras(datos, proyectosSeleccionados, unidadesSeleccionadas, muestrasSeleccionadas) {{
                       let datosFiltradores = filtrarPorProyectosYUnidades(datos, proyectosSeleccionados, unidadesSeleccionadas);
                       if (muestrasSeleccionadas.length > 0 && datosFiltradores.length > 0) {{
-                          // Detectar el nombre exacto de la columna de muestra
                           const primerRegistro = datosFiltradores[0];
                           const columnasDisponibles = Object.keys(primerRegistro);
-                          const nombreColumnaMuestra = columnasDisponibles.find(col =>
-                              col.toLowerCase().includes('muestra') && (col.includes('Nº') || col.includes('N°') || col.includes('Nº'))
-                          );
+
+                          // Buscar columna de muestra
+                          let nombreColumnaMuestra = null;
+                          const variaciones = [
+                              col => col.toLowerCase().includes('muestra') && col.toLowerCase().includes('nº'),
+                              col => col.toLowerCase().includes('muestra') && col.toLowerCase().includes('n°'),
+                              col => col.toLowerCase() === 'muestra nº',
+                              col => col.toLowerCase() === 'muestra n°',
+                              col => col.toLowerCase().includes('muestra') && col.includes('º'),
+                              col => col.toLowerCase().includes('muestra')
+                          ];
+
+                          for (let variacion of variaciones) {{
+                              nombreColumnaMuestra = columnasDisponibles.find(variacion);
+                              if (nombreColumnaMuestra) break;
+                          }}
 
                           if (nombreColumnaMuestra) {{
                               datosFiltradores = datosFiltradores.filter(row => muestrasSeleccionadas.includes(row[nombreColumnaMuestra].toString().trim()));
