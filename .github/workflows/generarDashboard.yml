@@ -279,9 +279,7 @@ jobs:
                               <div id="analyticsCardIncumplimientos" class="analytics-card" style="display: none;">
                                   <div class="analytics-card-content">
                                       <div class="analytics-icon" id="analyticsIconIncumplimientos" style="display: none;">
-                                          <svg viewBox="0 0 24 24" fill="#E53935" xmlns="http://www.w3.org/2000/svg">
-                                              <path d="M3 18l6-9 6-6 5 0 0 5 1 2 2-1v-8H9l-6 9z"/>
-                                          </svg>
+                                          <img src="Visuales/ArrowRise.png" alt="Tendencia al alza" style="width: 100%; height: 100%; object-fit: contain;">
                                       </div>
                                       <div class="analytics-info">
                                           <div class="analytics-label">Consolidado de muestras con baja resistencia</div>
