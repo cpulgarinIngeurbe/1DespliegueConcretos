@@ -183,7 +183,7 @@ jobs:
               <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
               <style>
                   body {{ background-color: #ffffff; color: #141311; margin: 0; padding: 6px; font-family: 'Inter', sans-serif; font-size: 10px; zoom: 110%; }}
-                  .container {{ max-width: 100%; margin: 0 auto; padding-right: 120px; }}
+                  .container {{ max-width: 100%; margin: 0 auto; }}
                   .tabs-container {{ display: flex; gap: 4px; margin-bottom: 8px; border-bottom: 1px solid #A3C610; }}
                   .tab-button {{ padding: 4px 8px; background-color: transparent; border: none; color: #4B4F1D; font-weight: 600; font-size: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid transparent; transition: all 0.3s ease; }}
                   .tab-button:hover {{ color: #A3C610; }}
@@ -205,7 +205,7 @@ jobs:
                   .filters-row {{ display: flex; gap: 6px; margin-bottom: 8px; }}
                   .filters-row .selector-section {{ margin-bottom: 0; flex: 1; }}
                   .filters-row .selector-dropdown {{ width: 100%; }}
-                  .table-section {{ display: none; opacity: 0; }}
+                  .table-section {{ display: none; opacity: 0; margin-top: 16px; }}
                   .table-section.active {{ display: block; transition: opacity 1500ms ease-in-out; opacity: 1; }}
                   table {{ border-collapse: collapse; width: 100%; }}
                   table th {{ background-color: #4B4F1D; color: #ffffff; padding: 3px 2px; text-align: center; font-weight: 600; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10; }}
@@ -215,7 +215,7 @@ jobs:
                   .green-bg {{ background-color: #f0f8f0; }}
                   .yellow-bg {{ background-color: #fffacd; }}
                   .group-separator td {{ border-top: 2.5px solid #7CB342 !important; }}
-                  .filter-section {{ margin-top: 80px; margin-bottom: 12px; position: relative; }}
+                  .filter-section {{ margin-top: 16px; margin-bottom: 12px; position: relative; }}
                   .filter-btn {{ padding: 4px 9px; background: transparent; color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5); border-radius: 3px; font-size: 10px; font-weight: 400; cursor: pointer; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 3px 6px rgba(122, 179, 66, 0.15); transition: all 0.15s ease; line-height: 1; height: auto; white-space: nowrap; }}
                   .filter-btn:hover {{ background: #5A8C3A; border-color: #5A8C3A; color: #ffffff; box-shadow: none; }}
                   .filter-btn:active {{ transform: scale(0.98); }}
@@ -247,11 +247,12 @@ jobs:
                   .analytics-value {{ font-size: 18px; font-weight: 800; color: #2f3215; letter-spacing: -0.5px; }}
                   .analytics-wrapper {{ display: flex; gap: 10px; align-items: flex-start; margin-top: 4px; }}
                   .analytics-cards-column {{ display: flex; flex-direction: column; gap: 8px; flex: 0 0 auto; }}
+                  [id^="resetBtn"] {{ align-self: flex-end; margin-bottom: 8px; }}
                   .footer {{ margin-top: 20px; padding: 10px 0; border-top: 1px solid #A3C610; text-align: right; font-size: 8px; color: #7CB342; }}
               </style>
           </head>
           <body>
-              <img src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/inge.png" alt="Logo Ingeurbe" style="position: absolute; top: 100px; right: 10px; height: 60px; width: auto;">
+              <img src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/inge.png" alt="Logo Ingeurbe" style="position: absolute; top: 60px; right: 120px; height: 50px; width: auto;">
               <div class="container">
                   <div class="tabs-container">
                       <button class="tab-button active" data-tab="incumplimientos">Alertas Incumplimientos</button>
