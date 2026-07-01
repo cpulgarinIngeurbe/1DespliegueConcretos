@@ -258,9 +258,9 @@ jobs:
                               <button class="filter-btn" id="filterBtnUnidadConsolidado" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadConsolidado"></div>
                           </div>
-                          <div style="flex-basis: 100%; display: flex; gap: 6px;">
-                              <div class="filter-tags" id="filterTagsConsolidado"></div>
-                              <div class="filter-tags" id="filterTagsUnidadConsolidado"></div>
+                          <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
+                              <div class="filter-tags" id="filterTagsConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsUnidadConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
                       <div id="tableSectionConsolidado" class="table-section">
@@ -282,9 +282,9 @@ jobs:
                               <button class="filter-btn" id="filterBtnUnidadAlertas" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadAlertas"></div>
                           </div>
-                          <div style="flex-basis: 100%; display: flex; gap: 6px;">
-                              <div class="filter-tags" id="filterTagsAlertas"></div>
-                              <div class="filter-tags" id="filterTagsUnidadAlertas"></div>
+                          <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
+                              <div class="filter-tags" id="filterTagsAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsUnidadAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
                       <div id="tableSectionAlertas" class="table-section">
@@ -306,9 +306,9 @@ jobs:
                               <button class="filter-btn" id="filterBtnUnidadIncumplimientos" style="display: none;">Filtrar por Unidad Estructural</button>
                               <div class="filter-dropdown" id="filterDropdownUnidadIncumplimientos"></div>
                           </div>
-                          <div style="flex-basis: 100%; display: flex; gap: 6px;">
-                              <div class="filter-tags" id="filterTagsIncumplimientos"></div>
-                              <div class="filter-tags" id="filterTagsUnidadIncumplimientos"></div>
+                          <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
+                              <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
                       <div id="tableSectionIncumplimientos" class="table-section">
