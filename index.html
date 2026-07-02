@@ -923,7 +923,8 @@
 
                         td.textContent = valor;
 
-                        if ((header === 'Diferencia (MPa)' || header === 'Resistencia (%)') && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
+                        if ((header === 'Diferencia (MPa)') && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
+                        if ((header === 'Resistencia (%)') && valor !== '' && parseFloat(valor) < 100) td.classList.add('red-negative');
                         if (header === 'Resistencia (MPa)' && valor !== '') {
                             const res = parseFloat(valor);
                             const resTeor = parseFloat(row['Resistencia Teórica (MPa)'] || 0);
@@ -1017,7 +1018,8 @@
 
                         td.textContent = valor;
 
-                        if ((header === 'Diferencia (MPa)' || header === 'Resistencia (%)') && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
+                        if ((header === 'Diferencia (MPa)') && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
+                        if ((header === 'Resistencia (%)') && valor !== '' && parseFloat(valor) < 100) td.classList.add('red-negative');
                         if (header === 'Resistencia Mínima (MPa)' && valor !== '') {
                             const resMin = parseFloat(valor);
                             const res = parseFloat(row['Resistencia (MPa)'] || 0);
@@ -1099,7 +1101,8 @@
 
                         td.textContent = valor;
 
-                        if ((header === 'Diferencia (MPa)' || header === 'Resistencia (%)') && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
+                        if ((header === 'Diferencia (MPa)') && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
+                        if ((header === 'Resistencia (%)') && valor !== '' && parseFloat(valor) < 100) td.classList.add('red-negative');
                         if (header === 'Resistencia Mínima (MPa)' && valor !== '') {
                             const resMin = parseFloat(valor);
                             const resPromedio = parseFloat(row['Resistencia Promedio (MPa)'] || 0);
@@ -1440,4 +1443,4 @@
     </script>
 </body>
 </html>
-<!-- Generated: 2026-07-02T21:23:42.475004 -->
+<!-- Generated: 2026-07-02T22:04:26.125778 -->
