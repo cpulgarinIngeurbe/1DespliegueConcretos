@@ -636,19 +636,26 @@ jobs:
                               const fecha = new Date(row['Toma']);
                               if (!isNaN(fecha.getTime())) {{
                                   const mes = fecha.getMonth();
-                                  meses.add(mes);
+                                  const año = fecha.getFullYear();
+                                  const mesAñoKey = año + '-' + String(mes + 1).padStart(2, '0');
+                                  meses.add(mesAñoKey);
                               }}
                           }}
                       }});
 
-                      return Array.from(meses).sort((a, b) => a - b).map(mes => ({{
-                          numero: mes,
-                          nombre: mesesNombres[mes],
-                          label: mesesNombres[mes] + ' (' + String(mes + 1).padStart(2, '0') + ')'
-                      }}));
+                      return Array.from(meses).sort().map(mesAñoKey => {{
+                          const [año, mesStr] = mesAñoKey.split('-');
+                          const mes = parseInt(mesStr) - 1;
+                          return {{
+                              mesAño: mesAñoKey,
+                              numero: mes,
+                              nombre: mesesNombres[mes],
+                              label: mesesNombres[mes] + '-' + año
+                          }};
+                      }});
                   }}
 
-                  // Función para filtrar datos por mes (0-11)
+                  // Función para filtrar datos por mes-año
                   function filtrarPorMes(datos, mesesSeleccionados) {{
                       if (mesesSeleccionados.length === 0) return datos;
                       return datos.filter(row => {{
@@ -656,7 +663,9 @@ jobs:
                           const fecha = new Date(row['Toma']);
                           if (isNaN(fecha.getTime())) return false;
                           const mes = fecha.getMonth();
-                          return mesesSeleccionados.includes(mes);
+                          const año = fecha.getFullYear();
+                          const mesAñoKey = año + '-' + String(mes + 1).padStart(2, '0');
+                          return mesesSeleccionados.includes(mesAñoKey);
                       }});
                   }}
 
@@ -830,12 +839,16 @@ jobs:
                       actualizarTags(filterTagsMuestraAlertas, muestrasSeleccionadas, removerMuestra);
                       actualizarTags(filterTagsMuestraIncumplimientos, muestrasSeleccionadas, removerMuestra);
 
-                      // Actualizar tags de Mes (convertir números a nombres)
+                      // Actualizar tags de Mes (convertir "2026-01" a "Enero-2026")
                       const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-                      const mesesSeleccionadosNombres = mesesSeleccionados.map(m => mesesNombres[m]);
-                      actualizarTags(filterTagsMesConsolidado, mesesSeleccionadosNombres, removerMes);
-                      actualizarTags(filterTagsMesAlertas, mesesSeleccionadosNombres, removerMes);
-                      actualizarTags(filterTagsMesIncumplimientos, mesesSeleccionadosNombres, removerMes);
+                      const mesesSeleccionadosNombres = mesesSeleccionados.map(m => {{
+                          const [año, mesStr] = m.split('-');
+                          const mesNum = parseInt(mesStr) - 1;
+                          return mesesNombres[mesNum] + '-' + año;
+                      }});
+                      actualizarTags(filterTagsMesConsolidado, mesesSeleccionadosNombres, removerMesPorFormato);
+                      actualizarTags(filterTagsMesAlertas, mesesSeleccionadosNombres, removerMesPorFormato);
+                      actualizarTags(filterTagsMesIncumplimientos, mesesSeleccionadosNombres, removerMesPorFormato);
 
                       // Actualizar tags de f'c (convertir a string con formato)
                       const fcSeleccionadosFormato = fcSeleccionados.map(f => f + ' MPa');
@@ -924,17 +937,17 @@ jobs:
                           const mesesIncumplimientos = obtenerMesesUnicos(datosIncumplimientos, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
 
                           llenarDropdownMeses(filterDropdownMesConsolidado, mesesConsolidado, () => {{
-                              mesesSeleccionados = Array.from(filterDropdownMesConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => parseInt(cb.value));
+                              mesesSeleccionados = Array.from(filterDropdownMesConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                               actualizarUIInmediata();
                               requestAnimationFrame(actualizarTablas);
                           }});
                           llenarDropdownMeses(filterDropdownMesAlertas, mesesAlertas, () => {{
-                              mesesSeleccionados = Array.from(filterDropdownMesAlertas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => parseInt(cb.value));
+                              mesesSeleccionados = Array.from(filterDropdownMesAlertas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                               actualizarUIInmediata();
                               requestAnimationFrame(actualizarTablas);
                           }});
                           llenarDropdownMeses(filterDropdownMesIncumplimientos, mesesIncumplimientos, () => {{
-                              mesesSeleccionados = Array.from(filterDropdownMesIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => parseInt(cb.value));
+                              mesesSeleccionados = Array.from(filterDropdownMesIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                               actualizarUIInmediata();
                               requestAnimationFrame(actualizarTablas);
                           }});
@@ -943,7 +956,7 @@ jobs:
                           [filterDropdownMesConsolidado, filterDropdownMesAlertas, filterDropdownMesIncumplimientos].forEach(dropdown => {{
                               const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
                               checkboxes.forEach(checkbox => {{
-                                  checkbox.checked = mesesSeleccionados.includes(parseInt(checkbox.value));
+                                  checkbox.checked = mesesSeleccionados.includes(checkbox.value);
                               }});
                           }});
                       }}
@@ -999,6 +1012,15 @@ jobs:
                       mesesSeleccionados = mesesSeleccionados.filter(m => m !== mes);
                       actualizarUIInmediata();
                       requestAnimationFrame(actualizarTablas);
+                  }}
+
+                  // Función para remover mes por formato display (convierte "Enero-2026" a "2026-01")
+                  function removerMesPorFormato(mesFormato) {{
+                      const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                      const [mesNombre, año] = mesFormato.split('-');
+                      const mesNum = mesesNombres.indexOf(mesNombre) + 1;
+                      const mesAñoKey = año + '-' + String(mesNum).padStart(2, '0');
+                      removerMes(mesAñoKey);
                   }}
 
                   // Función para actualizar opciones de f'c en el dropdown
@@ -1124,7 +1146,7 @@ jobs:
 
                           const checkbox = document.createElement('input');
                           checkbox.type = 'checkbox';
-                          checkbox.value = mes.numero;
+                          checkbox.value = mes.mesAño;
                           checkbox.id = 'checkbox-' + dropdownElement.id + '-' + index;
 
                           const label = document.createElement('label');
