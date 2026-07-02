@@ -2,9 +2,6 @@ name: 📊 Generar Dashboard (Sin Filtros)
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   generar-dashboard:
