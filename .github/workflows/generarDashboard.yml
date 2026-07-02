@@ -78,6 +78,19 @@ jobs:
 
               return ''
 
+          def extraer_mes(fecha):
+              """Extrae el mes de una fecha y retorna el nombre del mes"""
+              meses_nombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                             'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+              if pd.isna(fecha):
+                  return ''
+              try:
+                  fecha_obj = pd.to_datetime(fecha)
+                  mes_indice = fecha_obj.month - 1
+                  return meses_nombres[mes_indice]
+              except:
+                  return ''
+
           archivo_consolidado = "desplegable/Consolidado.xlsx"
           archivo_alertas = "desplegable/ConsolidadoAlertas.xlsx"
           archivo_incumplimientos = "desplegable/Incumplimientos.xlsx"
@@ -95,6 +108,11 @@ jobs:
               if 'Localización' in df_consolidado.columns:
                   df_consolidado['UNIDAD ESTRUCTURAL'] = df_consolidado['Localización'].apply(extraer_unidad_estructural)
                   print(f'  [+] Columna "UNIDAD ESTRUCTURAL" creada')
+
+              # Crear columna Mes
+              if 'Toma' in df_consolidado.columns:
+                  df_consolidado['Mes'] = df_consolidado['Toma'].apply(extraer_mes)
+                  print(f'  [+] Columna "Mes" creada')
 
               # Limpiar primeros 6 registros de Promedio Móvil por Proyecto y Resistencia nominal
               if 'Promedio Móvil (MPa)' in df_consolidado.columns and 'Resistencia nominal (MPa)' in df_consolidado.columns:
@@ -127,6 +145,11 @@ jobs:
                   df_alertas['UNIDAD ESTRUCTURAL'] = df_alertas['Localización'].apply(extraer_unidad_estructural)
                   print(f'  [+] Columna "UNIDAD ESTRUCTURAL" creada')
 
+              # Crear columna Mes
+              if 'Toma' in df_alertas.columns:
+                  df_alertas['Mes'] = df_alertas['Toma'].apply(extraer_mes)
+                  print(f'  [+] Columna "Mes" creada')
+
               # Limpiar primeros 6 registros de Promedio Móvil por Proyecto y Resistencia nominal
               if 'Promedio Móvil (MPa)' in df_alertas.columns and 'Resistencia nominal (MPa)' in df_alertas.columns:
                   for proyecto in df_alertas['Proyecto'].unique():
@@ -156,6 +179,11 @@ jobs:
               if 'Localización' in df_incumplimientos.columns:
                   df_incumplimientos['UNIDAD ESTRUCTURAL'] = df_incumplimientos['Localización'].apply(extraer_unidad_estructural)
                   print(f'  [+] Columna "UNIDAD ESTRUCTURAL" creada')
+
+              # Crear columna Mes
+              if 'Toma' in df_incumplimientos.columns:
+                  df_incumplimientos['Mes'] = df_incumplimientos['Toma'].apply(extraer_mes)
+                  print(f'  [+] Columna "Mes" creada')
 
               # Redondear columnas numéricas a 2 decimales
               columnas_decimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)']
