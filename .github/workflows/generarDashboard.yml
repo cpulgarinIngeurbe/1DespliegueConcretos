@@ -487,9 +487,14 @@ jobs:
                       return datos.filter(row => proyectosSeleccionados.includes(row['Proyecto']));
                   }}
 
-                  // Función para obtener unidades estructurales únicas de los datos filtrados por proyecto
-                  function obtenerUnidadesEstructuralesUnicas(datos, proyectosSeleccionados) {{
-                      const datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
+                  // Función para obtener unidades estructurales únicas de los datos filtrados por proyecto y muestras
+                  function obtenerUnidadesEstructuralesUnicas(datos, proyectosSeleccionados, muestrasSeleccionadas) {{
+                      let datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
+                      if (muestrasSeleccionadas && muestrasSeleccionadas.length > 0) {{
+                          datosFiltradores = datosFiltradores.filter(row =>
+                              muestrasSeleccionadas.includes(row['Cilindro N°'].toString().trim())
+                          );
+                      }}
                       const unidades = new Set();
                       datosFiltradores.forEach(row => {{
                           if (row['UNIDAD ESTRUCTURAL'] && row['UNIDAD ESTRUCTURAL'].trim() !== '') {{
@@ -499,9 +504,14 @@ jobs:
                       return Array.from(unidades).sort();
                   }}
 
-                  // Función para obtener muestras únicas de los datos filtrados por proyecto
-                  function obtenerMuestrasUnicas(datos, proyectosSeleccionados) {{
-                      const datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
+                  // Función para obtener muestras únicas de los datos filtrados por proyecto y unidades
+                  function obtenerMuestrasUnicas(datos, proyectosSeleccionados, unidadesSeleccionadas) {{
+                      let datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
+                      if (unidadesSeleccionadas && unidadesSeleccionadas.length > 0) {{
+                          datosFiltradores = datosFiltradores.filter(row =>
+                              unidadesSeleccionadas.includes(row['UNIDAD ESTRUCTURAL'])
+                          );
+                      }}
                       const muestras = new Set();
                       datosFiltradores.forEach(row => {{
                           if (row['Cilindro N°'] !== undefined && row['Cilindro N°'] !== null && row['Cilindro N°'].toString().trim() !== '') {{
@@ -652,26 +662,29 @@ jobs:
                       actualizarTags(filterTagsMuestraIncumplimientos, muestrasSeleccionadas, removerMuestra);
                   }}
 
-                  // Función para actualizar opciones de Unidad Estructural (después de cambiar proyectos)
+                  // Función para actualizar opciones de Unidad Estructural (después de cambiar proyectos o muestras)
                   function actualizarOpcionesUnidadEstructural() {{
                       if (proyectosSeleccionados.length > 0) {{
-                          const unidadesConsolidado = obtenerUnidadesEstructuralesUnicas(datosConsolidado, proyectosSeleccionados);
-                          const unidadesAlertas = obtenerUnidadesEstructuralesUnicas(datosAlertas, proyectosSeleccionados);
-                          const unidadesIncumplimientos = obtenerUnidadesEstructuralesUnicas(datosIncumplimientos, proyectosSeleccionados);
+                          const unidadesConsolidado = obtenerUnidadesEstructuralesUnicas(datosConsolidado, proyectosSeleccionados, muestrasSeleccionadas);
+                          const unidadesAlertas = obtenerUnidadesEstructuralesUnicas(datosAlertas, proyectosSeleccionados, muestrasSeleccionadas);
+                          const unidadesIncumplimientos = obtenerUnidadesEstructuralesUnicas(datosIncumplimientos, proyectosSeleccionados, muestrasSeleccionadas);
 
                           llenarDropdown(filterDropdownUnidadConsolidado, unidadesConsolidado, () => {{
                               unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                               actualizarUIInmediata();
+                              actualizarOpcionesMuestra();
                               requestAnimationFrame(actualizarTablas);
                           }});
                           llenarDropdown(filterDropdownUnidadAlertas, unidadesAlertas, () => {{
                               unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadAlertas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                               actualizarUIInmediata();
+                              actualizarOpcionesMuestra();
                               requestAnimationFrame(actualizarTablas);
                           }});
                           llenarDropdown(filterDropdownUnidadIncumplimientos, unidadesIncumplimientos, () => {{
                               unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                               actualizarUIInmediata();
+                              actualizarOpcionesMuestra();
                               requestAnimationFrame(actualizarTablas);
                           }});
 
@@ -688,23 +701,26 @@ jobs:
                   // Función para actualizar opciones de Muestra (después de cambiar proyectos)
                   function actualizarOpcionesMuestra() {{
                       if (proyectosSeleccionados.length > 0) {{
-                          const muestrasConsolidado = obtenerMuestrasUnicas(datosConsolidado, proyectosSeleccionados);
-                          const muestrasAlertas = obtenerMuestrasUnicas(datosAlertas, proyectosSeleccionados);
-                          const muestrasIncumplimientos = obtenerMuestrasUnicas(datosIncumplimientos, proyectosSeleccionados);
+                          const muestrasConsolidado = obtenerMuestrasUnicas(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas);
+                          const muestrasAlertas = obtenerMuestrasUnicas(datosAlertas, proyectosSeleccionados, unidadesEstructuralesSeleccionadas);
+                          const muestrasIncumplimientos = obtenerMuestrasUnicas(datosIncumplimientos, proyectosSeleccionados, unidadesEstructuralesSeleccionadas);
 
                           llenarDropdown(filterDropdownMuestraConsolidado, muestrasConsolidado, () => {{
                               muestrasSeleccionadas = Array.from(filterDropdownMuestraConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                               actualizarUIInmediata();
+                              actualizarOpcionesUnidadEstructural();
                               requestAnimationFrame(actualizarTablas);
                           }});
                           llenarDropdown(filterDropdownMuestraAlertas, muestrasAlertas, () => {{
                               muestrasSeleccionadas = Array.from(filterDropdownMuestraAlertas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                               actualizarUIInmediata();
+                              actualizarOpcionesUnidadEstructural();
                               requestAnimationFrame(actualizarTablas);
                           }});
                           llenarDropdown(filterDropdownMuestraIncumplimientos, muestrasIncumplimientos, () => {{
                               muestrasSeleccionadas = Array.from(filterDropdownMuestraIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                               actualizarUIInmediata();
+                              actualizarOpcionesUnidadEstructural();
                               requestAnimationFrame(actualizarTablas);
                           }});
 
