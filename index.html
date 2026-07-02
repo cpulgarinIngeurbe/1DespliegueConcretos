@@ -100,11 +100,16 @@
                     <button class="filter-btn" id="filterBtnMuestraIncumplimientos" style="display: none;">Filtrar por Muestra</button>
                     <div class="filter-dropdown" id="filterDropdownMuestraIncumplimientos"></div>
                 </div>
+                <div style="display: inline-block; position: relative;">
+                    <button class="filter-btn" id="filterBtnMesIncumplimientos" style="display: none;">Filtrar por Mes</button>
+                    <div class="filter-dropdown" id="filterDropdownMesIncumplimientos"></div>
+                </div>
                 <button class="filter-btn reset-btn" id="resetBtnIncumplimientos" style="align-self: center; margin-right: auto; display: none;">Restablecer Filtros</button>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
                     <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                     <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                     <div class="filter-tags" id="filterTagsMuestraIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                    <div class="filter-tags" id="filterTagsMesIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                 </div>
             </div>
             <div class="analytics-wrapper">
@@ -158,11 +163,16 @@
                     <button class="filter-btn" id="filterBtnMuestraAlertas" style="display: none;">Filtrar por Muestra</button>
                     <div class="filter-dropdown" id="filterDropdownMuestraAlertas"></div>
                 </div>
+                <div style="display: inline-block; position: relative;">
+                    <button class="filter-btn" id="filterBtnMesAlertas" style="display: none;">Filtrar por Mes</button>
+                    <div class="filter-dropdown" id="filterDropdownMesAlertas"></div>
+                </div>
                 <button class="filter-btn" id="resetBtnAlertas" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
                 <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
                     <div class="filter-tags" id="filterTagsAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                     <div class="filter-tags" id="filterTagsUnidadAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                     <div class="filter-tags" id="filterTagsMuestraAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                    <div class="filter-tags" id="filterTagsMesAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                 </div>
             </div>
             <div id="tableSectionAlertas" class="table-section">
@@ -188,11 +198,16 @@
                     <button class="filter-btn" id="filterBtnMuestraConsolidado" style="display: none;">Filtrar por Muestra</button>
                     <div class="filter-dropdown" id="filterDropdownMuestraConsolidado"></div>
                 </div>
+                <div style="display: inline-block; position: relative;">
+                    <button class="filter-btn" id="filterBtnMesConsolidado" style="display: none;">Filtrar por Mes</button>
+                    <div class="filter-dropdown" id="filterDropdownMesConsolidado"></div>
+                </div>
                 <button class="filter-btn" id="resetBtnConsolidado" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
                 <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
                     <div class="filter-tags" id="filterTagsConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                     <div class="filter-tags" id="filterTagsUnidadConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                     <div class="filter-tags" id="filterTagsMuestraConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                    <div class="filter-tags" id="filterTagsMesConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                 </div>
             </div>
             <div id="tableSectionConsolidado" class="table-section">
@@ -252,6 +267,15 @@
         const filterTagsMuestraConsolidado = document.getElementById('filterTagsMuestraConsolidado');
         const filterTagsMuestraAlertas = document.getElementById('filterTagsMuestraAlertas');
         const filterTagsMuestraIncumplimientos = document.getElementById('filterTagsMuestraIncumplimientos');
+        const filterBtnMesConsolidado = document.getElementById('filterBtnMesConsolidado');
+        const filterBtnMesAlertas = document.getElementById('filterBtnMesAlertas');
+        const filterBtnMesIncumplimientos = document.getElementById('filterBtnMesIncumplimientos');
+        const filterDropdownMesConsolidado = document.getElementById('filterDropdownMesConsolidado');
+        const filterDropdownMesAlertas = document.getElementById('filterDropdownMesAlertas');
+        const filterDropdownMesIncumplimientos = document.getElementById('filterDropdownMesIncumplimientos');
+        const filterTagsMesConsolidado = document.getElementById('filterTagsMesConsolidado');
+        const filterTagsMesAlertas = document.getElementById('filterTagsMesAlertas');
+        const filterTagsMesIncumplimientos = document.getElementById('filterTagsMesIncumplimientos');
 
         // Función para actualizar tags
         function actualizarTags(tagsContainer, proyectosSeleccionados, onRemoveCallback) {
@@ -277,6 +301,8 @@
         let unidadesEstructuralesSeleccionadas = [];
         // Variable global para almacenar muestras seleccionadas
         let muestrasSeleccionadas = [];
+        // Variable global para almacenar meses seleccionados (0-11)
+        let mesesSeleccionados = [];
 
         // Variables de paginación
         const REGISTROS_POR_PAGINA = 150;
@@ -345,6 +371,41 @@
             return Array.from(muestras).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
         }
 
+        // Función para obtener meses únicos de los datos filtrados por proyecto
+        function obtenerMesesUnicos(datos, proyectosSeleccionados) {
+            let datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
+            const meses = new Set();
+            const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+            datosFiltradores.forEach(row => {
+                if (row['Toma'] !== undefined && row['Toma'] !== null) {
+                    const fecha = new Date(row['Toma']);
+                    if (!isNaN(fecha.getTime())) {
+                        const mes = fecha.getMonth();
+                        meses.add(mes);
+                    }
+                }
+            });
+
+            return Array.from(meses).sort((a, b) => a - b).map(mes => ({
+                numero: mes,
+                nombre: mesesNombres[mes],
+                label: mesesNombres[mes] + ' (' + String(mes + 1).padStart(2, '0') + ')'
+            }));
+        }
+
+        // Función para filtrar datos por mes (0-11)
+        function filtrarPorMes(datos, mesesSeleccionados) {
+            if (mesesSeleccionados.length === 0) return datos;
+            return datos.filter(row => {
+                if (row['Toma'] === undefined || row['Toma'] === null) return false;
+                const fecha = new Date(row['Toma']);
+                if (isNaN(fecha.getTime())) return false;
+                const mes = fecha.getMonth();
+                return mesesSeleccionados.includes(mes);
+            });
+        }
+
         // Función para filtrar datos por proyectos y unidades estructurales
         function filtrarPorProyectosYUnidades(datos, proyectosSeleccionados, unidadesSeleccionadas) {
             let datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
@@ -360,6 +421,7 @@
             if (muestrasSeleccionadas.length > 0) {
                 datosFiltradores = datosFiltradores.filter(row => muestrasSeleccionadas.includes(row['Cilindro N°'].toString().trim()));
             }
+            datosFiltradores = filtrarPorMes(datosFiltradores, mesesSeleccionados);
             return datosFiltradores;
         }
 
@@ -701,7 +763,8 @@
                 'Cilindro N°': 'Muestra N°',
                 'Resistencia nominal (MPa)': "f'c (MPA)",
                 'Resistencia (MPa)': 'RESULTADO (MPA)',
-                'Resistencia (%)': 'Resultado (%)'
+                'Resistencia (%)': 'Resultado (%)',
+                'Tipo de mezcla': 'Tipo'
             };
             return mapeo[nombreOriginal] || nombreOriginal;
         }
@@ -761,7 +824,7 @@
 
                         td.textContent = valor;
 
-                        if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
+                        if ((header === 'Diferencia (MPa)' || header === 'Resultado (%)') && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
                         if (header === 'Resistencia (MPa)' && valor !== '') {
                             const res = parseFloat(valor);
                             const resTeor = parseFloat(row['Resistencia Teórica (MPa)'] || 0);
@@ -855,7 +918,7 @@
 
                         td.textContent = valor;
 
-                        if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
+                        if ((header === 'Diferencia (MPa)' || header === 'Resultado (%)') && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
                         if (header === 'Resistencia Mínima (MPa)' && valor !== '') {
                             const resMin = parseFloat(valor);
                             const res = parseFloat(row['Resistencia (MPa)'] || 0);
@@ -937,7 +1000,7 @@
 
                         td.textContent = valor;
 
-                        if (header === 'Diferencia (MPa)' && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
+                        if ((header === 'Diferencia (MPa)' || header === 'Resultado (%)') && valor !== '' && parseFloat(valor) <= 0) td.classList.add('red-negative');
                         if (header === 'Resistencia Mínima (MPa)' && valor !== '') {
                             const resMin = parseFloat(valor);
                             const resPromedio = parseFloat(row['Resistencia Promedio (MPa)'] || 0);
@@ -1224,4 +1287,4 @@
     </script>
 </body>
 </html>
-<!-- Generated: 2026-07-02T19:52:22.552669 -->
+<!-- Generated: 2026-07-02T20:47:30.411385 -->
