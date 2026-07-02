@@ -1004,7 +1004,15 @@ jobs:
                   // Función para actualizar opciones de f'c en el dropdown
                   function actualizarOpcionesFc(tabName) {{
                       if (proyectosSeleccionados.length > 0) {{
-                          const datos = obtenerDatos(tabName);
+                          let datos;
+                          if (tabName === 'Consolidado') {{
+                              datos = datosConsolidado;
+                          }} else if (tabName === 'Alertas') {{
+                              datos = datosAlertas;
+                          }} else if (tabName === 'Incumplimientos') {{
+                              datos = datosIncumplimientos;
+                          }}
+
                           const fcUnicos = obtenerFcUnicos(datos, proyectosSeleccionados);
                           const dropdownElement = document.getElementById('filterDropdownFc' + tabName);
                           const buttonElement = document.getElementById('filterBtnFc' + tabName);
