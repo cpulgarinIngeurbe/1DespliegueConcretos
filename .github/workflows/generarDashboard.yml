@@ -964,9 +964,9 @@ jobs:
                       actualizarOpcionesMes();
 
                       // Actualizar opciones de f'c basadas en proyectos seleccionados
-                      actualizarOpcionesFc('Consolidado');
-                      actualizarOpcionesFc('Alertas');
-                      actualizarOpcionesFc('Incumplimientos');
+                      // actualizarOpcionesFc('Consolidado');
+                      // actualizarOpcionesFc('Alertas');
+                      // actualizarOpcionesFc('Incumplimientos');
 
                       // Actualizar tablas de forma asincrónica
                       requestAnimationFrame(actualizarTablas);
@@ -1013,14 +1013,16 @@ jobs:
                               datos = datosIncumplimientos;
                           }}
 
+                          if (!datos) return;
+
                           const fcUnicos = obtenerFcUnicos(datos, proyectosSeleccionados);
                           const dropdownElement = document.getElementById('filterDropdownFc' + tabName);
                           const buttonElement = document.getElementById('filterBtnFc' + tabName);
 
+                          if (!dropdownElement || !buttonElement) return;
+
                           if (fcUnicos.length > 0) {{
-                              if (buttonElement) {{
-                                  buttonElement.style.display = 'inline-block';
-                              }}
+                              buttonElement.style.display = 'inline-block';
                               llenarDropdownFc(dropdownElement, fcUnicos, () => {{
                                   fcSeleccionados = Array.from(dropdownElement.querySelectorAll('input[type="checkbox"]:checked')).map(cb => parseFloat(cb.value));
                                   actualizarUIInmediata();
@@ -1033,9 +1035,7 @@ jobs:
                                   checkbox.checked = fcSeleccionados.includes(parseFloat(checkbox.value));
                               }});
                           }} else {{
-                              if (buttonElement) {{
-                                  buttonElement.style.display = 'none';
-                              }}
+                              buttonElement.style.display = 'none';
                           }}
                       }}
                   }}
