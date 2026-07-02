@@ -964,9 +964,9 @@ jobs:
                       actualizarOpcionesMes();
 
                       // Actualizar opciones de f'c basadas en proyectos seleccionados
-                      // actualizarOpcionesFc('Consolidado');
-                      // actualizarOpcionesFc('Alertas');
-                      // actualizarOpcionesFc('Incumplimientos');
+                      actualizarOpcionesFc('Consolidado');
+                      actualizarOpcionesFc('Alertas');
+                      actualizarOpcionesFc('Incumplimientos');
 
                       // Actualizar tablas de forma asincrónica
                       requestAnimationFrame(actualizarTablas);
@@ -1004,38 +1004,42 @@ jobs:
                   // Función para actualizar opciones de f'c en el dropdown
                   function actualizarOpcionesFc(tabName) {{
                       if (proyectosSeleccionados.length > 0) {{
-                          let datos;
-                          if (tabName === 'Consolidado') {{
-                              datos = datosConsolidado;
-                          }} else if (tabName === 'Alertas') {{
-                              datos = datosAlertas;
-                          }} else if (tabName === 'Incumplimientos') {{
-                              datos = datosIncumplimientos;
-                          }}
+                          try {{
+                              let datos;
+                              if (tabName === 'Consolidado') {{
+                                  datos = datosConsolidado;
+                              }} else if (tabName === 'Alertas') {{
+                                  datos = datosAlertas;
+                              }} else if (tabName === 'Incumplimientos') {{
+                                  datos = datosIncumplimientos;
+                              }}
 
-                          if (!datos) return;
+                              if (!datos || !Array.isArray(datos)) return;
 
-                          const fcUnicos = obtenerFcUnicos(datos, proyectosSeleccionados);
-                          const dropdownElement = document.getElementById('filterDropdownFc' + tabName);
-                          const buttonElement = document.getElementById('filterBtnFc' + tabName);
+                              const fcUnicos = obtenerFcUnicos(datos, proyectosSeleccionados);
+                              const dropdownElement = document.getElementById('filterDropdownFc' + tabName);
+                              const buttonElement = document.getElementById('filterBtnFc' + tabName);
 
-                          if (!dropdownElement || !buttonElement) return;
+                              if (!dropdownElement || !buttonElement) return;
 
-                          if (fcUnicos.length > 0) {{
-                              buttonElement.style.display = 'inline-block';
-                              llenarDropdownFc(dropdownElement, fcUnicos, () => {{
-                                  fcSeleccionados = Array.from(dropdownElement.querySelectorAll('input[type="checkbox"]:checked')).map(cb => parseFloat(cb.value));
-                                  actualizarUIInmediata();
-                                  requestAnimationFrame(actualizarTablas);
-                              }});
+                              if (fcUnicos && fcUnicos.length > 0) {{
+                                  buttonElement.style.display = 'inline-block';
+                                  llenarDropdownFc(dropdownElement, fcUnicos, () => {{
+                                      fcSeleccionados = Array.from(dropdownElement.querySelectorAll('input[type="checkbox"]:checked')).map(cb => parseFloat(cb.value));
+                                      actualizarUIInmediata();
+                                      requestAnimationFrame(actualizarTablas);
+                                  }});
 
-                              // Marcar checkboxes que estaban seleccionados
-                              const checkboxes = dropdownElement.querySelectorAll('input[type="checkbox"]');
-                              checkboxes.forEach(checkbox => {{
-                                  checkbox.checked = fcSeleccionados.includes(parseFloat(checkbox.value));
-                              }});
-                          }} else {{
-                              buttonElement.style.display = 'none';
+                                  // Marcar checkboxes que estaban seleccionados
+                                  const checkboxes = dropdownElement.querySelectorAll('input[type="checkbox"]');
+                                  checkboxes.forEach(checkbox => {{
+                                      checkbox.checked = fcSeleccionados.includes(parseFloat(checkbox.value));
+                                  }});
+                              }} else {{
+                                  buttonElement.style.display = 'none';
+                              }}
+                          }} catch (error) {{
+                              console.error('Error en actualizarOpcionesFc:', error);
                           }}
                       }}
                   }}
