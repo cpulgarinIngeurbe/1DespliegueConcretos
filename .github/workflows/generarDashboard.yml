@@ -575,9 +575,19 @@ jobs:
                       return Array.from(muestras).sort((a, b) => a.localeCompare(b, undefined, {{numeric: true}}));
                   }}
 
-                  // Función para obtener meses únicos de los datos filtrados por proyecto
-                  function obtenerMesesUnicos(datos, proyectosSeleccionados) {{
+                  // Función para obtener meses únicos de los datos filtrados por proyecto, unidades y muestras
+                  function obtenerMesesUnicos(datos, proyectosSeleccionados, unidadesSeleccionadas, muestrasSeleccionadas) {{
                       let datosFiltradores = filtrarPorProyectos(datos, proyectosSeleccionados);
+                      if (unidadesSeleccionadas && unidadesSeleccionadas.length > 0) {{
+                          datosFiltradores = datosFiltradores.filter(row =>
+                              unidadesSeleccionadas.includes(row['UNIDAD ESTRUCTURAL'])
+                          );
+                      }}
+                      if (muestrasSeleccionadas && muestrasSeleccionadas.length > 0) {{
+                          datosFiltradores = datosFiltradores.filter(row =>
+                              muestrasSeleccionadas.includes(row['Cilindro N°'].toString().trim())
+                          );
+                      }}
                       const meses = new Set();
                       const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
@@ -710,6 +720,12 @@ jobs:
                       filterBtnMuestraAlertas.style.display = mostrarMuestraBtn ? 'inline-block' : 'none';
                       filterBtnMuestraIncumplimientos.style.display = mostrarMuestraBtn ? 'inline-block' : 'none';
 
+                      // Mostrar/ocultar botones de Mes según si hay proyectos seleccionados
+                      const mostrarMesBtn = proyectosSeleccionados.length > 0;
+                      filterBtnMesConsolidado.style.display = mostrarMesBtn ? 'inline-block' : 'none';
+                      filterBtnMesAlertas.style.display = mostrarMesBtn ? 'inline-block' : 'none';
+                      filterBtnMesIncumplimientos.style.display = mostrarMesBtn ? 'inline-block' : 'none';
+
                       // Mostrar/ocultar botones de Reset según si hay proyectos seleccionados
                       const mostrarResetBtn = proyectosSeleccionados.length > 0;
                       resetBtnConsolidado.style.display = mostrarResetBtn ? 'inline-block' : 'none';
@@ -724,16 +740,20 @@ jobs:
                           }});
                       }});
 
-                      // Limpiar selección de unidades y muestras si no hay proyectos
+                      // Limpiar selección de unidades, muestras y meses si no hay proyectos
                       if (proyectosSeleccionados.length === 0) {{
                           unidadesEstructuralesSeleccionadas = [];
                           muestrasSeleccionadas = [];
+                          mesesSeleccionados = [];
                           filterDropdownUnidadConsolidado.innerHTML = '';
                           filterDropdownUnidadAlertas.innerHTML = '';
                           filterDropdownUnidadIncumplimientos.innerHTML = '';
                           filterDropdownMuestraConsolidado.innerHTML = '';
                           filterDropdownMuestraAlertas.innerHTML = '';
                           filterDropdownMuestraIncumplimientos.innerHTML = '';
+                          filterDropdownMesConsolidado.innerHTML = '';
+                          filterDropdownMesAlertas.innerHTML = '';
+                          filterDropdownMesIncumplimientos.innerHTML = '';
                       }}
 
                       // Actualizar tags en todas las pestañas (proyectos)
@@ -750,6 +770,13 @@ jobs:
                       actualizarTags(filterTagsMuestraConsolidado, muestrasSeleccionadas, removerMuestra);
                       actualizarTags(filterTagsMuestraAlertas, muestrasSeleccionadas, removerMuestra);
                       actualizarTags(filterTagsMuestraIncumplimientos, muestrasSeleccionadas, removerMuestra);
+
+                      // Actualizar tags de Mes (convertir números a nombres)
+                      const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                      const mesesSeleccionadosNombres = mesesSeleccionados.map(m => mesesNombres[m]);
+                      actualizarTags(filterTagsMesConsolidado, mesesSeleccionadosNombres, removerMes);
+                      actualizarTags(filterTagsMesAlertas, mesesSeleccionadosNombres, removerMes);
+                      actualizarTags(filterTagsMesIncumplimientos, mesesSeleccionadosNombres, removerMes);
                   }}
 
                   // Función para actualizar opciones de Unidad Estructural (después de cambiar proyectos o muestras)
@@ -824,6 +851,39 @@ jobs:
                       }}
                   }}
 
+                  // Función para actualizar opciones de Mes (después de cambiar proyectos, unidades o muestras)
+                  function actualizarOpcionesMes() {{
+                      if (proyectosSeleccionados.length > 0) {{
+                          const mesesConsolidado = obtenerMesesUnicos(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
+                          const mesesAlertas = obtenerMesesUnicos(datosAlertas, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
+                          const mesesIncumplimientos = obtenerMesesUnicos(datosIncumplimientos, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
+
+                          llenarDropdownMeses(filterDropdownMesConsolidado, mesesConsolidado, () => {{
+                              mesesSeleccionados = Array.from(filterDropdownMesConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => parseInt(cb.value));
+                              actualizarUIInmediata();
+                              requestAnimationFrame(actualizarTablas);
+                          }});
+                          llenarDropdownMeses(filterDropdownMesAlertas, mesesAlertas, () => {{
+                              mesesSeleccionados = Array.from(filterDropdownMesAlertas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => parseInt(cb.value));
+                              actualizarUIInmediata();
+                              requestAnimationFrame(actualizarTablas);
+                          }});
+                          llenarDropdownMeses(filterDropdownMesIncumplimientos, mesesIncumplimientos, () => {{
+                              mesesSeleccionados = Array.from(filterDropdownMesIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => parseInt(cb.value));
+                              actualizarUIInmediata();
+                              requestAnimationFrame(actualizarTablas);
+                          }});
+
+                          // Marcar checkboxes que estaban seleccionados
+                          [filterDropdownMesConsolidado, filterDropdownMesAlertas, filterDropdownMesIncumplimientos].forEach(dropdown => {{
+                              const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+                              checkboxes.forEach(checkbox => {{
+                                  checkbox.checked = mesesSeleccionados.includes(parseInt(checkbox.value));
+                              }});
+                          }});
+                      }}
+                  }}
+
                   // Función para actualizar todos los filtros (UI inmediata + tablas asincrónicas)
                   function actualizarTodosFiltros() {{
                       // Actualizar UI inmediatamente
@@ -834,6 +894,9 @@ jobs:
 
                       // Actualizar opciones de Muestra basadas en proyectos seleccionados
                       actualizarOpcionesMuestra();
+
+                      // Actualizar opciones de Mes basadas en proyectos, unidades y muestras seleccionados
+                      actualizarOpcionesMes();
 
                       // Actualizar tablas de forma asincrónica
                       requestAnimationFrame(actualizarTablas);
@@ -862,6 +925,12 @@ jobs:
                       actualizarTodosFiltros();
                   }}
 
+                  function removerMes(mes) {{
+                      mesesSeleccionados = mesesSeleccionados.filter(m => m !== mes);
+                      actualizarUIInmediata();
+                      requestAnimationFrame(actualizarTablas);
+                  }}
+
                   // Función para llenar dropdown con checkboxes
                   function llenarDropdown(dropdownElement, proyectos, onChangeCallback) {{
                       dropdownElement.innerHTML = '';
@@ -878,6 +947,36 @@ jobs:
                           label.className = 'filter-option-label';
                           label.htmlFor = checkbox.id;
                           label.textContent = proyecto;
+
+                          checkbox.addEventListener('change', () => {{
+                              // Cerrar dropdown PRIMERO (inmediato)
+                              dropdownElement.classList.remove('open');
+                              // Luego actualizar la UI
+                              onChangeCallback();
+                          }});
+
+                          option.appendChild(checkbox);
+                          option.appendChild(label);
+                          dropdownElement.appendChild(option);
+                      }});
+                  }}
+
+                  // Función para llenar dropdown con checkboxes de meses
+                  function llenarDropdownMeses(dropdownElement, meses, onChangeCallback) {{
+                      dropdownElement.innerHTML = '';
+                      meses.forEach((mes, index) => {{
+                          const option = document.createElement('div');
+                          option.className = 'filter-option';
+
+                          const checkbox = document.createElement('input');
+                          checkbox.type = 'checkbox';
+                          checkbox.value = mes.numero;
+                          checkbox.id = 'checkbox-' + dropdownElement.id + '-' + index;
+
+                          const label = document.createElement('label');
+                          label.className = 'filter-option-label';
+                          label.htmlFor = checkbox.id;
+                          label.textContent = mes.label;
 
                           checkbox.addEventListener('change', () => {{
                               // Cerrar dropdown PRIMERO (inmediato)
@@ -1429,17 +1528,65 @@ jobs:
                       filterDropdownUnidadIncumplimientos.classList.remove('open');
                   }});
 
+                  // Listeners para botones de filtro de Mes
+                  filterBtnMesConsolidado.addEventListener('click', () => {{
+                      filterDropdownMesConsolidado.classList.toggle('open');
+                      filterDropdownMesAlertas.classList.remove('open');
+                      filterDropdownMesIncumplimientos.classList.remove('open');
+                      filterDropdownConsolidado.classList.remove('open');
+                      filterDropdownAlertas.classList.remove('open');
+                      filterDropdownIncumplimientos.classList.remove('open');
+                      filterDropdownUnidadConsolidado.classList.remove('open');
+                      filterDropdownUnidadAlertas.classList.remove('open');
+                      filterDropdownUnidadIncumplimientos.classList.remove('open');
+                      filterDropdownMuestraConsolidado.classList.remove('open');
+                      filterDropdownMuestraAlertas.classList.remove('open');
+                      filterDropdownMuestraIncumplimientos.classList.remove('open');
+                  }});
+
+                  filterBtnMesAlertas.addEventListener('click', () => {{
+                      filterDropdownMesAlertas.classList.toggle('open');
+                      filterDropdownMesConsolidado.classList.remove('open');
+                      filterDropdownMesIncumplimientos.classList.remove('open');
+                      filterDropdownConsolidado.classList.remove('open');
+                      filterDropdownAlertas.classList.remove('open');
+                      filterDropdownIncumplimientos.classList.remove('open');
+                      filterDropdownUnidadConsolidado.classList.remove('open');
+                      filterDropdownUnidadAlertas.classList.remove('open');
+                      filterDropdownUnidadIncumplimientos.classList.remove('open');
+                      filterDropdownMuestraConsolidado.classList.remove('open');
+                      filterDropdownMuestraAlertas.classList.remove('open');
+                      filterDropdownMuestraIncumplimientos.classList.remove('open');
+                  }});
+
+                  filterBtnMesIncumplimientos.addEventListener('click', () => {{
+                      filterDropdownMesIncumplimientos.classList.toggle('open');
+                      filterDropdownMesConsolidado.classList.remove('open');
+                      filterDropdownMesAlertas.classList.remove('open');
+                      filterDropdownConsolidado.classList.remove('open');
+                      filterDropdownAlertas.classList.remove('open');
+                      filterDropdownIncumplimientos.classList.remove('open');
+                      filterDropdownUnidadConsolidado.classList.remove('open');
+                      filterDropdownUnidadAlertas.classList.remove('open');
+                      filterDropdownUnidadIncumplimientos.classList.remove('open');
+                      filterDropdownMuestraConsolidado.classList.remove('open');
+                      filterDropdownMuestraAlertas.classList.remove('open');
+                      filterDropdownMuestraIncumplimientos.classList.remove('open');
+                  }});
+
                   // Función para restablecer todos los filtros
                   function restablecerFiltros() {{
                       proyectosSeleccionados = [];
                       unidadesEstructuralesSeleccionadas = [];
                       muestrasSeleccionadas = [];
+                      mesesSeleccionados = [];
                       paginaConsolidado = 1;
                       paginaAlertas = 1;
                       paginaIncumplimientos = 1;
                       actualizarUIInmediata();
                       actualizarOpcionesUnidadEstructural();
                       actualizarOpcionesMuestra();
+                      actualizarOpcionesMes();
                       requestAnimationFrame(actualizarTablas);
                   }}
 
@@ -1461,6 +1608,12 @@ jobs:
                           filterDropdownUnidadConsolidado.classList.remove('open');
                           filterDropdownUnidadAlertas.classList.remove('open');
                           filterDropdownUnidadIncumplimientos.classList.remove('open');
+                          filterDropdownMuestraConsolidado.classList.remove('open');
+                          filterDropdownMuestraAlertas.classList.remove('open');
+                          filterDropdownMuestraIncumplimientos.classList.remove('open');
+                          filterDropdownMesConsolidado.classList.remove('open');
+                          filterDropdownMesAlertas.classList.remove('open');
+                          filterDropdownMesIncumplimientos.classList.remove('open');
                       }}
                   }});
 
