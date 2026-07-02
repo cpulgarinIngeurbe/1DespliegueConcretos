@@ -308,12 +308,17 @@ jobs:
                               <button class="filter-btn" id="filterBtnMesIncumplimientos" style="display: none;">Filtrar por Mes</button>
                               <div class="filter-dropdown" id="filterDropdownMesIncumplimientos"></div>
                           </div>
+                          <div style="display: inline-block; position: relative;">
+                              <button class="filter-btn" id="filterBtnFcIncumplimientos" style="display: none;">Filtrar por f'c (MPA)</button>
+                              <div class="filter-dropdown" id="filterDropdownFcIncumplimientos"></div>
+                          </div>
                           <button class="filter-btn reset-btn" id="resetBtnIncumplimientos" style="align-self: center; margin-right: auto; display: none;">Restablecer Filtros</button>
                           <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
                               <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsUnidadIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsMuestraIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsMesIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsFcIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
                       <div class="analytics-wrapper">
@@ -371,12 +376,17 @@ jobs:
                               <button class="filter-btn" id="filterBtnMesAlertas" style="display: none;">Filtrar por Mes</button>
                               <div class="filter-dropdown" id="filterDropdownMesAlertas"></div>
                           </div>
+                          <div style="display: inline-block; position: relative;">
+                              <button class="filter-btn" id="filterBtnFcAlertas" style="display: none;">Filtrar por f'c (MPA)</button>
+                              <div class="filter-dropdown" id="filterDropdownFcAlertas"></div>
+                          </div>
                           <button class="filter-btn" id="resetBtnAlertas" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
                           <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
                               <div class="filter-tags" id="filterTagsAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsUnidadAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsMuestraAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsMesAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsFcAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
                       <div id="tableSectionAlertas" class="table-section">
@@ -406,12 +416,17 @@ jobs:
                               <button class="filter-btn" id="filterBtnMesConsolidado" style="display: none;">Filtrar por Mes</button>
                               <div class="filter-dropdown" id="filterDropdownMesConsolidado"></div>
                           </div>
+                          <div style="display: inline-block; position: relative;">
+                              <button class="filter-btn" id="filterBtnFcConsolidado" style="display: none;">Filtrar por f'c (MPA)</button>
+                              <div class="filter-dropdown" id="filterDropdownFcConsolidado"></div>
+                          </div>
                           <button class="filter-btn" id="resetBtnConsolidado" style="margin-left: auto; align-self: center;">Restablecer Filtros</button>
                           <div style="flex-basis: 100%; display: flex; gap: 12px; flex-wrap: wrap;">
                               <div class="filter-tags" id="filterTagsConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsUnidadConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsMuestraConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsMesConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsFcConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
                       <div id="tableSectionConsolidado" class="table-section">
