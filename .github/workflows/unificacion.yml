@@ -558,59 +558,58 @@ jobs:
           print(f'\n[*] Creando archivo Incumplimientos.xlsx...')
           archivo_incumplimientos = os.path.join(ruta_desplegable, "Incumplimientos.xlsx")
 
-          if 'Diferencia (MPa)' in df_unificado.columns and 'Cilindro N°' in df_unificado.columns and 'Edad (días)' in df_unificado.columns:
+          if 'Diferencia (MPa)' in df_unificado.columns and 'Cilindro N°' in df_unificado.columns and 'Edad (días)' in df_unificado.columns and 'Proyecto' in df_unificado.columns:
               # Paso 1: Convertir Edad (días) a numérico
               df_unificado['Edad (días)'] = pd.to_numeric(df_unificado['Edad (días)'], errors='coerce')
 
               # Paso 2: Filtrar por Edad >= 28
               df_unificado_edad_28 = df_unificado[df_unificado['Edad (días)'] >= 28].copy()
 
-              # Paso 3: Identificar cilindros con Diferencia (MPa) < 0 en el subset de Edad >= 28
-              cilindros_incumplimiento = df_unificado_edad_28[df_unificado_edad_28['Diferencia (MPa)'] < 0]['Cilindro N°'].unique()
-              print(f'  [DEBUG] Cilindros identificados con diferencia negativa (Edad >= 28): {len(cilindros_incumplimiento)}')
-              print(f'  [DEBUG] Cilindros: {cilindros_incumplimiento[:10]}')  # Mostrar primeros 10
+              # Paso 3: Identificar grupos (Proyecto + Cilindro N° + Edad) con al menos UN registro con Diferencia < 0
+              df_unificado_edad_28['Diferencia (MPa)'] = pd.to_numeric(df_unificado_edad_28['Diferencia (MPa)'], errors='coerce')
 
-              # Paso 4: Incluir TODOS los registros de esos cilindros (solo con Edad >= 28)
-              df_incumplimientos = df_unificado_edad_28[df_unificado_edad_28['Cilindro N°'].isin(cilindros_incumplimiento)].copy()
+              grupos_incumplimiento = df_unificado_edad_28[df_unificado_edad_28['Diferencia (MPa)'] < 0].groupby(['Proyecto', 'Cilindro N°', 'Edad (días)']).size().reset_index(name='count')
+              grupos_incumplimiento_list = [(row['Proyecto'], row['Cilindro N°'], row['Edad (días)']) for _, row in grupos_incumplimiento.iterrows()]
+
+              print(f'  [DEBUG] Grupos (Proyecto + Cilindro N° + Edad) identificados con diferencia negativa: {len(grupos_incumplimiento_list)}')
+              print(f'  [DEBUG] Primeros 10 grupos: {grupos_incumplimiento_list[:10]}')
+
+              # Paso 4: Incluir TODOS los registros de esos grupos (Proyecto + Cilindro N° + Edad)
+              df_incumplimientos = pd.DataFrame()
+              for proyecto, cilindro, edad in grupos_incumplimiento_list:
+                  grupo_registros = df_unificado_edad_28[
+                      (df_unificado_edad_28['Proyecto'] == proyecto) &
+                      (df_unificado_edad_28['Cilindro N°'] == cilindro) &
+                      (df_unificado_edad_28['Edad (días)'] == edad)
+                  ].copy()
+                  df_incumplimientos = pd.concat([df_incumplimientos, grupo_registros], ignore_index=False)
 
               cantidad_incumplimientos = len(df_incumplimientos)
-              print(f'  [DEBUG] Registros totales encontrados para esos cilindros (Edad = 28): {cantidad_incumplimientos}')
+              print(f'  [DEBUG] Registros totales encontrados para esos grupos: {cantidad_incumplimientos}')
 
               if cantidad_incumplimientos > 0:
-                  # Ordenar por Proyecto, Cilindro N°, y Toma (más reciente a más antigua)
-                  print(f'\n[*] Ordenando por Proyecto + Cilindro N° y Toma (fecha más reciente primero)...')
+                  # Ordenar por Proyecto, Cilindro N°, Edad (días) y Toma (más reciente a más antigua)
+                  print(f'\n[*] Ordenando por Proyecto + Cilindro N° + Edad (días) y Toma (fecha más reciente primero)...')
                   if 'Toma' in df_incumplimientos.columns:
                       # Convertir Toma a datetime para ordenamiento correcto
                       df_incumplimientos['Toma_temp'] = pd.to_datetime(df_incumplimientos['Toma'], format='%d-%m-%Y', errors='coerce')
                       df_incumplimientos = df_incumplimientos.sort_values(
-                          by=['Proyecto', 'Cilindro N°', 'Toma_temp'],
-                          ascending=[True, True, False]
+                          by=['Proyecto', 'Cilindro N°', 'Edad (días)', 'Toma_temp'],
+                          ascending=[True, True, True, False]
                       ).reset_index(drop=True)
                       df_incumplimientos.drop('Toma_temp', axis=1, inplace=True)
                       print(f'  [+] ✅ Ordenamiento aplicado exitosamente')
                   else:
                       df_incumplimientos = df_incumplimientos.sort_values(
-                          by=['Proyecto', 'Cilindro N°'],
-                          ascending=[True, True]
+                          by=['Proyecto', 'Cilindro N°', 'Edad (días)'],
+                          ascending=[True, True, True]
                       ).reset_index(drop=True)
                       print(f'  [!] Advertencia: Columna "Toma" no encontrada para ordenamiento por fecha')
 
-                  # Validar que cada grupo (Proyecto + Cilindro N°) tenga al menos un valor negativo
-                  print(f'\n[*] Validando grupos (Proyecto + Cilindro N°) con diferencia negativa...')
-                  df_incumplimientos['Diferencia (MPa)'] = pd.to_numeric(df_incumplimientos['Diferencia (MPa)'], errors='coerce')
-                  grupos_validos = []
-                  for (proyecto, cilindro), grupo in df_incumplimientos.groupby(['Proyecto', 'Cilindro N°']):
-                      tiene_negativo = (grupo['Diferencia (MPa)'] < 0).any()
-                      if tiene_negativo:
-                          grupos_validos.append((proyecto, cilindro))
-
-                  # Crear máscara para los grupos válidos
-                  mask = df_incumplimientos.apply(lambda row: (row['Proyecto'], row['Cilindro N°']) in grupos_validos, axis=1)
-                  df_incumplimientos_validado = df_incumplimientos[mask].copy()
-                  registros_eliminados = cantidad_incumplimientos - len(df_incumplimientos_validado)
-                  print(f'  [+] Grupos (Proyecto + Cilindro) validados: {len(grupos_validos)}')
-                  print(f'  [+] Registros eliminados (sin negativos): {registros_eliminados}')
-                  df_incumplimientos = df_incumplimientos_validado
+                  # Nota: La validación ya se hizo al identificar grupos_incumplimiento (solo grupos con Diferencia < 0)
+                  print(f'\n[*] Validación: Solo se incluyen grupos (Proyecto + Cilindro N° + Edad) con al menos un incumplimiento')
+                  print(f'  [+] Grupos validados: {len(grupos_incumplimiento_list)}')
+                  print(f'  [+] Registros totales a incluir: {cantidad_incumplimientos}')
 
                   # Crear columnas "Resistencia Promedio (MPa)" y "No. Registros Promedio" - se hará después de agregar cilindros nuevos
 
