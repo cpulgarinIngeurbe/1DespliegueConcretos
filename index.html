@@ -1292,11 +1292,29 @@
                         if (header === 'Resistencia Mínima (MPa)' && valor !== '') {
                             const resMin = parseFloat(valor);
                             const resPromedio = parseFloat(row['Resistencia Promedio (MPa)'] || 0);
-                            if (!isNaN(resMin) && !isNaN(resPromedio) && resMin > resPromedio) td.classList.add('yellow-bg');
+                            if (!isNaN(resMin) && !isNaN(resPromedio)) {
+                                if (resMin > resPromedio) {
+                                    td.classList.add('red-negative');  // ROJO: Incumplimiento (Res.Min > Res.Promedio)
+                                } else {
+                                    td.classList.add('green-bg');  // VERDE: Cumple (Res.Min <= Res.Promedio)
+                                }
+                            }
                         }
 
-                        const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia Teórica (MPa)'];
-                        if (columnasVerdes.includes(header)) td.classList.add('green-bg');
+                        if (header === 'Promedio Móvil (MPa)' && valor !== '') {
+                            const promedioMovil = parseFloat(valor);
+                            const fc = parseFloat(row['Resistencia nominal (MPa)'] || 0);
+                            if (!isNaN(promedioMovil) && !isNaN(fc)) {
+                                if (promedioMovil < fc) {
+                                    td.classList.add('red-negative');  // ROJO: Incumplimiento (Prom.Móvil < f'c)
+                                } else {
+                                    td.classList.add('green-bg');  // VERDE: Cumple (Prom.Móvil >= f'c)
+                                }
+                            }
+                        } else {
+                            const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia Teórica (MPa)'];
+                            if (columnasVerdes.includes(header)) td.classList.add('green-bg');
+                        }
 
                         tr.appendChild(td);
                     });
@@ -1691,4 +1709,4 @@
     </script>
 </body>
 </html>
-<!-- Generated: 2026-07-03T17:30:09.697683 -->
+<!-- Generated: 2026-07-03T17:41:37.530960 -->
