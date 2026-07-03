@@ -1496,7 +1496,13 @@ jobs:
                                   if (header === 'Resistencia Mínima (MPa)' && valor !== '') {{
                                       const resMin = parseFloat(valor);
                                       const resPromedio = parseFloat(row['Resistencia Promedio (MPa)'] || 0);
-                                      if (!isNaN(resMin) && !isNaN(resPromedio) && resMin > resPromedio) td.classList.add('yellow-bg');
+                                      if (!isNaN(resMin) && !isNaN(resPromedio)) {{
+                                          if (resMin > resPromedio) {{
+                                              td.classList.add('red-negative');  // ROJO: Incumplimiento (Res.Min > Res.Promedio)
+                                          }} else {{
+                                              td.classList.add('green-bg');  // VERDE: Cumple (Res.Min <= Res.Promedio)
+                                          }}
+                                      }}
                                   }}
 
                                   const columnasVerdes = ['Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia Teórica (MPa)'];
