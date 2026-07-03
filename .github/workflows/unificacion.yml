@@ -778,16 +778,11 @@ jobs:
                   else:
                       print(f'  [!] Advertencia: Columna "Resistencia nominal (MPa)" no encontrada')
 
-                  # Filtro final: eliminar registros con Diferencia (MPa) > 0
-                  print(f'\n[*] Aplicando filtro final: eliminando registros con Diferencia (MPa) > 0...')
-                  df_incumplimientos['Diferencia (MPa)'] = pd.to_numeric(df_incumplimientos['Diferencia (MPa)'], errors='coerce')
-                  registros_antes_final = len(df_incumplimientos)
-                  df_incumplimientos = df_incumplimientos[df_incumplimientos['Diferencia (MPa)'] <= 0].copy()
-                  registros_despues_final = len(df_incumplimientos)
-                  registros_eliminados_final = registros_antes_final - registros_despues_final
-                  print(f'  [+] Registros antes del filtro final: {registros_antes_final}')
-                  print(f'  [+] Registros después del filtro final: {registros_despues_final}')
-                  print(f'  [+] Registros eliminados (Diferencia > 0): {registros_eliminados_final}')
+                  # Nota: NO se aplica filtro final porque se quieren traer TODOS los registros del grupo
+                  # incluso los que tienen Diferencia (MPa) > 0 (que cumplen)
+                  # Solo se incluyen grupos donde hay al menos UN incumplimiento (Diferencia <= 0)
+                  print(f'\n[*] Incluyen TODOS los registros de grupos con incumplimiento')
+                  print(f'  [+] Esto incluye registros con Diferencia (MPa) > 0 que sí cumplen')
 
                   # Guardar archivo de incumplimientos
                   df_incumplimientos.to_excel(archivo_incumplimientos, index=False)
