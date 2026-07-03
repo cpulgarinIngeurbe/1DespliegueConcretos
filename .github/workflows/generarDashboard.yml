@@ -191,6 +191,33 @@ jobs:
                   if col in df_incumplimientos.columns:
                       df_incumplimientos[col] = df_incumplimientos[col].apply(lambda x: round(x, 2) if pd.notna(x) else x)
 
+              # Crear columna "Cumplimiento normativo" basada en Promedio Móvil y Resistencia Mínima
+              print(f'\n[*] Creando columna "Cumplimiento normativo"...')
+              def evaluar_cumplimiento(row):
+                  cumple_promedio_movil = True
+                  cumple_resistencia_minima = True
+
+                  # Condición 1: Promedio Móvil (MPa) >= f'c (Resistencia nominal)
+                  if pd.notna(row.get('Promedio Móvil (MPa)')) and pd.notna(row.get('Resistencia nominal (MPa)')):
+                      promedio_movil = float(row.get('Promedio Móvil (MPa)', 0))
+                      fc = float(row.get('Resistencia nominal (MPa)', 0))
+                      cumple_promedio_movil = promedio_movil >= fc
+
+                  # Condición 2: Resistencia Mínima (MPa) <= Resistencia Promedio (MPa)
+                  if pd.notna(row.get('Resistencia Mínima (MPa)')) and pd.notna(row.get('Resistencia Promedio (MPa)')):
+                      resistencia_minima = float(row.get('Resistencia Mínima (MPa)', 0))
+                      resistencia_promedio = float(row.get('Resistencia Promedio (MPa)', 0))
+                      cumple_resistencia_minima = resistencia_minima <= resistencia_promedio
+
+                  # Si AMBAS condiciones se cumplen, es "Aprobado", sino "Rechazado"
+                  return 'Aprobado' if (cumple_promedio_movil and cumple_resistencia_minima) else 'Rechazado'
+
+              df_incumplimientos['Cumplimiento normativo'] = df_incumplimientos.apply(evaluar_cumplimiento, axis=1)
+              print(f'  [+] ✅ Columna "Cumplimiento normativo" creada')
+              aprobados = (df_incumplimientos['Cumplimiento normativo'] == 'Aprobado').sum()
+              rechazados = (df_incumplimientos['Cumplimiento normativo'] == 'Rechazado').sum()
+              print(f'  [+] Aprobados: {aprobados}, Rechazados: {rechazados}')
+
               datos_tabs['incumplimientos'] = df_incumplimientos.to_json(orient='records')
               print(f'[+] Incumplimientos cargado: {len(df_incumplimientos)} registros')
           else:
