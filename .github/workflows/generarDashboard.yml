@@ -1273,6 +1273,9 @@ jobs:
                           if (datosParaHeaders.length > 0) {{
                               const headers = obtenerColumnasOrdenadas(datosParaHeaders, columnasOcultasConsolidado);
                               const headerRow = document.createElement('tr');
+                              const thId = document.createElement('th');
+                              thId.textContent = 'ID';
+                              headerRow.appendChild(thId);
                               headers.forEach(header => {{
                                   const th = document.createElement('th');
                                   th.textContent = mapearNombreColumna(header);
@@ -1364,6 +1367,9 @@ jobs:
                           if (datosParaHeaders.length > 0) {{
                               const headers = obtenerColumnasOrdenadas(datosParaHeaders, columnasOcultasAlertas);
                               const headerRow = document.createElement('tr');
+                              const thId = document.createElement('th');
+                              thId.textContent = 'ID';
+                              headerRow.appendChild(thId);
                               headers.forEach(header => {{
                                   const th = document.createElement('th');
                                   th.textContent = mapearNombreColumna(header);
@@ -1443,6 +1449,9 @@ jobs:
                           if (datosParaHeaders.length > 0) {{
                               const headers = obtenerColumnasOrdenadas(datosParaHeaders, columnasOcultasIncumplimientos);
                               const headerRow = document.createElement('tr');
+                              const thId = document.createElement('th');
+                              thId.textContent = 'ID';
+                              headerRow.appendChild(thId);
                               headers.forEach(header => {{
                                   const th = document.createElement('th');
                                   th.textContent = mapearNombreColumna(header);
