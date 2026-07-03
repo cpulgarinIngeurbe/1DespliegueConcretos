@@ -636,14 +636,13 @@ jobs:
                           print(f'  [+] Cilindros nuevos a agregar: {len(cilindros_nuevos)}')
 
                           # Extraer registros de cilindros nuevos de df_unificado_edad_28
-                          df_nuevos_cilindros = df_unificado_edad_28.copy()
+                          df_nuevos_cilindros = pd.DataFrame()
                           for proyecto, cilindro in cilindros_nuevos:
                               df_nuevo = df_unificado_edad_28[(df_unificado_edad_28['Proyecto'] == proyecto) & (df_unificado_edad_28['Cilindro N°'] == cilindro)]
                               df_nuevos_cilindros = pd.concat([df_nuevos_cilindros, df_nuevo], ignore_index=False)
 
                           # Eliminar duplicados manteniendo solo los nuevos
                           df_nuevos_cilindros = df_nuevos_cilindros.drop_duplicates(subset=['Proyecto', 'Cilindro N°', 'Edad (días)'], keep='first')
-                          df_nuevos_cilindros = df_nuevos_cilindros[~df_nuevos_cilindros.apply(tuple, axis=1).isin(cilindros_actuales)]
 
                           # Agregar los nuevos registros
                           if len(df_nuevos_cilindros) > 0:
@@ -736,19 +735,29 @@ jobs:
                       columnas_join_existentes = [col for col in columnas_join if col in df_incumplimientos.columns and col in df_alertas.columns]
 
                       if len(columnas_join_existentes) > 0:
-                          # Crear merge
+                          # Crear merge - eliminar duplicados en df_alertas primero
                           df_merge = df_alertas[columnas_join_existentes + ['Promedio Móvil (MPa)']].copy()
+                          df_merge = df_merge.drop_duplicates(subset=columnas_join_existentes, keep='first')
+
+                          registros_antes_merge = len(df_incumplimientos)
                           df_incumplimientos = df_incumplimientos.merge(
                               df_merge,
                               on=columnas_join_existentes,
                               how='left',
                               suffixes=('', '_alertas')
                           )
+                          registros_despues_merge = len(df_incumplimientos)
 
                           # Si no existe la columna, crearla
                           if 'Promedio Móvil (MPa)_alertas' in df_incumplimientos.columns:
                               df_incumplimientos['Promedio Móvil (MPa)'] = df_incumplimientos['Promedio Móvil (MPa)_alertas']
                               df_incumplimientos.drop('Promedio Móvil (MPa)_alertas', axis=1, inplace=True)
+
+                          # Eliminar registros duplicados si el merge creó duplicados
+                          if registros_despues_merge > registros_antes_merge:
+                              print(f'  [!] Advertencia: Merge creó duplicados ({registros_antes_merge} → {registros_despues_merge})')
+                              df_incumplimientos = df_incumplimientos.drop_duplicates(subset=['Proyecto', 'Cilindro N°', 'Localización', 'Toma', 'Edad (días)'], keep='first')
+                              print(f'  [+] Duplicados eliminados: {registros_despues_merge - len(df_incumplimientos)}')
 
                           print(f'  [+] ✅ Promedio Móvil (MPa) traído desde ConsolidadoAlertas')
                       else:
