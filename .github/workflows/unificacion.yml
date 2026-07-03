@@ -792,9 +792,9 @@ jobs:
                   # Guardar archivo de incumplimientos
                   df_incumplimientos.to_excel(archivo_incumplimientos, index=False)
                   print(f'  [+] ✅ Archivo de incumplimientos creado: {archivo_incumplimientos}')
-                  print(f'  [+] Cilindros con incumplimiento (Diferencia < 0): {len(cilindros_incumplimiento)}')
-                  print(f'  [+] Registros totales de esos cilindros: {cantidad_incumplimientos}')
-                  print(f'  [+] Tamaño: {cantidad_incumplimientos} registros x {len(df_incumplimientos.columns)} columnas')
+                  print(f'  [+] Grupos (Proyecto + Cilindro N° + Edad) con incumplimiento: {len(grupos_incumplimiento_list)}')
+                  print(f'  [+] Registros totales de esos grupos: {len(df_incumplimientos)}')
+                  print(f'  [+] Tamaño: {len(df_incumplimientos)} registros x {len(df_incumplimientos.columns)} columnas')
               else:
                   print(f'  [+] ℹ️ No hay registros con incumplimiento (Diferencia < 0)')
           else:
