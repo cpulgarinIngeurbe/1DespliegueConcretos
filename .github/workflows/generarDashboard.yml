@@ -540,7 +540,7 @@ jobs:
                   // Columnas a ocultar por tabla
                   const columnasOcultasConsolidado = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Fecha Primera Aparición', 'Mes', 'Diferencia (MPa)'];
                   const columnasOcultasAlertas = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Estado', 'Fecha Primera Aparición', 'Mes', 'Diferencia (MPa)'];
-                  const columnasOcultasIncumplimientos = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Estado', 'Fecha Primera Aparición', 'Mes', 'Diferencia (MPa)'];
+                  const columnasOcultasIncumplimientos = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Estado', 'Fecha Primera Aparición', 'Mes', 'Diferencia (MPa)', 'Resistencia (MPa)'];
                   let paginaConsolidado = 1;
                   let paginaAlertas = 1;
                   let paginaIncumplimientos = 1;
