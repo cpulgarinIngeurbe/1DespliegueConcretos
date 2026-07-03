@@ -1438,6 +1438,7 @@ jobs:
 
                   // Función para generar tabla de Incumplimientos
                   function generarTablaIncumplimientos(datos, datosCompletos = null) {{
+                      console.log('[DEBUG] generarTablaIncumplimientos - datos.length:', datos.length, 'datosActualesIncumplimientos.length:', datosActualesIncumplimientos.length);
                       const thead = dataTableIncumplimientos.querySelector('thead');
                       const tbody = dataTableIncumplimientos.querySelector('tbody');
 
