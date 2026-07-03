@@ -1030,6 +1030,18 @@
         }
 
         // Función para mapear nombres de columnas a sus etiquetas de visualización
+        // Orden deseado de las columnas
+        const ordenColumnas = ['ID Vista', 'Proyecto', 'UNIDAD ESTRUCTURAL', 'Localización', 'Cilindro N°', 'Edad (días)', 'Código de mezcla', 'Tipo de mezcla', 'TIPO ELEMENTO', 'Toma', 'Rotura', 'Mes', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Diferencia (MPa)', 'Resistencia Teórica (MPa)', 'Resistencia Promedio (MPa)', 'No. Registros Promedio', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)'];
+
+        // Función para obtener columnas en el orden deseado
+        function obtenerColumnasOrdenadas(datos, columnasOcultas) {
+            const allHeaders = Object.keys(datos[0]);
+            const headersFiltrados = allHeaders.filter(h => !columnasOcultas.includes(h));
+            return ordenColumnas.filter(col => headersFiltrados.includes(col)).concat(
+                headersFiltrados.filter(col => !ordenColumnas.includes(col))
+            );
+        }
+
         function mapearNombreColumna(nombreOriginal) {
             const mapeo = {
                 'Toma': 'FECHA TOMA',
@@ -1055,11 +1067,8 @@
             if (thead.innerHTML === '') {
                 const datosParaHeaders = datosCompletos || datos || datosConsolidado;
                 if (datosParaHeaders.length > 0) {
-                    const headers = Object.keys(datosParaHeaders[0]).filter(h => !columnasOcultasConsolidado.includes(h));
+                    const headers = obtenerColumnasOrdenadas(datosParaHeaders, columnasOcultasConsolidado);
                     const headerRow = document.createElement('tr');
-                    const thId = document.createElement('th');
-                    thId.textContent = 'ID';
-                    headerRow.appendChild(thId);
                     headers.forEach(header => {
                         const th = document.createElement('th');
                         th.textContent = mapearNombreColumna(header);
@@ -1071,8 +1080,7 @@
 
             // Solo agregar filas si hay datos
             if (datos.length > 0) {
-                const allHeaders = Object.keys(datos[0]);
-                const headers = allHeaders.filter(h => !columnasOcultasConsolidado.includes(h));
+                const headers = obtenerColumnasOrdenadas(datos, columnasOcultasConsolidado);
                 const fragment = document.createDocumentFragment();
                 let grupoAnterior = null;
                 const inicioRegistro = (paginaConsolidado - 1) * REGISTROS_POR_PAGINA + 1;
@@ -1150,11 +1158,8 @@
             if (thead.innerHTML === '') {
                 const datosParaHeaders = datosCompletos || datos || datosAlertas;
                 if (datosParaHeaders.length > 0) {
-                    const headers = Object.keys(datosParaHeaders[0]).filter(h => !columnasOcultasAlertas.includes(h));
+                    const headers = obtenerColumnasOrdenadas(datosParaHeaders, columnasOcultasAlertas);
                     const headerRow = document.createElement('tr');
-                    const thId = document.createElement('th');
-                    thId.textContent = 'ID';
-                    headerRow.appendChild(thId);
                     headers.forEach(header => {
                         const th = document.createElement('th');
                         th.textContent = mapearNombreColumna(header);
@@ -1166,8 +1171,7 @@
 
             // Solo agregar filas si hay datos
             if (datos.length > 0) {
-                const allHeaders = Object.keys(datos[0]);
-                const headers = allHeaders.filter(h => !columnasOcultasAlertas.includes(h));
+                const headers = obtenerColumnasOrdenadas(datos, columnasOcultasAlertas);
                 const fragment = document.createDocumentFragment();
                 let grupoAnterior = null;
                 const inicioRegistro = (paginaAlertas - 1) * REGISTROS_POR_PAGINA + 1;
@@ -1233,11 +1237,8 @@
             if (thead.innerHTML === '') {
                 const datosParaHeaders = datosCompletos || datos || datosIncumplimientos;
                 if (datosParaHeaders.length > 0) {
-                    const headers = Object.keys(datosParaHeaders[0]).filter(h => !columnasOcultasIncumplimientos.includes(h));
+                    const headers = obtenerColumnasOrdenadas(datosParaHeaders, columnasOcultasIncumplimientos);
                     const headerRow = document.createElement('tr');
-                    const thId = document.createElement('th');
-                    thId.textContent = 'ID';
-                    headerRow.appendChild(thId);
                     headers.forEach(header => {
                         const th = document.createElement('th');
                         th.textContent = mapearNombreColumna(header);
@@ -1249,8 +1250,7 @@
 
             // Solo agregar filas si hay datos
             if (datos.length > 0) {
-                const allHeaders = Object.keys(datos[0]);
-                const headers = allHeaders.filter(h => !columnasOcultasIncumplimientos.includes(h));
+                const headers = obtenerColumnasOrdenadas(datos, columnasOcultasIncumplimientos);
                 const fragment = document.createDocumentFragment();
                 let grupoAnterior = null;
                 const inicioRegistro = (paginaIncumplimientos - 1) * REGISTROS_POR_PAGINA + 1;
@@ -1681,4 +1681,4 @@
     </script>
 </body>
 </html>
-<!-- Generated: 2026-07-03T12:38:43.815376 -->
+<!-- Generated: 2026-07-03T12:43:34.710636 -->
