@@ -784,6 +784,23 @@ jobs:
                   print(f'\n[*] Incluyen TODOS los registros de grupos con incumplimiento')
                   print(f'  [+] Esto incluye registros con Diferencia (MPa) > 0 que sí cumplen')
 
+                  # Eliminar duplicados basados en el grupo: Proyecto + UNIDAD ESTRUCTURAL + Edad (días) + Resistencia nominal (MPa) + Resistencia Promedio (MPa) + Promedio Móvil (MPa) + Resistencia Mínima (MPa)
+                  print(f'\n[*] Eliminando registros duplicados por grupo...')
+                  columnas_agrupacion = ['Proyecto', 'UNIDAD ESTRUCTURAL', 'Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)']
+                  columnas_agrupacion_existentes = [col for col in columnas_agrupacion if col in df_incumplimientos.columns]
+
+                  registros_antes_dedup = len(df_incumplimientos)
+                  if len(columnas_agrupacion_existentes) == len(columnas_agrupacion):
+                      df_incumplimientos = df_incumplimientos.drop_duplicates(subset=columnas_agrupacion_existentes, keep='first')
+                      registros_despues_dedup = len(df_incumplimientos)
+                      registros_eliminados_dedup = registros_antes_dedup - registros_despues_dedup
+                      print(f'  [+] Registros antes de eliminar duplicados: {registros_antes_dedup}')
+                      print(f'  [+] Registros después de eliminar duplicados: {registros_despues_dedup}')
+                      print(f'  [+] Registros duplicados eliminados: {registros_eliminados_dedup}')
+                  else:
+                      print(f'  [!] Advertencia: No se pudieron eliminar duplicados (columnas faltantes)')
+                      print(f'  [!] Columnas faltantes: {set(columnas_agrupacion) - set(columnas_agrupacion_existentes)}')
+
                   # Guardar archivo de incumplimientos
                   df_incumplimientos.to_excel(archivo_incumplimientos, index=False)
                   print(f'  [+] ✅ Archivo de incumplimientos creado: {archivo_incumplimientos}')
