@@ -784,9 +784,9 @@ jobs:
                   print(f'\n[*] Incluyen TODOS los registros de grupos con incumplimiento')
                   print(f'  [+] Esto incluye registros con Diferencia (MPa) > 0 que sí cumplen')
 
-                  # Eliminar duplicados basados en el grupo: Proyecto + UNIDAD ESTRUCTURAL + Edad (días) + Resistencia nominal (MPa) + Resistencia Promedio (MPa) + Promedio Móvil (MPa) + Resistencia Mínima (MPa)
+                  # Eliminar duplicados basados en el grupo: Proyecto + Edad (días) + Resistencia nominal (MPa) + Resistencia Promedio (MPa) + Promedio Móvil (MPa) + Resistencia Mínima (MPa)
                   print(f'\n[*] Eliminando registros duplicados por grupo...')
-                  columnas_agrupacion = ['Proyecto', 'UNIDAD ESTRUCTURAL', 'Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)']
+                  columnas_agrupacion = ['Proyecto', 'Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)']
                   columnas_agrupacion_existentes = [col for col in columnas_agrupacion if col in df_incumplimientos.columns]
 
                   registros_antes_dedup = len(df_incumplimientos)
