@@ -1235,7 +1235,7 @@ jobs:
 
                   // Función para mapear nombres de columnas a sus etiquetas de visualización
                   // Orden deseado de las columnas
-                  const ordenColumnas = ['ID Vista', 'Proyecto', 'UNIDAD ESTRUCTURAL', 'Localización', 'Cilindro N°', 'Edad (días)', 'Código de mezcla', 'Tipo de mezcla', 'TIPO ELEMENTO', 'Toma', 'Rotura', 'Mes', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Diferencia (MPa)', 'Resistencia Teórica (MPa)', 'Resistencia Promedio (MPa)', 'No. Registros Promedio', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)'];
+                  const ordenColumnas = ['Proyecto', 'UNIDAD ESTRUCTURAL', 'Localización', 'Cilindro N°', 'Edad (días)', 'Código de mezcla', 'Tipo de mezcla', 'TIPO ELEMENTO', 'Toma', 'Rotura', 'Mes', 'Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Diferencia (MPa)', 'Resistencia Teórica (MPa)', 'Resistencia Promedio (MPa)', 'No. Registros Promedio', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)'];
 
                   // Función para obtener columnas en el orden deseado
                   function obtenerColumnasOrdenadas(datos, columnasOcultas) {{
