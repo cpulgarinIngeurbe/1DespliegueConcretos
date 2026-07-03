@@ -538,9 +538,9 @@ jobs:
                   const REGISTROS_POR_PAGINA = 150;
 
                   // Columnas a ocultar por tabla
-                  const columnasOcultasConsolidado = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Fecha Primera Aparición'];
-                  const columnasOcultasAlertas = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Estado', 'Fecha Primera Aparición'];
-                  const columnasOcultasIncumplimientos = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Estado', 'Fecha Primera Aparición'];
+                  const columnasOcultasConsolidado = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Fecha Primera Aparición', 'Mes', 'Diferencia (MPa)'];
+                  const columnasOcultasAlertas = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Estado', 'Fecha Primera Aparición', 'Mes', 'Diferencia (MPa)'];
+                  const columnasOcultasIncumplimientos = ['Resistencia nominal (MPa) llave', 'Llave', 'Fecha Descarga', 'Estado', 'Fecha Primera Aparición', 'Mes', 'Diferencia (MPa)'];
                   let paginaConsolidado = 1;
                   let paginaAlertas = 1;
                   let paginaIncumplimientos = 1;
