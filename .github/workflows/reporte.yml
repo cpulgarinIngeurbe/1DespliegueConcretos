@@ -38,6 +38,13 @@ jobs:
           from datetime import datetime
           from openpyxl import load_workbook
 
+          # Cargar logo corporativo como base64
+          logo_path = "Visuales/inge.png"
+          logo_b64 = ""
+          if os.path.exists(logo_path):
+              with open(logo_path, "rb") as f:
+                  logo_b64 = base64.b64encode(f.read()).decode()
+
           # Configuración
           tenant_id = os.getenv('TENANT_ID')
           client_id = os.getenv('CLIENT_ID')
@@ -119,24 +126,156 @@ jobs:
                   # Enviar email
                   print(f'  [+] Enviando email a: {email_destino}')
 
+                  # Construir filas de la tabla de incumplimientos
+                  columnas_tabla = [
+                      'Cilindro N°', 'Código de mezcla', 'Tipo de mezcla', 'Localización',
+                      'Edad (días)', 'Resistencia nominal (MPa)', 'Resistencia (MPa)',
+                      'Resistencia (%)', 'Toma', 'Rotura', 'Estado'
+                  ]
+                  cols_disponibles = [c for c in columnas_tabla if c in df_proyecto.columns]
+                  df_tabla = df_proyecto[cols_disponibles].copy()
+
+                  filas_html = ""
+                  for i, (_, row) in enumerate(df_tabla.iterrows()):
+                      bg = "#f9fafb" if i % 2 == 0 else "#ffffff"
+                      resistencia_pct = row.get('Resistencia (%)', None)
+                      color_res = "#c0392b" if pd.notna(resistencia_pct) and resistencia_pct < 90 else "#58595B"
+                      celdas = ""
+                      for col in cols_disponibles:
+                          val = row[col]
+                          if pd.isna(val):
+                              val = "-"
+                          elif hasattr(val, 'strftime'):
+                              val = val.strftime('%d/%m/%Y')
+                          elif isinstance(val, float):
+                              val = f"{val:.1f}"
+                          estilo_celda = f'color:{color_res};font-weight:600;' if col == 'Resistencia (%)' else ''
+                          celdas += f'<td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;font-size:12px;color:#374151;{estilo_celda}">{val}</td>'
+                      filas_html += f'<tr style="background:{bg};">{celdas}</tr>'
+
+                  encabezados_html = "".join(
+                      f'<th style="padding:10px;text-align:left;font-size:11px;font-weight:700;color:#ffffff;background:#58595B;white-space:nowrap;">{col}</th>'
+                      for col in cols_disponibles
+                  )
+
+                  # Estadísticas resumen
+                  res_pct_col = df_proyecto.get('Resistencia (%)', pd.Series(dtype=float))
+                  criticos = int((res_pct_col < 85).sum()) if len(res_pct_col) > 0 else 0
+                  observacion = int(((res_pct_col >= 85) & (res_pct_col < 95)).sum()) if len(res_pct_col) > 0 else 0
+                  res_promedio = f"{res_pct_col.mean():.1f}%" if len(res_pct_col) > 0 else "N/A"
+
+                  logo_tag = f'<img src="data:image/png;base64,{logo_b64}" alt="INGEURBE" style="height:50px;" />' if logo_b64 else '<span style="font-size:22px;font-weight:700;color:#8DC63F;">INGEURBE</span>'
+
+                  html_correo = f"""<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:30px 0;">
+  <tr><td align="center">
+    <table width="720" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);max-width:720px;">
+
+      <!-- ENCABEZADO -->
+      <tr>
+        <td style="background:linear-gradient(135deg,#58595B 0%,#3a3b3d 100%);padding:28px 36px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td>{logo_tag}</td>
+              <td align="right" style="color:#ffffff;font-size:12px;opacity:0.8;">{fecha_actual}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- BANDA VERDE -->
+      <tr><td style="background:#8DC63F;height:5px;"></td></tr>
+
+      <!-- TÍTULO -->
+      <tr>
+        <td style="padding:28px 36px 16px;">
+          <h1 style="margin:0;font-size:22px;color:#58595B;font-weight:700;">Reporte de Incumplimientos</h1>
+          <p style="margin:6px 0 0;font-size:15px;color:#6b7280;">Proyecto: <strong style="color:#8DC63F;">{proyecto}</strong></p>
+        </td>
+      </tr>
+
+      <!-- TARJETAS RESUMEN -->
+      <tr>
+        <td style="padding:0 36px 24px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="32%" style="padding:0 6px 0 0;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px;border-left:4px solid #8DC63F;">
+                  <tr><td style="padding:14px 16px;">
+                    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;">Total Incumplimientos</div>
+                    <div style="font-size:26px;font-weight:700;color:#58595B;margin-top:4px;">{registros_proyecto}</div>
+                  </td></tr>
+                </table>
+              </td>
+              <td width="32%" style="padding:0 6px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px;border-left:4px solid #e67e22;">
+                  <tr><td style="padding:14px 16px;">
+                    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;">En Observación</div>
+                    <div style="font-size:26px;font-weight:700;color:#e67e22;margin-top:4px;">{observacion}</div>
+                  </td></tr>
+                </table>
+              </td>
+              <td width="32%" style="padding:0 0 0 6px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px;border-left:4px solid #c0392b;">
+                  <tr><td style="padding:14px 16px;">
+                    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;">Críticos (&lt;85%)</div>
+                    <div style="font-size:26px;font-weight:700;color:#c0392b;margin-top:4px;">{criticos}</div>
+                  </td></tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- TABLA -->
+      <tr>
+        <td style="padding:0 36px 28px;">
+          <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#58595B;text-transform:uppercase;letter-spacing:0.5px;">Detalle de Incumplimientos</p>
+          <div style="overflow-x:auto;border-radius:8px;border:1px solid #e5e7eb;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;min-width:600px;">
+              <thead><tr>{encabezados_html}</tr></thead>
+              <tbody>{filas_html}</tbody>
+            </table>
+          </div>
+          <p style="margin:10px 0 0;font-size:11px;color:#9ca3af;">
+            <span style="display:inline-block;width:10px;height:10px;background:#c0392b;border-radius:2px;margin-right:4px;"></span>Resistencia &lt; 90% &nbsp;|&nbsp;
+            El archivo Excel completo se adjunta a este correo.
+          </p>
+        </td>
+      </tr>
+
+      <!-- PIE -->
+      <tr>
+        <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 36px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="font-size:11px;color:#9ca3af;">
+                Este es un correo automático generado por el sistema de monitoreo de resistencia de concretos de INGEURBE.<br>
+                Por favor no responda este correo.
+              </td>
+              <td align="right" style="font-size:11px;color:#8DC63F;font-weight:700;white-space:nowrap;">
+                INGEURBE · Inspiración que construye
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body></html>"""
+
                   email_payload = {
                       'message': {
-                          'subject': f'Reporte de Incumplimientos - {proyecto} - {fecha_actual}',
+                          'subject': f'⚠️ Incumplimientos de Resistencia · {proyecto} · {datetime.now().strftime("%d/%m/%Y")}',
                           'body': {
                               'contentType': 'HTML',
-                              'content': f"""
-                              <html>
-                                  <body>
-                                      <h2>Reporte de Incumplimientos</h2>
-                                      <p><strong>Proyecto:</strong> {proyecto}</p>
-                                      <p><strong>Total de registros:</strong> {registros_proyecto}</p>
-                                      <p>Se adjunta el archivo de Incumplimientos filtrado para este proyecto.</p>
-                                      <p><strong>Fecha de generación:</strong> {fecha_actual}</p>
-                                      <p>---</p>
-                                      <p><em>Este es un correo automático generado por el sistema de CI/CD.</em></p>
-                                  </body>
-                              </html>
-                              """
+                              'content': html_correo
                           },
                           'toRecipients': [
                               {
