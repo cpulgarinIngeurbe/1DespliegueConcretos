@@ -37,6 +37,7 @@ jobs:
           import pandas as pd
           import re
           from datetime import datetime
+          from urllib.request import urlopen
 
           def extraer_unidad_estructural(localizacion):
               if pd.isna(localizacion):
@@ -80,11 +81,7 @@ jobs:
               except:
                   return ''
 
-          logo_path = "Visuales/inge.png"
-          logo_b64 = ""
-          if os.path.exists(logo_path):
-              with open(logo_path, "rb") as f:
-                  logo_b64 = base64.b64encode(f.read()).decode()
+          logo_url = "https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/inge.png"
 
           tenant_id = os.getenv('TENANT_ID')
           client_id = os.getenv('CLIENT_ID')
@@ -187,7 +184,7 @@ jobs:
                   criticos = int((res_pct_col < 85).sum()) if len(res_pct_col) > 0 else 0
                   observacion = int(((res_pct_col >= 85) & (res_pct_col < 95)).sum()) if len(res_pct_col) > 0 else 0
 
-                  logo_tag = f'<img src="data:image/png;base64,{logo_b64}" alt="INGEURBE" style="height:50px;" />' if logo_b64 else '<span style="font-size:22px;font-weight:700;color:#8DC63F;">INGEURBE</span>'
+                  logo_tag = f'<img src="{logo_url}" alt="INGEURBE" style="height:50px;" />'
 
                   html_partes = [
                       '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>',
