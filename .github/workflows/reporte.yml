@@ -155,7 +155,7 @@ jobs:
                   with open(tmp_path, 'rb') as f:
                       archivo_contenido = base64.b64encode(f.read()).decode()
 
-                  columnas_tabla = ['ID', 'Proyecto', 'UNIDAD ESTRUCTURAL', 'Localización', 'Cilindro N°', 'Edad (días)', 'Código de mezcla', 'Tipo de mezcla', 'TIPO ELEMENTO', 'Toma', 'Rotura', 'Resistencia nominal (MPa)', 'Resistencia Teórica (MPa)', 'Resistencia Promedio (MPa)', 'No. Registros Promedio', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)', 'Cumplimiento normativo']
+                  columnas_tabla = ['ID', 'Proyecto', 'UNIDAD ESTRUCTURAL', 'Localización', 'Cilindro N°', 'Edad (días)', 'Toma', 'Rotura', 'Resistencia nominal (MPa)', 'Resistencia Teórica (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)', 'Cumplimiento normativo']
 
                   encabezados_html = "".join(
                       f'<th style="padding:5px 4px;text-align:left;font-size:9px;font-weight:700;color:#ffffff;background:#58595B;white-space:nowrap;">{col}</th>'
