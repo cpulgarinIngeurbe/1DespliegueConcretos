@@ -36,7 +36,7 @@ jobs:
           import tempfile
           import pandas as pd
           import re
-          from datetime import datetime
+          from datetime import datetime, timedelta
           from urllib.request import urlopen
 
           def extraer_unidad_estructural(localizacion):
@@ -131,7 +131,7 @@ jobs:
               proyectos_unicos = df['Proyecto'].unique()
               print(f'  [+] Proyectos encontrados: {list(proyectos_unicos)}')
 
-              fecha_actual = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+              fecha_actual = (datetime.now() - timedelta(hours=5)).strftime('%d-%m-%Y %H:%M:%S')
 
               for proyecto in proyectos_unicos:
                   if pd.isna(proyecto):
