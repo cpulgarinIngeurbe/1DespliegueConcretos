@@ -108,7 +108,7 @@
                     <button class="filter-btn" id="filterBtnFcIncumplimientos" style="display: none;">Filtrar por f'c (MPA)</button>
                     <div class="filter-dropdown" id="filterDropdownFcIncumplimientos"></div>
                 </div>
-                <button class="filter-btn" id="sortBtnIncumplimientos" style="color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5);">Fecha más cercana ▼</button>
+                <button class="filter-btn" id="sortBtnIncumplimientos" style="display: none; color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5);">Fecha más cercana ▼</button>
                 <button class="filter-btn reset-btn" id="resetBtnIncumplimientos" style="align-self: center; margin-right: auto; display: none;">Restablecer Filtros</button>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
                     <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -177,7 +177,7 @@
                     <button class="filter-btn" id="filterBtnFcAlertas" style="display: none;">Filtrar por f'c (MPA)</button>
                     <div class="filter-dropdown" id="filterDropdownFcAlertas"></div>
                 </div>
-                <button class="filter-btn" id="sortBtnAlertas" style="color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5);">Fecha más cercana ▼</button>
+                <button class="filter-btn" id="sortBtnAlertas" style="display: none; color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5);">Fecha más cercana ▼</button>
                 <button class="filter-btn reset-btn" id="resetBtnAlertas" style="align-self: center; margin-right: auto;">Restablecer Filtros</button>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
                     <div class="filter-tags" id="filterTagsAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -218,7 +218,7 @@
                     <button class="filter-btn" id="filterBtnFcConsolidado" style="display: none;">Filtrar por f'c (MPA)</button>
                     <div class="filter-dropdown" id="filterDropdownFcConsolidado"></div>
                 </div>
-                <button class="filter-btn" id="sortBtnConsolidado" style="color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5);">Fecha más cercana ▼</button>
+                <button class="filter-btn" id="sortBtnConsolidado" style="display: none; color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5);">Fecha más cercana ▼</button>
                 <button class="filter-btn reset-btn" id="resetBtnConsolidado" style="align-self: center; margin-right: auto;">Restablecer Filtros</button>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
                     <div class="filter-tags" id="filterTagsConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -303,6 +303,10 @@
         const filterTagsFcConsolidado = document.getElementById('filterTagsFcConsolidado');
         const filterTagsFcAlertas = document.getElementById('filterTagsFcAlertas');
         const filterTagsFcIncumplimientos = document.getElementById('filterTagsFcIncumplimientos');
+
+        const sortBtnConsolidado = document.getElementById('sortBtnConsolidado');
+        const sortBtnAlertas = document.getElementById('sortBtnAlertas');
+        const sortBtnIncumplimientos = document.getElementById('sortBtnIncumplimientos');
 
         // Función para actualizar tags
         function actualizarTags(tagsContainer, proyectosSeleccionados, onRemoveCallback) {
@@ -618,6 +622,12 @@
             resetBtnConsolidado.style.display = mostrarResetBtn ? 'inline-block' : 'none';
             resetBtnAlertas.style.display = mostrarResetBtn ? 'inline-block' : 'none';
             resetBtnIncumplimientos.style.display = mostrarResetBtn ? 'inline-block' : 'none';
+
+            // Mostrar/ocultar botones de ordenamiento por fecha según si hay proyectos seleccionados
+            const mostrarSortBtn = proyectosSeleccionados.length > 0;
+            sortBtnConsolidado.style.display = mostrarSortBtn ? 'inline-flex' : 'none';
+            sortBtnAlertas.style.display = mostrarSortBtn ? 'inline-flex' : 'none';
+            sortBtnIncumplimientos.style.display = mostrarSortBtn ? 'inline-flex' : 'none';
 
             // Actualizar solo los checkboxes de Unidad Estructural (no reconstruir)
             [filterDropdownUnidadConsolidado, filterDropdownUnidadAlertas, filterDropdownUnidadIncumplimientos].forEach(dropdown => {
@@ -1661,10 +1671,6 @@
         });
 
         // Listeners para botones de ordenamiento
-        const sortBtnConsolidado = document.getElementById('sortBtnConsolidado');
-        const sortBtnAlertas = document.getElementById('sortBtnAlertas');
-        const sortBtnIncumplimientos = document.getElementById('sortBtnIncumplimientos');
-
         sortBtnConsolidado.addEventListener('click', () => {
             ordenFechaConsolidado = ordenFechaConsolidado === 'descendente' ? 'ascendente' : 'descendente';
             sortBtnConsolidado.textContent = ordenFechaConsolidado === 'descendente' ? 'Fecha más cercana ▼' : 'Fecha más antigua ▲';
@@ -1760,4 +1766,4 @@
     </script>
 </body>
 </html>
-<!-- Generated: 2026-07-30T17:38:34.535434 -->
+<!-- Generated: 2026-07-30T18:31:30.083660 -->
