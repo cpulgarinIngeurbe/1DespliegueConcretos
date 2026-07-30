@@ -108,6 +108,7 @@
                     <button class="filter-btn" id="filterBtnFcIncumplimientos" style="display: none;">Filtrar por f'c (MPA)</button>
                     <div class="filter-dropdown" id="filterDropdownFcIncumplimientos"></div>
                 </div>
+                <button class="filter-btn" id="sortBtnIncumplimientos" style="color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5);">Fecha más cercana ▼</button>
                 <button class="filter-btn reset-btn" id="resetBtnIncumplimientos" style="align-self: center; margin-right: auto; display: none;">Restablecer Filtros</button>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
                     <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -176,6 +177,7 @@
                     <button class="filter-btn" id="filterBtnFcAlertas" style="display: none;">Filtrar por f'c (MPA)</button>
                     <div class="filter-dropdown" id="filterDropdownFcAlertas"></div>
                 </div>
+                <button class="filter-btn" id="sortBtnAlertas" style="color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5);">Fecha más cercana ▼</button>
                 <button class="filter-btn reset-btn" id="resetBtnAlertas" style="align-self: center; margin-right: auto;">Restablecer Filtros</button>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
                     <div class="filter-tags" id="filterTagsAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -216,6 +218,7 @@
                     <button class="filter-btn" id="filterBtnFcConsolidado" style="display: none;">Filtrar por f'c (MPA)</button>
                     <div class="filter-dropdown" id="filterDropdownFcConsolidado"></div>
                 </div>
+                <button class="filter-btn" id="sortBtnConsolidado" style="color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5);">Fecha más cercana ▼</button>
                 <button class="filter-btn reset-btn" id="resetBtnConsolidado" style="align-self: center; margin-right: auto;">Restablecer Filtros</button>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
                     <div class="filter-tags" id="filterTagsConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -329,6 +332,11 @@
         let mesesSeleccionados = [];
         // Variable global para almacenar f'c (MPA) seleccionados
         let fcSeleccionados = [];
+
+        // Variables de estado del ordenamiento por fecha
+        let ordenFechaConsolidado = 'descendente';
+        let ordenFechaAlertas = 'descendente';
+        let ordenFechaIncumplimientos = 'descendente';
 
         // Variables de paginación
         const REGISTROS_POR_PAGINA = 150;
@@ -480,6 +488,22 @@
             return datos.filter(row => fcSeleccionados.includes(row['Resistencia nominal (MPa)']));
         }
 
+        // Función para ordenar datos por fecha (columna "Toma")
+        function ordenarPorFecha(datos, direccion = 'descendente') {
+            const datosOrdenados = [...datos];
+            datosOrdenados.sort((a, b) => {
+                const fechaA = new Date(a['Toma'] || 0);
+                const fechaB = new Date(b['Toma'] || 0);
+
+                if (direccion === 'descendente') {
+                    return fechaB - fechaA;  // Más reciente primero
+                } else {
+                    return fechaA - fechaB;  // Más antigua primero
+                }
+            });
+            return datosOrdenados;
+        }
+
         // Función para filtrar datos por proyectos, unidades y muestras
         function filtrarPorProyectosUnidadesYMuestras(datos, proyectosSeleccionados, unidadesSeleccionadas, muestrasSeleccionadas) {
             let datosFiltradores = filtrarPorProyectosYUnidades(datos, proyectosSeleccionados, unidadesSeleccionadas);
@@ -494,14 +518,17 @@
         // Función para actualizar solo tablas (puede ser lenta)
         function actualizarTablas() {
             datosActualesConsolidado = filtrarPorProyectosUnidadesYMuestras(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
+            datosActualesConsolidado = ordenarPorFecha(datosActualesConsolidado, ordenFechaConsolidado);
             paginaConsolidado = 1;
             renderizarTablaConsolidado();
 
             datosActualesAlertas = filtrarPorProyectosUnidadesYMuestras(datosAlertas, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
+            datosActualesAlertas = ordenarPorFecha(datosActualesAlertas, ordenFechaAlertas);
             paginaAlertas = 1;
             renderizarTablaAlertas();
 
             datosActualesIncumplimientos = filtrarPorProyectosUnidadesYMuestras(datosIncumplimientos, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
+            datosActualesIncumplimientos = ordenarPorFecha(datosActualesIncumplimientos, ordenFechaIncumplimientos);
             paginaIncumplimientos = 1;
             renderizarTablaIncumplimientos();
         }
@@ -1633,6 +1660,29 @@
             filterDropdownMesIncumplimientos.classList.remove('open');
         });
 
+        // Listeners para botones de ordenamiento
+        const sortBtnConsolidado = document.getElementById('sortBtnConsolidado');
+        const sortBtnAlertas = document.getElementById('sortBtnAlertas');
+        const sortBtnIncumplimientos = document.getElementById('sortBtnIncumplimientos');
+
+        sortBtnConsolidado.addEventListener('click', () => {
+            ordenFechaConsolidado = ordenFechaConsolidado === 'descendente' ? 'ascendente' : 'descendente';
+            sortBtnConsolidado.textContent = ordenFechaConsolidado === 'descendente' ? 'Fecha más cercana ▼' : 'Fecha más antigua ▲';
+            requestAnimationFrame(actualizarTablas);
+        });
+
+        sortBtnAlertas.addEventListener('click', () => {
+            ordenFechaAlertas = ordenFechaAlertas === 'descendente' ? 'ascendente' : 'descendente';
+            sortBtnAlertas.textContent = ordenFechaAlertas === 'descendente' ? 'Fecha más cercana ▼' : 'Fecha más antigua ▲';
+            requestAnimationFrame(actualizarTablas);
+        });
+
+        sortBtnIncumplimientos.addEventListener('click', () => {
+            ordenFechaIncumplimientos = ordenFechaIncumplimientos === 'descendente' ? 'ascendente' : 'descendente';
+            sortBtnIncumplimientos.textContent = ordenFechaIncumplimientos === 'descendente' ? 'Fecha más cercana ▼' : 'Fecha más antigua ▲';
+            requestAnimationFrame(actualizarTablas);
+        });
+
         // Función para restablecer todos los filtros
         function restablecerFiltros() {
             proyectosSeleccionados = [];
@@ -1710,4 +1760,4 @@
     </script>
 </body>
 </html>
-<!-- Generated: 2026-07-30T16:04:42.122446 -->
+<!-- Generated: 2026-07-30T17:38:34.535434 -->
