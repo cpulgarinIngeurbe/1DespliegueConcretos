@@ -1035,24 +1035,18 @@ jobs:
 
                   // Función para actualizar todos los filtros (UI inmediata + tablas asincrónicas)
                   function actualizarTodosFiltros() {{
-                      // Actualizar UI inmediatamente
-                      actualizarUIInmediata();
-
-                      // Actualizar opciones de Unidad Estructural basadas en proyectos seleccionados
+                      // Primero: Actualizar opciones de filtros (reconstruir dropdowns)
                       actualizarOpcionesUnidadEstructural();
-
-                      // Actualizar opciones de Muestra basadas en proyectos seleccionados
                       actualizarOpcionesMuestra();
-
-                      // Actualizar opciones de Mes basadas en proyectos, unidades y muestras seleccionados
                       actualizarOpcionesMes();
-
-                      // Actualizar opciones de f'c basadas en proyectos seleccionados
                       actualizarOpcionesFc('Consolidado');
                       actualizarOpcionesFc('Alertas');
                       actualizarOpcionesFc('Incumplimientos');
 
-                      // Actualizar tablas de forma asincrónica
+                      // Segundo: Actualizar UI (sincronizar checkboxes reconstruidos)
+                      actualizarUIInmediata();
+
+                      // Tercero: Actualizar tablas
                       requestAnimationFrame(actualizarTablas);
                   }}
 
