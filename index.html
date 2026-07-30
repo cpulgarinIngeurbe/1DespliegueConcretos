@@ -108,7 +108,6 @@
                     <button class="filter-btn" id="filterBtnFcIncumplimientos" style="display: none;">Filtrar por f'c (MPA)</button>
                     <div class="filter-dropdown" id="filterDropdownFcIncumplimientos"></div>
                 </div>
-                <button class="filter-btn" id="sortBtnIncumplimientos" style="color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5);">Fecha más cercana ▼</button>
                 <button class="filter-btn reset-btn" id="resetBtnIncumplimientos" style="align-self: center; margin-right: auto; display: none;">Restablecer Filtros</button>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
                     <div class="filter-tags" id="filterTagsIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -177,7 +176,6 @@
                     <button class="filter-btn" id="filterBtnFcAlertas" style="display: none;">Filtrar por f'c (MPA)</button>
                     <div class="filter-dropdown" id="filterDropdownFcAlertas"></div>
                 </div>
-                <button class="filter-btn" id="sortBtnAlertas" style="color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5);">Fecha más cercana ▼</button>
                 <button class="filter-btn reset-btn" id="resetBtnAlertas" style="align-self: center; margin-right: auto;">Restablecer Filtros</button>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
                     <div class="filter-tags" id="filterTagsAlertas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -218,7 +216,6 @@
                     <button class="filter-btn" id="filterBtnFcConsolidado" style="display: none;">Filtrar por f'c (MPA)</button>
                     <div class="filter-dropdown" id="filterDropdownFcConsolidado"></div>
                 </div>
-                <button class="filter-btn" id="sortBtnConsolidado" style="color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5);">Fecha más cercana ▼</button>
                 <button class="filter-btn reset-btn" id="resetBtnConsolidado" style="align-self: center; margin-right: auto;">Restablecer Filtros</button>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
                     <div class="filter-tags" id="filterTagsConsolidado" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -304,11 +301,6 @@
         const filterTagsFcAlertas = document.getElementById('filterTagsFcAlertas');
         const filterTagsFcIncumplimientos = document.getElementById('filterTagsFcIncumplimientos');
 
-        // Botones de ordenamiento por fecha
-        const sortBtnConsolidado = document.getElementById('sortBtnConsolidado');
-        const sortBtnAlertas = document.getElementById('sortBtnAlertas');
-        const sortBtnIncumplimientos = document.getElementById('sortBtnIncumplimientos');
-
         // Función para actualizar tags
         function actualizarTags(tagsContainer, proyectosSeleccionados, onRemoveCallback) {
             tagsContainer.innerHTML = '';
@@ -348,12 +340,6 @@
         let paginaConsolidado = 1;
         let paginaAlertas = 1;
         let paginaIncumplimientos = 1;
-
-        // Variables para el ordenamiento por fecha
-        let ordenFechaConsolidado = 'descendente'; // 'descendente' (más cercana) o 'ascendente' (más lejana)
-        let ordenFechaAlertas = 'descendente';
-        let ordenFechaIncumplimientos = 'descendente';
-
         let datosActualesConsolidado = [];
         let datosActualesAlertas = [];
         let datosActualesIncumplimientos = [];
@@ -505,46 +491,6 @@
             return datosFiltradores;
         }
 
-        // Función para ordenar datos por la columna "Toma" (fecha)
-        function ordenarPorFecha(datos, direccion = 'descendente') {
-            if (!datos || datos.length === 0) return datos;
-
-            const datosOrdenados = [...datos]; // Crear una copia para no modificar el original
-
-            datosOrdenados.sort((a, b) => {
-                let fechaA = a['Toma'];
-                let fechaB = b['Toma'];
-
-                // Convertir a Date si es necesario
-                if (typeof fechaA === 'string' && fechaA.includes('/')) {
-                    const partesA = fechaA.split('/');
-                    fechaA = new Date(partesA[2], partesA[1] - 1, partesA[0]);
-                } else if (typeof fechaA === 'string') {
-                    fechaA = new Date(fechaA);
-                }
-
-                if (typeof fechaB === 'string' && fechaB.includes('/')) {
-                    const partesB = fechaB.split('/');
-                    fechaB = new Date(partesB[2], partesB[1] - 1, partesB[0]);
-                } else if (typeof fechaB === 'string') {
-                    fechaB = new Date(fechaB);
-                }
-
-                // Si alguno no es válido, mantener orden original
-                if (!(fechaA instanceof Date) || isNaN(fechaA)) return 0;
-                if (!(fechaB instanceof Date) || isNaN(fechaB)) return 0;
-
-                // Ordenar según la dirección
-                if (direccion === 'descendente') {
-                    return fechaB - fechaA; // Más cercana primero (descendente)
-                } else {
-                    return fechaA - fechaB; // Más lejana primero (ascendente)
-                }
-            });
-
-            return datosOrdenados;
-        }
-
         // Función para actualizar solo tablas (puede ser lenta)
         function actualizarTablas() {
             datosActualesConsolidado = filtrarPorProyectosUnidadesYMuestras(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
@@ -563,12 +509,10 @@
         // Función para renderizar tabla de Consolidado con paginación
         function renderizarTablaConsolidado() {
             window.scrollTo({top: 0, behavior: 'smooth'});
-            // Aplicar ordenamiento por fecha
-            const datosOrdenados = ordenarPorFecha(datosActualesConsolidado, ordenFechaConsolidado);
             const inicio = (paginaConsolidado - 1) * REGISTROS_POR_PAGINA;
             const fin = inicio + REGISTROS_POR_PAGINA;
-            const datosPage = datosOrdenados.slice(inicio, fin);
-            generarTabla(datosPage, false, datosOrdenados.length > 0 ? datosOrdenados : datosConsolidado);
+            const datosPage = datosActualesConsolidado.slice(inicio, fin);
+            generarTabla(datosPage, false, datosActualesConsolidado.length > 0 ? datosActualesConsolidado : datosConsolidado);
             crearPaginacion(datosActualesConsolidado.length, paginaConsolidado, document.getElementById('paginationConsolidado'), (nuevaPagina) => {
                 paginaConsolidado = nuevaPagina;
                 renderizarTablaConsolidado();
@@ -578,12 +522,10 @@
         // Función para renderizar tabla de Alertas con paginación
         function renderizarTablaAlertas() {
             window.scrollTo({top: 0, behavior: 'smooth'});
-            // Aplicar ordenamiento por fecha
-            const datosOrdenados = ordenarPorFecha(datosActualesAlertas, ordenFechaAlertas);
             const inicio = (paginaAlertas - 1) * REGISTROS_POR_PAGINA;
             const fin = inicio + REGISTROS_POR_PAGINA;
-            const datosPage = datosOrdenados.slice(inicio, fin);
-            generarTablaAlertas(datosPage, datosOrdenados.length > 0 ? datosOrdenados : datosAlertas);
+            const datosPage = datosActualesAlertas.slice(inicio, fin);
+            generarTablaAlertas(datosPage, datosActualesAlertas.length > 0 ? datosActualesAlertas : datosAlertas);
             crearPaginacion(datosActualesAlertas.length, paginaAlertas, document.getElementById('paginationAlertas'), (nuevaPagina) => {
                 paginaAlertas = nuevaPagina;
                 renderizarTablaAlertas();
@@ -593,12 +535,10 @@
         // Función para renderizar tabla de Incumplimientos con paginación
         function renderizarTablaIncumplimientos() {
             window.scrollTo({top: 0, behavior: 'smooth'});
-            // Aplicar ordenamiento por fecha
-            const datosOrdenados = ordenarPorFecha(datosActualesIncumplimientos, ordenFechaIncumplimientos);
             const inicio = (paginaIncumplimientos - 1) * REGISTROS_POR_PAGINA;
             const fin = inicio + REGISTROS_POR_PAGINA;
-            const datosPage = datosOrdenados.slice(inicio, fin);
-            generarTablaIncumplimientos(datosPage, datosOrdenados.length > 0 ? datosOrdenados : datosIncumplimientos);
+            const datosPage = datosActualesIncumplimientos.slice(inicio, fin);
+            generarTablaIncumplimientos(datosPage, datosActualesIncumplimientos.length > 0 ? datosActualesIncumplimientos : datosIncumplimientos);
             crearPaginacion(datosActualesIncumplimientos.length, paginaIncumplimientos, document.getElementById('paginationIncumplimientos'), (nuevaPagina) => {
                 paginaIncumplimientos = nuevaPagina;
                 renderizarTablaIncumplimientos();
@@ -1693,31 +1633,6 @@
             filterDropdownMesIncumplimientos.classList.remove('open');
         });
 
-        // Listeners para botones de ordenamiento por fecha
-        sortBtnConsolidado.addEventListener('click', () => {
-            // Alternar entre descendente (más cercana) y ascendente (más lejana)
-            ordenFechaConsolidado = ordenFechaConsolidado === 'descendente' ? 'ascendente' : 'descendente';
-            sortBtnConsolidado.textContent = ordenFechaConsolidado === 'descendente' ? 'Fecha más cercana ▼' : 'Fecha más lejana ▲';
-            paginaConsolidado = 1;
-            renderizarTablaConsolidado();
-        });
-
-        sortBtnAlertas.addEventListener('click', () => {
-            // Alternar entre descendente (más cercana) y ascendente (más lejana)
-            ordenFechaAlertas = ordenFechaAlertas === 'descendente' ? 'ascendente' : 'descendente';
-            sortBtnAlertas.textContent = ordenFechaAlertas === 'descendente' ? 'Fecha más cercana ▼' : 'Fecha más lejana ▲';
-            paginaAlertas = 1;
-            renderizarTablaAlertas();
-        });
-
-        sortBtnIncumplimientos.addEventListener('click', () => {
-            // Alternar entre descendente (más cercana) y ascendente (más lejana)
-            ordenFechaIncumplimientos = ordenFechaIncumplimientos === 'descendente' ? 'ascendente' : 'descendente';
-            sortBtnIncumplimientos.textContent = ordenFechaIncumplimientos === 'descendente' ? 'Fecha más cercana ▼' : 'Fecha más lejana ▲';
-            paginaIncumplimientos = 1;
-            renderizarTablaIncumplimientos();
-        });
-
         // Función para restablecer todos los filtros
         function restablecerFiltros() {
             proyectosSeleccionados = [];
@@ -1728,13 +1643,6 @@
             paginaConsolidado = 1;
             paginaAlertas = 1;
             paginaIncumplimientos = 1;
-            // Restablecer ordenamiento por fecha a descendente (más cercana)
-            ordenFechaConsolidado = 'descendente';
-            ordenFechaAlertas = 'descendente';
-            ordenFechaIncumplimientos = 'descendente';
-            sortBtnConsolidado.textContent = 'Fecha más cercana ▼';
-            sortBtnAlertas.textContent = 'Fecha más cercana ▼';
-            sortBtnIncumplimientos.textContent = 'Fecha más cercana ▼';
             actualizarUIInmediata();
             actualizarOpcionesUnidadEstructural();
             actualizarOpcionesMuestra();
@@ -1802,4 +1710,4 @@
     </script>
 </body>
 </html>
-<!-- Generated: 2026-07-30T14:34:08.242758 -->
+<!-- Generated: 2026-07-30T16:04:42.122446 -->
