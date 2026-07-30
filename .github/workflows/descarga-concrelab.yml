@@ -23,12 +23,14 @@ jobs:
           pip install playwright
           playwright install chromium
 
-      - name: ⬇️ Descargar Excel de Concrelab (FLORA y TERRA)
+      - name: ⬇️ Descargar Excel de Concrelab (FLORA, TERRA y ALBURA)
         env:
           CONCRELAB_FLORA_USER: ${{ secrets.CONCRELAB_FLORA_USER }}
           CONCRELAB_FLORA_PASS: ${{ secrets.CONCRELAB_FLORA_PASS }}
           CONCRELAB_TERRA_USER: ${{ secrets.CONCRELAB_TERRA_USER }}
           CONCRELAB_TERRA_PASS: ${{ secrets.CONCRELAB_TERRA_PASS }}
+          CONCRELAB_ALBURA_USER: ${{ secrets.CONCRELAB_ALBURA_USER }}
+          CONCRELAB_ALBURA_PASS: ${{ secrets.CONCRELAB_ALBURA_PASS }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           python << 'EOF'
@@ -38,7 +40,7 @@ jobs:
           from pathlib import Path
 
           # Lista de proyectos
-          proyectos = ['FLORA', 'TERRA']
+          proyectos = ['FLORA', 'TERRA', 'ALBURA']
 
           # Crear carpeta datos si no existe
           Path('datos').mkdir(exist_ok=True)

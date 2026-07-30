@@ -29,6 +29,7 @@ jobs:
           EMAIL_TERRA: ${{ secrets.EMAIL_TERRA }}
           EMAIL_NATIVA: ${{ secrets.EMAIL_NATIVA }}
           EMAIL_VIALE: ${{ secrets.EMAIL_VIALE }}
+          EMAIL_ALBURA: ${{ secrets.EMAIL_ALBURA }}
         run: |
           import requests
           import base64
@@ -93,7 +94,8 @@ jobs:
               'FLORA': os.getenv('EMAIL_FLORA'),
               'TERRA': os.getenv('EMAIL_TERRA'),
               'NATIVA': os.getenv('EMAIL_NATIVA'),
-              'VIALE': os.getenv('EMAIL_VIALE')
+              'VIALE': os.getenv('EMAIL_VIALE'),
+              'ALBURA': os.getenv('EMAIL_ALBURA')
           }
 
           print(f'\n[*] Iniciando envio de reportes por proyecto...')
