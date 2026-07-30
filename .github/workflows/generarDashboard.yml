@@ -305,6 +305,13 @@ jobs:
                   .analytics-wrapper {{ display: flex; gap: 10px; align-items: flex-start; margin-top: 4px; }}
                   .analytics-cards-column {{ display: flex; flex-direction: column; gap: 8px; flex: 0 0 auto; }}
                   [id^="resetBtn"] {{ align-self: flex-end; margin-bottom: 8px; }}
+                  .row-expandida {{ background-color: #f0f0f0; }}
+                  .row-expandida td {{ background-color: #f0f0f0; font-style: italic; color: #666; }}
+                  .row-expandida table {{ margin: 4px 0; font-size: 7px; }}
+                  .row-expandida table th {{ background-color: #d0d0d0; padding: 2px 1px; }}
+                  .row-expandida table td {{ padding: 2px 1px; }}
+                  table tbody tr {{ cursor: pointer; transition: background-color 0.2s ease; }}
+                  table tbody tr:hover:not(.row-expandida) {{ background-color: #fffacd !important; }}
                   .footer {{ margin-top: 20px; padding: 10px 0; border-top: 1px solid #A3C610; text-align: right; font-size: 8px; color: #7CB342; }}
               </style>
           </head>
@@ -1535,6 +1542,15 @@ jobs:
 
                           datos.forEach((row, indice) => {{
                               const tr = document.createElement('tr');
+                              const muestra = row['Cilindro N°'] ? row['Cilindro N°'].toString().trim() : '';
+                              const proyecto = row['Proyecto'] ? row['Proyecto'].toString().trim() : '';
+
+                              // Agregar atributos de datos y evento click
+                              tr.setAttribute('data-muestra', muestra);
+                              tr.setAttribute('data-proyecto', proyecto);
+                              tr.style.cursor = 'pointer';
+                              tr.addEventListener('click', () => toggleFilaExpandida(tr, muestra, proyecto));
+
                               const tdId = document.createElement('td');
                               tdId.textContent = inicioRegistro + indice;
                               tdId.style.fontWeight = 'bold';
@@ -1688,6 +1704,111 @@ jobs:
                           analyticsCardIncumplimientos.style.display = 'none';
                           analyticsCardIncumplimientosUltimoMes.style.display = 'none';
                       }}
+                  }}
+
+                  // Función para buscar registros en Consolidado con muestra y edad 56 días
+                  function buscarRegistrosConsolidado(muestra) {{
+                      const registrosEncontrados = datosConsolidado.filter(row => {{
+                          const cilindroMuestra = row['Cilindro N°'] ? row['Cilindro N°'].toString().trim() : '';
+                          const edad = row['Edad (días)'];
+                          return cilindroMuestra === muestra && edad === 56;
+                      }});
+                      return registrosEncontrados;
+                  }}
+
+                  // Función para toggle (expandir/colapsar) fila expandida
+                  function toggleFilaExpandida(rowElement, muestra, proyecto) {{
+                      // Verificar si ya existe una fila expandida siguiente a ésta
+                      const siguienteFila = rowElement.nextElementSibling;
+                      if (siguienteFila && siguienteFila.classList.contains('row-expandida')) {{
+                          // Ya está expandida, colapsar
+                          siguienteFila.remove();
+                          return;
+                      }}
+
+                      // Buscar registros con esa muestra y edad 56
+                      const registrosConsolidado = buscarRegistrosConsolidado(muestra);
+
+                      // Crear la fila expandida
+                      const filaExpandida = document.createElement('tr');
+                      filaExpandida.classList.add('row-expandida');
+
+                      // Crear una celda que ocupe todo el ancho (colspan = número de columnas)
+                      const tdExpandida = document.createElement('td');
+                      const headers = obtenerColumnasOrdenadas(datosIncumplimientos, columnasOcultasIncumplimientos);
+                      // El colspan debe ser el número de encabezados + 1 (para la columna ID)
+                      tdExpandida.setAttribute('colspan', headers.length + 1);
+
+                      if (registrosConsolidado.length === 0) {{
+                          // No hay datos encontrados
+                          tdExpandida.textContent = 'No hay datos con Edad = 56 días para Cilindro N° ' + muestra;
+                          tdExpandida.style.textAlign = 'center';
+                          tdExpandida.style.fontStyle = 'italic';
+                          tdExpandida.style.color = '#999';
+                      }} else {{
+                          // Crear tabla con los registros encontrados
+                          const tableExpandida = document.createElement('table');
+                          tableExpandida.style.width = '100%';
+                          tableExpandida.style.borderCollapse = 'collapse';
+
+                          // Crear encabezados de la tabla expandida
+                          const theadExpandida = document.createElement('thead');
+                          const trHead = document.createElement('tr');
+                          const thId = document.createElement('th');
+                          thId.textContent = 'ID';
+                          thId.style.padding = '2px 1px';
+                          trHead.appendChild(thId);
+
+                          // Agregar headers del consolidado
+                          const headersConsolidado = obtenerColumnasOrdenadas(datosConsolidado, columnasOcultasConsolidado);
+                          headersConsolidado.forEach(header => {{
+                              const th = document.createElement('th');
+                              th.textContent = mapearNombreColumna(header);
+                              th.style.padding = '2px 1px';
+                              trHead.appendChild(th);
+                          }});
+                          theadExpandida.appendChild(trHead);
+                          tableExpandida.appendChild(theadExpandida);
+
+                          // Crear cuerpo de la tabla expandida
+                          const tbodyExpandida = document.createElement('tbody');
+                          registrosConsolidado.forEach((row, idx) => {{
+                              const tr = document.createElement('tr');
+                              const tdIdx = document.createElement('td');
+                              tdIdx.textContent = idx + 1;
+                              tdIdx.style.textAlign = 'center';
+                              tdIdx.style.padding = '2px 1px';
+                              tr.appendChild(tdIdx);
+
+                              headersConsolidado.forEach(header => {{
+                                  const td = document.createElement('td');
+                                  let valor = row[header] !== null && row[header] !== undefined ? row[header] : '';
+
+                                  if ((header === 'Rotura' || header === 'Toma' || header === 'Fecha Descarga') && valor !== '') {{
+                                      valor = formatearFecha(valor);
+                                  }}
+
+                                  const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)'];
+                                  if (columnasDecimales.includes(header) && valor !== '') {{
+                                      valor = typeof valor === 'number' && !isNaN(valor) ? valor.toFixed(2) : (typeof valor === 'string' && !isNaN(parseFloat(valor)) ? parseFloat(valor).toFixed(2) : valor);
+                                  }}
+
+                                  td.textContent = valor;
+                                  td.style.textAlign = 'center';
+                                  td.style.padding = '2px 1px';
+                                  tr.appendChild(td);
+                              }});
+                              tbodyExpandida.appendChild(tr);
+                          }});
+                          tableExpandida.appendChild(tbodyExpandida);
+
+                          tdExpandida.appendChild(tableExpandida);
+                      }}
+
+                      filaExpandida.appendChild(tdExpandida);
+
+                      // Insertar la fila expandida después de la fila clickeada
+                      rowElement.insertAdjacentElement('afterend', filaExpandida);
                   }}
 
                   // Función para cambiar pestaña sin recalcular (solo renderizar)
