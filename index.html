@@ -5,6 +5,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Dashboard de Resistencias</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { background-color: #ffffff; color: #141311; margin: 0; padding: 6px; font-family: 'Inter', sans-serif; font-size: 10px; zoom: 110%; }
         .container { max-width: 100%; margin: 0 auto; }
@@ -88,9 +89,46 @@
     <img src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/inge.png" alt="Logo Ingeurbe" style="position: absolute; top: 30px; right: 10px; height: 50px; width: auto;">
     <div class="container">
         <div class="tabs-container">
+            <button class="tab-button" data-tab="graficas">Gráficas</button>
             <button class="tab-button active" data-tab="incumplimientos">Alertas Incumplimientos</button>
             <button class="tab-button" data-tab="alertas">Control 28 Días</button>
             <button class="tab-button" data-tab="consolidado">Consolidado</button>
+        </div>
+
+        <div id="graficas" class="tab-content">
+            <div class="filter-section" style="display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px; position: relative;">
+                <div style="display: inline-block; position: relative;">
+                    <button class="filter-btn" id="filterBtnGraficas">Filtrar por Proyecto</button>
+                    <div class="filter-dropdown" id="filterDropdownGraficas"></div>
+                </div>
+                <div style="display: inline-block; position: relative;">
+                    <button class="filter-btn" id="filterBtnUnidadGraficas" style="display: none;">Filtrar por Unidad Estructural</button>
+                    <div class="filter-dropdown" id="filterDropdownUnidadGraficas"></div>
+                </div>
+                <div style="display: inline-block; position: relative;">
+                    <button class="filter-btn" id="filterBtnMuestraGraficas" style="display: none;">Filtrar por Muestra</button>
+                    <div class="filter-dropdown" id="filterDropdownMuestraGraficas"></div>
+                </div>
+                <div style="display: inline-block; position: relative;">
+                    <button class="filter-btn" id="filterBtnMesGraficas" style="display: none;">Filtrar por Mes</button>
+                    <div class="filter-dropdown" id="filterDropdownMesGraficas"></div>
+                </div>
+                <div style="display: inline-block; position: relative;">
+                    <button class="filter-btn" id="filterBtnFcGraficas" style="display: none;">Filtrar por f'c (MPA)</button>
+                    <div class="filter-dropdown" id="filterDropdownFcGraficas"></div>
+                </div>
+                <button class="filter-btn reset-btn" id="resetBtnGraficas" style="align-self: center; margin-right: auto; display: none;">Restablecer Filtros</button>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
+                    <div class="filter-tags" id="filterTagsGraficas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                    <div class="filter-tags" id="filterTagsUnidadGraficas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                    <div class="filter-tags" id="filterTagsMuestraGraficas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                    <div class="filter-tags" id="filterTagsMesGraficas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                    <div class="filter-tags" id="filterTagsFcGraficas" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                </div>
+            </div>
+            <div style="padding: 16px 8px; background-color: #ffffff; border-radius: 3px; border: 1px solid #e5e2dd; margin-top: 16px;">
+                <canvas id="chartGraficas" style="max-height: 400px;"></canvas>
+            </div>
         </div>
 
         <div id="incumplimientos" class="tab-content active">
@@ -264,49 +302,64 @@
         const dataTableAlertas = document.getElementById('dataTableAlertas');
         const dataTableIncumplimientos = document.getElementById('dataTableIncumplimientos');
 
+        const filterBtnGraficas = document.getElementById('filterBtnGraficas');
         const filterBtnConsolidado = document.getElementById('filterBtnConsolidado');
         const filterBtnAlertas = document.getElementById('filterBtnAlertas');
         const filterBtnIncumplimientos = document.getElementById('filterBtnIncumplimientos');
+        const filterDropdownGraficas = document.getElementById('filterDropdownGraficas');
         const filterDropdownConsolidado = document.getElementById('filterDropdownConsolidado');
         const filterDropdownAlertas = document.getElementById('filterDropdownAlertas');
         const filterDropdownIncumplimientos = document.getElementById('filterDropdownIncumplimientos');
+        const filterTagsGraficas = document.getElementById('filterTagsGraficas');
         const filterTagsConsolidado = document.getElementById('filterTagsConsolidado');
         const filterTagsAlertas = document.getElementById('filterTagsAlertas');
         const filterTagsIncumplimientos = document.getElementById('filterTagsIncumplimientos');
 
+        const filterBtnUnidadGraficas = document.getElementById('filterBtnUnidadGraficas');
         const filterBtnUnidadConsolidado = document.getElementById('filterBtnUnidadConsolidado');
         const filterBtnUnidadAlertas = document.getElementById('filterBtnUnidadAlertas');
         const filterBtnUnidadIncumplimientos = document.getElementById('filterBtnUnidadIncumplimientos');
+        const filterBtnMuestraGraficas = document.getElementById('filterBtnMuestraGraficas');
         const filterBtnMuestraConsolidado = document.getElementById('filterBtnMuestraConsolidado');
         const filterBtnMuestraAlertas = document.getElementById('filterBtnMuestraAlertas');
         const filterBtnMuestraIncumplimientos = document.getElementById('filterBtnMuestraIncumplimientos');
+        const filterDropdownUnidadGraficas = document.getElementById('filterDropdownUnidadGraficas');
         const filterDropdownUnidadConsolidado = document.getElementById('filterDropdownUnidadConsolidado');
         const filterDropdownUnidadAlertas = document.getElementById('filterDropdownUnidadAlertas');
         const filterDropdownUnidadIncumplimientos = document.getElementById('filterDropdownUnidadIncumplimientos');
+        const filterDropdownMuestraGraficas = document.getElementById('filterDropdownMuestraGraficas');
         const filterDropdownMuestraConsolidado = document.getElementById('filterDropdownMuestraConsolidado');
         const filterDropdownMuestraAlertas = document.getElementById('filterDropdownMuestraAlertas');
         const filterDropdownMuestraIncumplimientos = document.getElementById('filterDropdownMuestraIncumplimientos');
+        const filterTagsUnidadGraficas = document.getElementById('filterTagsUnidadGraficas');
         const filterTagsUnidadConsolidado = document.getElementById('filterTagsUnidadConsolidado');
         const filterTagsUnidadAlertas = document.getElementById('filterTagsUnidadAlertas');
         const filterTagsUnidadIncumplimientos = document.getElementById('filterTagsUnidadIncumplimientos');
+        const filterTagsMuestraGraficas = document.getElementById('filterTagsMuestraGraficas');
         const filterTagsMuestraConsolidado = document.getElementById('filterTagsMuestraConsolidado');
         const filterTagsMuestraAlertas = document.getElementById('filterTagsMuestraAlertas');
         const filterTagsMuestraIncumplimientos = document.getElementById('filterTagsMuestraIncumplimientos');
+        const filterBtnMesGraficas = document.getElementById('filterBtnMesGraficas');
         const filterBtnMesConsolidado = document.getElementById('filterBtnMesConsolidado');
         const filterBtnMesAlertas = document.getElementById('filterBtnMesAlertas');
         const filterBtnMesIncumplimientos = document.getElementById('filterBtnMesIncumplimientos');
+        const filterDropdownMesGraficas = document.getElementById('filterDropdownMesGraficas');
         const filterDropdownMesConsolidado = document.getElementById('filterDropdownMesConsolidado');
         const filterDropdownMesAlertas = document.getElementById('filterDropdownMesAlertas');
         const filterDropdownMesIncumplimientos = document.getElementById('filterDropdownMesIncumplimientos');
+        const filterTagsMesGraficas = document.getElementById('filterTagsMesGraficas');
         const filterTagsMesConsolidado = document.getElementById('filterTagsMesConsolidado');
         const filterTagsMesAlertas = document.getElementById('filterTagsMesAlertas');
         const filterTagsMesIncumplimientos = document.getElementById('filterTagsMesIncumplimientos');
+        const filterBtnFcGraficas = document.getElementById('filterBtnFcGraficas');
         const filterBtnFcConsolidado = document.getElementById('filterBtnFcConsolidado');
         const filterBtnFcAlertas = document.getElementById('filterBtnFcAlertas');
         const filterBtnFcIncumplimientos = document.getElementById('filterBtnFcIncumplimientos');
+        const filterDropdownFcGraficas = document.getElementById('filterDropdownFcGraficas');
         const filterDropdownFcConsolidado = document.getElementById('filterDropdownFcConsolidado');
         const filterDropdownFcAlertas = document.getElementById('filterDropdownFcAlertas');
         const filterDropdownFcIncumplimientos = document.getElementById('filterDropdownFcIncumplimientos');
+        const filterTagsFcGraficas = document.getElementById('filterTagsFcGraficas');
         const filterTagsFcConsolidado = document.getElementById('filterTagsFcConsolidado');
         const filterTagsFcAlertas = document.getElementById('filterTagsFcAlertas');
         const filterTagsFcIncumplimientos = document.getElementById('filterTagsFcIncumplimientos');
@@ -314,6 +367,10 @@
         const sortBtnConsolidado = document.getElementById('sortBtnConsolidado');
         const sortBtnAlertas = document.getElementById('sortBtnAlertas');
         const sortBtnIncumplimientos = document.getElementById('sortBtnIncumplimientos');
+
+        // Referencias al canvas y gráfica
+        const canvasGraficas = document.getElementById('chartGraficas');
+        let chartInstance = null;
 
         // Función para actualizar tags
         function actualizarTags(tagsContainer, proyectosSeleccionados, onRemoveCallback) {
@@ -526,6 +583,165 @@
             return datosFiltradores;
         }
 
+        // Función para generar la gráfica de resistencia por mes
+        function generarGraficaResistencia() {
+            // Filtrar datos según los filtros seleccionados
+            let datosFiltrados = filtrarPorProyectosUnidadesYMuestras(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
+
+            // Agrupar por mes y calcular promedio de "Resultado (%)"
+            const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            const datosAgrupados = {};
+
+            datosFiltrados.forEach(row => {
+                if (row['Toma'] && row['Resistencia (%)'] !== undefined && row['Resistencia (%)'] !== null) {
+                    const fecha = new Date(row['Toma']);
+                    if (!isNaN(fecha.getTime())) {
+                        const mes = fecha.getMonth();
+                        const año = fecha.getFullYear();
+                        const mesAñoKey = año + '-' + String(mes + 1).padStart(2, '0');
+
+                        if (!datosAgrupados[mesAñoKey]) {
+                            datosAgrupados[mesAñoKey] = {};
+                            datosAgrupados[mesAñoKey].valores = [];
+                            datosAgrupados[mesAñoKey].nombre = mesesNombres[mes] + '/' + año;
+                        }
+                        datosAgrupados[mesAñoKey].valores.push(parseFloat(row['Resistencia (%)']));
+                    }
+                }
+            });
+
+            // Ordenar por fecha y calcular promedios
+            const mesesOrdenados = Object.keys(datosAgrupados).sort();
+            const labels = [];
+            const promedios = [];
+
+            mesesOrdenados.forEach(mesAñoKey => {
+                const datos = datosAgrupados[mesAñoKey];
+                const promedio = datos.valores.reduce((a, b) => a + b, 0) / datos.valores.length;
+                labels.push(datos.nombre);
+                promedios.push(parseFloat(promedio.toFixed(2)));
+            });
+
+            // Destruir gráfica anterior si existe
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            // Crear la gráfica
+            if (labels.length > 0) {
+                const ctx = canvasGraficas.getContext('2d');
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Promedio de Resultado (%)',
+                            data: promedios,
+                            borderColor: '#8DC63F',
+                            backgroundColor: 'rgba(141, 198, 63, 0.1)',
+                            borderWidth: 2.5,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#8DC63F',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            fill: true,
+                            pointHoverRadius: 7
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        size: 11,
+                                        weight: '600',
+                                        family: "'Inter', sans-serif"
+                                    },
+                                    color: '#4B4F1D',
+                                    boxWidth: 12,
+                                    padding: 12,
+                                    usePointStyle: true
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: '#4B4F1D',
+                                titleColor: '#ffffff',
+                                bodyColor: '#ffffff',
+                                borderColor: '#8DC63F',
+                                borderWidth: 1,
+                                padding: 10,
+                                titleFont: {
+                                    size: 11,
+                                    weight: '600'
+                                },
+                                bodyFont: {
+                                    size: 10
+                                },
+                                displayColors: true,
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                min: 0,
+                                max: 150,
+                                ticks: {
+                                    font: {
+                                        size: 10
+                                    },
+                                    color: '#7CB342',
+                                    stepSize: 25
+                                },
+                                grid: {
+                                    color: 'rgba(163, 198, 16, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Resultado (%)',
+                                    font: {
+                                        size: 11,
+                                        weight: '600'
+                                    },
+                                    color: '#4B4F1D'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        size: 10
+                                    },
+                                    color: '#7CB342'
+                                },
+                                grid: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Mes/Año',
+                                    font: {
+                                        size: 11,
+                                        weight: '600'
+                                    },
+                                    color: '#4B4F1D'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
         // Función para actualizar solo tablas (puede ser lenta)
         function actualizarTablas() {
             datosActualesConsolidado = filtrarPorProyectosUnidadesYMuestras(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
@@ -542,6 +758,8 @@
             datosActualesIncumplimientos = ordenarPorFecha(datosActualesIncumplimientos, ordenFechaIncumplimientos);
             paginaIncumplimientos = 1;
             renderizarTablaIncumplimientos();
+
+            generarGraficaResistencia();
         }
 
         // Función para renderizar tabla de Consolidado con paginación
@@ -591,7 +809,7 @@
             unidadesEstructuralesSeleccionadas = Array.from(new Set(unidadesEstructuralesSeleccionadas));
 
             // Actualizar checkboxes en todas las pestañas (proyectos)
-            [filterDropdownConsolidado, filterDropdownAlertas, filterDropdownIncumplimientos].forEach(dropdown => {
+            [filterDropdownGraficas, filterDropdownConsolidado, filterDropdownAlertas, filterDropdownIncumplimientos].forEach(dropdown => {
                 const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
                 checkboxes.forEach(checkbox => {
                     checkbox.checked = proyectosSeleccionados.includes(checkbox.value);
@@ -600,18 +818,21 @@
 
             // Mostrar/ocultar botones de Unidad Estructural según si hay proyectos seleccionados
             const mostrarUnidadBtn = proyectosSeleccionados.length > 0;
+            filterBtnUnidadGraficas.style.display = mostrarUnidadBtn ? 'inline-block' : 'none';
             filterBtnUnidadConsolidado.style.display = mostrarUnidadBtn ? 'inline-block' : 'none';
             filterBtnUnidadAlertas.style.display = mostrarUnidadBtn ? 'inline-block' : 'none';
             filterBtnUnidadIncumplimientos.style.display = mostrarUnidadBtn ? 'inline-block' : 'none';
 
             // Mostrar/ocultar botones de Muestra según si hay proyectos seleccionados
             const mostrarMuestraBtn = proyectosSeleccionados.length > 0;
+            filterBtnMuestraGraficas.style.display = mostrarMuestraBtn ? 'inline-block' : 'none';
             filterBtnMuestraConsolidado.style.display = mostrarMuestraBtn ? 'inline-block' : 'none';
             filterBtnMuestraAlertas.style.display = mostrarMuestraBtn ? 'inline-block' : 'none';
             filterBtnMuestraIncumplimientos.style.display = mostrarMuestraBtn ? 'inline-block' : 'none';
 
             // Mostrar/ocultar botones de Mes según si hay proyectos seleccionados
             const mostrarMesBtn = proyectosSeleccionados.length > 0;
+            filterBtnMesGraficas.style.display = mostrarMesBtn ? 'inline-block' : 'none';
             filterBtnMesConsolidado.style.display = mostrarMesBtn ? 'inline-block' : 'none';
             filterBtnMesAlertas.style.display = mostrarMesBtn ? 'inline-block' : 'none';
             filterBtnMesIncumplimientos.style.display = mostrarMesBtn ? 'inline-block' : 'none';
@@ -619,6 +840,7 @@
             // Mostrar/ocultar botones de f'c según si hay proyectos seleccionados
             // (se controlará dinámicamente en actualizarOpcionesFc() basado en si hay datos con f'c disponibles)
             if (proyectosSeleccionados.length === 0) {
+                filterBtnFcGraficas.style.display = 'none';
                 filterBtnFcConsolidado.style.display = 'none';
                 filterBtnFcAlertas.style.display = 'none';
                 filterBtnFcIncumplimientos.style.display = 'none';
@@ -626,6 +848,7 @@
 
             // Mostrar/ocultar botones de Reset según si hay proyectos seleccionados
             const mostrarResetBtn = proyectosSeleccionados.length > 0;
+            resetBtnGraficas.style.display = mostrarResetBtn ? 'inline-block' : 'none';
             resetBtnConsolidado.style.display = mostrarResetBtn ? 'inline-block' : 'none';
             resetBtnAlertas.style.display = mostrarResetBtn ? 'inline-block' : 'none';
             resetBtnIncumplimientos.style.display = mostrarResetBtn ? 'inline-block' : 'none';
@@ -637,7 +860,7 @@
             sortBtnIncumplimientos.style.display = mostrarSortBtn ? 'inline-flex' : 'none';
 
             // Actualizar solo los checkboxes de Unidad Estructural (no reconstruir)
-            [filterDropdownUnidadConsolidado, filterDropdownUnidadAlertas, filterDropdownUnidadIncumplimientos].forEach(dropdown => {
+            [filterDropdownUnidadGraficas, filterDropdownUnidadConsolidado, filterDropdownUnidadAlertas, filterDropdownUnidadIncumplimientos].forEach(dropdown => {
                 const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
                 checkboxes.forEach(checkbox => {
                     checkbox.checked = unidadesEstructuralesSeleccionadas.includes(checkbox.value);
@@ -650,31 +873,38 @@
                 muestrasSeleccionadas = [];
                 mesesSeleccionados = [];
                 fcSeleccionados = [];
+                filterDropdownUnidadGraficas.innerHTML = '';
                 filterDropdownUnidadConsolidado.innerHTML = '';
                 filterDropdownUnidadAlertas.innerHTML = '';
                 filterDropdownUnidadIncumplimientos.innerHTML = '';
+                filterDropdownMuestraGraficas.innerHTML = '';
                 filterDropdownMuestraConsolidado.innerHTML = '';
                 filterDropdownMuestraAlertas.innerHTML = '';
                 filterDropdownMuestraIncumplimientos.innerHTML = '';
+                filterDropdownMesGraficas.innerHTML = '';
                 filterDropdownMesConsolidado.innerHTML = '';
                 filterDropdownMesAlertas.innerHTML = '';
                 filterDropdownMesIncumplimientos.innerHTML = '';
+                filterDropdownFcGraficas.innerHTML = '';
                 filterDropdownFcConsolidado.innerHTML = '';
                 filterDropdownFcAlertas.innerHTML = '';
                 filterDropdownFcIncumplimientos.innerHTML = '';
             }
 
             // Actualizar tags en todas las pestañas (proyectos)
+            actualizarTags(filterTagsGraficas, proyectosSeleccionados, removerProyecto);
             actualizarTags(filterTagsConsolidado, proyectosSeleccionados, removerProyecto);
             actualizarTags(filterTagsAlertas, proyectosSeleccionados, removerProyecto);
             actualizarTags(filterTagsIncumplimientos, proyectosSeleccionados, removerProyecto);
 
             // Actualizar tags de Unidad Estructural
+            actualizarTags(filterTagsUnidadGraficas, unidadesEstructuralesSeleccionadas, removerUnidadEstructural);
             actualizarTags(filterTagsUnidadConsolidado, unidadesEstructuralesSeleccionadas, removerUnidadEstructural);
             actualizarTags(filterTagsUnidadAlertas, unidadesEstructuralesSeleccionadas, removerUnidadEstructural);
             actualizarTags(filterTagsUnidadIncumplimientos, unidadesEstructuralesSeleccionadas, removerUnidadEstructural);
 
             // Actualizar tags de Muestra
+            actualizarTags(filterTagsMuestraGraficas, muestrasSeleccionadas, removerMuestra);
             actualizarTags(filterTagsMuestraConsolidado, muestrasSeleccionadas, removerMuestra);
             actualizarTags(filterTagsMuestraAlertas, muestrasSeleccionadas, removerMuestra);
             actualizarTags(filterTagsMuestraIncumplimientos, muestrasSeleccionadas, removerMuestra);
@@ -686,12 +916,14 @@
                 const mesNum = parseInt(mesStr) - 1;
                 return mesesNombres[mesNum] + '-' + año;
             });
+            actualizarTags(filterTagsMesGraficas, mesesSeleccionadosNombres, removerMesPorFormato);
             actualizarTags(filterTagsMesConsolidado, mesesSeleccionadosNombres, removerMesPorFormato);
             actualizarTags(filterTagsMesAlertas, mesesSeleccionadosNombres, removerMesPorFormato);
             actualizarTags(filterTagsMesIncumplimientos, mesesSeleccionadosNombres, removerMesPorFormato);
 
             // Actualizar tags de f'c (convertir a string con formato)
             const fcSeleccionadosFormato = fcSeleccionados.map(f => f + ' MPa');
+            actualizarTags(filterTagsFcGraficas, fcSeleccionadosFormato, removerFcPorFormato);
             actualizarTags(filterTagsFcConsolidado, fcSeleccionadosFormato, removerFcPorFormato);
             actualizarTags(filterTagsFcAlertas, fcSeleccionadosFormato, removerFcPorFormato);
             actualizarTags(filterTagsFcIncumplimientos, fcSeleccionadosFormato, removerFcPorFormato);
@@ -700,10 +932,17 @@
         // Función para actualizar opciones de Unidad Estructural (después de cambiar proyectos o muestras)
         function actualizarOpcionesUnidadEstructural() {
             if (proyectosSeleccionados.length > 0) {
+                const unidadesGraficas = obtenerUnidadesEstructuralesUnicas(datosConsolidado, proyectosSeleccionados, muestrasSeleccionadas);
                 const unidadesConsolidado = obtenerUnidadesEstructuralesUnicas(datosConsolidado, proyectosSeleccionados, muestrasSeleccionadas);
                 const unidadesAlertas = obtenerUnidadesEstructuralesUnicas(datosAlertas, proyectosSeleccionados, muestrasSeleccionadas);
                 const unidadesIncumplimientos = obtenerUnidadesEstructuralesUnicas(datosIncumplimientos, proyectosSeleccionados, muestrasSeleccionadas);
 
+                llenarDropdown(filterDropdownUnidadGraficas, unidadesGraficas, () => {
+                    unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadGraficas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                    actualizarUIInmediata();
+                    actualizarOpcionesMuestra();
+                    requestAnimationFrame(actualizarTablas);
+                });
                 llenarDropdown(filterDropdownUnidadConsolidado, unidadesConsolidado, () => {
                     unidadesEstructuralesSeleccionadas = Array.from(filterDropdownUnidadConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                     actualizarUIInmediata();
@@ -724,7 +963,7 @@
                 });
 
                 // Marcar checkboxes que estaban seleccionados
-                [filterDropdownUnidadConsolidado, filterDropdownUnidadAlertas, filterDropdownUnidadIncumplimientos].forEach(dropdown => {
+                [filterDropdownUnidadGraficas, filterDropdownUnidadConsolidado, filterDropdownUnidadAlertas, filterDropdownUnidadIncumplimientos].forEach(dropdown => {
                     const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
                     checkboxes.forEach(checkbox => {
                         checkbox.checked = unidadesEstructuralesSeleccionadas.includes(checkbox.value);
@@ -736,10 +975,17 @@
         // Función para actualizar opciones de Muestra (después de cambiar proyectos)
         function actualizarOpcionesMuestra() {
             if (proyectosSeleccionados.length > 0) {
+                const muestrasGraficas = obtenerMuestrasUnicas(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas);
                 const muestrasConsolidado = obtenerMuestrasUnicas(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas);
                 const muestrasAlertas = obtenerMuestrasUnicas(datosAlertas, proyectosSeleccionados, unidadesEstructuralesSeleccionadas);
                 const muestrasIncumplimientos = obtenerMuestrasUnicas(datosIncumplimientos, proyectosSeleccionados, unidadesEstructuralesSeleccionadas);
 
+                llenarDropdown(filterDropdownMuestraGraficas, muestrasGraficas, () => {
+                    muestrasSeleccionadas = Array.from(filterDropdownMuestraGraficas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                    actualizarUIInmediata();
+                    actualizarOpcionesUnidadEstructural();
+                    requestAnimationFrame(actualizarTablas);
+                });
                 llenarDropdown(filterDropdownMuestraConsolidado, muestrasConsolidado, () => {
                     muestrasSeleccionadas = Array.from(filterDropdownMuestraConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                     actualizarUIInmediata();
@@ -760,7 +1006,7 @@
                 });
 
                 // Marcar checkboxes que estaban seleccionados
-                [filterDropdownMuestraConsolidado, filterDropdownMuestraAlertas, filterDropdownMuestraIncumplimientos].forEach(dropdown => {
+                [filterDropdownMuestraGraficas, filterDropdownMuestraConsolidado, filterDropdownMuestraAlertas, filterDropdownMuestraIncumplimientos].forEach(dropdown => {
                     const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
                     checkboxes.forEach(checkbox => {
                         checkbox.checked = muestrasSeleccionadas.includes(checkbox.value);
@@ -772,10 +1018,16 @@
         // Función para actualizar opciones de Mes (después de cambiar proyectos, unidades o muestras)
         function actualizarOpcionesMes() {
             if (proyectosSeleccionados.length > 0) {
+                const mesesGraficas = obtenerMesesUnicos(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
                 const mesesConsolidado = obtenerMesesUnicos(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
                 const mesesAlertas = obtenerMesesUnicos(datosAlertas, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
                 const mesesIncumplimientos = obtenerMesesUnicos(datosIncumplimientos, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
 
+                llenarDropdownMeses(filterDropdownMesGraficas, mesesGraficas, () => {
+                    mesesSeleccionados = Array.from(filterDropdownMesGraficas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                    actualizarUIInmediata();
+                    requestAnimationFrame(actualizarTablas);
+                });
                 llenarDropdownMeses(filterDropdownMesConsolidado, mesesConsolidado, () => {
                     mesesSeleccionados = Array.from(filterDropdownMesConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                     actualizarUIInmediata();
@@ -793,7 +1045,7 @@
                 });
 
                 // Marcar checkboxes que estaban seleccionados
-                [filterDropdownMesConsolidado, filterDropdownMesAlertas, filterDropdownMesIncumplimientos].forEach(dropdown => {
+                [filterDropdownMesGraficas, filterDropdownMesConsolidado, filterDropdownMesAlertas, filterDropdownMesIncumplimientos].forEach(dropdown => {
                     const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
                     checkboxes.forEach(checkbox => {
                         checkbox.checked = mesesSeleccionados.includes(checkbox.value);
@@ -815,7 +1067,7 @@
             // Segundo: Actualizar UI (sincronizar checkboxes reconstruidos)
             actualizarUIInmediata();
 
-            // Tercero: Actualizar tablas
+            // Tercero: Actualizar tablas y gráficas
             requestAnimationFrame(actualizarTablas);
         }
 
@@ -1598,6 +1850,14 @@
             btn.addEventListener('click', () => cambiarPestana(btn.dataset.tab));
         });
 
+        // Listeners para botones de filtro de Gráficas
+        filterBtnGraficas.addEventListener('click', () => {
+            filterDropdownGraficas.classList.toggle('open');
+            filterDropdownConsolidado.classList.remove('open');
+            filterDropdownAlertas.classList.remove('open');
+            filterDropdownIncumplimientos.classList.remove('open');
+        });
+
         // Listeners para botones de filtro
         filterBtnConsolidado.addEventListener('click', () => {
             filterDropdownConsolidado.classList.toggle('open');
@@ -1618,6 +1878,16 @@
         });
 
         // Listeners para botones de filtro de Unidad Estructural
+        filterBtnUnidadGraficas.addEventListener('click', () => {
+            filterDropdownUnidadGraficas.classList.toggle('open');
+            filterDropdownUnidadAlertas.classList.remove('open');
+            filterDropdownUnidadIncumplimientos.classList.remove('open');
+            filterDropdownConsolidado.classList.remove('open');
+            filterDropdownAlertas.classList.remove('open');
+            filterDropdownIncumplimientos.classList.remove('open');
+            filterDropdownGraficas.classList.remove('open');
+        });
+
         filterBtnUnidadConsolidado.addEventListener('click', () => {
             filterDropdownUnidadConsolidado.classList.toggle('open');
             filterDropdownUnidadAlertas.classList.remove('open');
@@ -1646,6 +1916,19 @@
             filterDropdownMuestraConsolidado.classList.remove('open');
             filterDropdownMuestraAlertas.classList.remove('open');
             filterDropdownMuestraIncumplimientos.classList.remove('open');
+        });
+
+        filterBtnMuestraGraficas.addEventListener('click', () => {
+            filterDropdownMuestraGraficas.classList.toggle('open');
+            filterDropdownMuestraAlertas.classList.remove('open');
+            filterDropdownMuestraIncumplimientos.classList.remove('open');
+            filterDropdownConsolidado.classList.remove('open');
+            filterDropdownAlertas.classList.remove('open');
+            filterDropdownIncumplimientos.classList.remove('open');
+            filterDropdownUnidadGraficas.classList.remove('open');
+            filterDropdownUnidadAlertas.classList.remove('open');
+            filterDropdownUnidadIncumplimientos.classList.remove('open');
+            filterDropdownGraficas.classList.remove('open');
         });
 
         filterBtnMuestraConsolidado.addEventListener('click', () => {
@@ -1685,6 +1968,22 @@
         });
 
         // Listeners para botones de filtro de Mes
+        filterBtnMesGraficas.addEventListener('click', () => {
+            filterDropdownMesGraficas.classList.toggle('open');
+            filterDropdownMesAlertas.classList.remove('open');
+            filterDropdownMesIncumplimientos.classList.remove('open');
+            filterDropdownConsolidado.classList.remove('open');
+            filterDropdownAlertas.classList.remove('open');
+            filterDropdownIncumplimientos.classList.remove('open');
+            filterDropdownUnidadGraficas.classList.remove('open');
+            filterDropdownUnidadAlertas.classList.remove('open');
+            filterDropdownUnidadIncumplimientos.classList.remove('open');
+            filterDropdownMuestraGraficas.classList.remove('open');
+            filterDropdownMuestraAlertas.classList.remove('open');
+            filterDropdownMuestraIncumplimientos.classList.remove('open');
+            filterDropdownGraficas.classList.remove('open');
+        });
+
         filterBtnMesConsolidado.addEventListener('click', () => {
             filterDropdownMesConsolidado.classList.toggle('open');
             filterDropdownMesAlertas.classList.remove('open');
@@ -1731,6 +2030,25 @@
         });
 
         // Listeners para botones de filtro de f'c (MPA)
+        filterBtnFcGraficas.addEventListener('click', () => {
+            filterDropdownFcGraficas.classList.toggle('open');
+            filterDropdownFcAlertas.classList.remove('open');
+            filterDropdownFcIncumplimientos.classList.remove('open');
+            filterDropdownConsolidado.classList.remove('open');
+            filterDropdownAlertas.classList.remove('open');
+            filterDropdownIncumplimientos.classList.remove('open');
+            filterDropdownUnidadGraficas.classList.remove('open');
+            filterDropdownUnidadAlertas.classList.remove('open');
+            filterDropdownUnidadIncumplimientos.classList.remove('open');
+            filterDropdownMuestraGraficas.classList.remove('open');
+            filterDropdownMuestraAlertas.classList.remove('open');
+            filterDropdownMuestraIncumplimientos.classList.remove('open');
+            filterDropdownMesGraficas.classList.remove('open');
+            filterDropdownMesAlertas.classList.remove('open');
+            filterDropdownMesIncumplimientos.classList.remove('open');
+            filterDropdownGraficas.classList.remove('open');
+        });
+
         filterBtnFcConsolidado.addEventListener('click', () => {
             filterDropdownFcConsolidado.classList.toggle('open');
             filterDropdownFcAlertas.classList.remove('open');
@@ -1825,10 +2143,12 @@
         }
 
         // Listeners para botones de reset
+        const resetBtnGraficas = document.getElementById('resetBtnGraficas');
         const resetBtnConsolidado = document.getElementById('resetBtnConsolidado');
         const resetBtnAlertas = document.getElementById('resetBtnAlertas');
         const resetBtnIncumplimientos = document.getElementById('resetBtnIncumplimientos');
 
+        resetBtnGraficas.addEventListener('click', restablecerFiltros);
         resetBtnConsolidado.addEventListener('click', restablecerFiltros);
         resetBtnAlertas.addEventListener('click', restablecerFiltros);
         resetBtnIncumplimientos.addEventListener('click', restablecerFiltros);
@@ -1836,18 +2156,23 @@
         // Cerrar dropdown al hacer click fuera
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.filter-section')) {
+                filterDropdownGraficas.classList.remove('open');
                 filterDropdownConsolidado.classList.remove('open');
                 filterDropdownAlertas.classList.remove('open');
                 filterDropdownIncumplimientos.classList.remove('open');
+                filterDropdownUnidadGraficas.classList.remove('open');
                 filterDropdownUnidadConsolidado.classList.remove('open');
                 filterDropdownUnidadAlertas.classList.remove('open');
                 filterDropdownUnidadIncumplimientos.classList.remove('open');
+                filterDropdownMuestraGraficas.classList.remove('open');
                 filterDropdownMuestraConsolidado.classList.remove('open');
                 filterDropdownMuestraAlertas.classList.remove('open');
                 filterDropdownMuestraIncumplimientos.classList.remove('open');
+                filterDropdownMesGraficas.classList.remove('open');
                 filterDropdownMesConsolidado.classList.remove('open');
                 filterDropdownMesAlertas.classList.remove('open');
                 filterDropdownMesIncumplimientos.classList.remove('open');
+                filterDropdownFcGraficas.classList.remove('open');
                 filterDropdownFcConsolidado.classList.remove('open');
                 filterDropdownFcAlertas.classList.remove('open');
                 filterDropdownFcIncumplimientos.classList.remove('open');
@@ -1862,6 +2187,11 @@
             generarTablaIncumplimientos([], datosIncumplimientos);
 
             // Llenar dropdowns con proyectos y conectar al sistema global
+            llenarDropdown(filterDropdownGraficas, obtenerProyectosUnicos(datosConsolidado), () => {
+                proyectosSeleccionados = Array.from(document.querySelectorAll('.filter-dropdown input[type="checkbox"]:checked')).map(cb => cb.value);
+                actualizarTodosFiltros();
+            });
+
             llenarDropdown(filterDropdownConsolidado, obtenerProyectosUnicos(datosConsolidado), () => {
                 proyectosSeleccionados = Array.from(document.querySelectorAll('.filter-dropdown input[type="checkbox"]:checked')).map(cb => cb.value);
                 actualizarTodosFiltros();
@@ -1881,4 +2211,4 @@
     </script>
 </body>
 </html>
-<!-- Generated: 2026-07-31T21:08:39.055861 -->
+<!-- Generated: 2026-07-31T21:48:34.002682 -->
