@@ -363,13 +363,7 @@ jobs:
                       <div style="padding: 16px 8px; background-color: #ffffff; border-radius: 3px; border: 1px solid #e5e2dd; margin-top: 16px;">
                           <h3 style="margin: 0 0 12px 0; font-size: 11px; font-weight: 600; color: #4B4F1D; text-transform: uppercase; letter-spacing: 0.05em;">Detalle de Datos</h3>
                           <table id="dataTableGraficas" style="border-collapse: collapse; width: 100%;">
-                              <thead>
-                                  <tr>
-                                      <th style="background-color: #4B4F1D; color: #ffffff; padding: 3px 2px; text-align: center; font-weight: 600; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10;">Mes/Año</th>
-                                      <th style="background-color: #4B4F1D; color: #ffffff; padding: 3px 2px; text-align: center; font-weight: 600; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10;">Promedio Resultado (%)</th>
-                                      <th style="background-color: #4B4F1D; color: #ffffff; padding: 3px 2px; text-align: center; font-weight: 600; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10;">Cantidad de Registros</th>
-                                  </tr>
-                              </thead>
+                              <thead></thead>
                               <tbody></tbody>
                           </table>
                       </div>
@@ -829,51 +823,112 @@ jobs:
                       return datosFiltradores;
                   }}
 
-                  // Función para generar la gráfica de resistencia por mes
+                  // Función para generar la gráfica de resistencia por edad (días) con múltiples series por f'c
                   function generarGraficaResistencia() {{
                       // Filtrar datos según los filtros seleccionados
                       let datosFiltrados = filtrarPorProyectosUnidadesYMuestras(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
 
-                      // Agrupar por mes y calcular promedio de "Resultado (%)"
-                      const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-                      const datosAgrupados = {{}};
+                      // Obtener valores únicos de f'c (Resistencia nominal (MPa))
+                      let fcUnicos = [];
+                      if (fcSeleccionados.length > 0) {{
+                          fcUnicos = fcSeleccionados;
+                      }} else {{
+                          const fcSet = new Set();
+                          datosFiltrados.forEach(row => {{
+                              if (row['Resistencia nominal (MPa)'] !== undefined && row['Resistencia nominal (MPa)'] !== null) {{
+                                  fcSet.add(row['Resistencia nominal (MPa)']);
+                              }}
+                          }});
+                          fcUnicos = Array.from(fcSet).sort((a, b) => a - b);
+                      }}
+
+                      // Paleta de colores para cada f'c
+                      const colorPaleta = [
+                          '#8DC63F', // Verde
+                          '#0066CC', // Azul
+                          '#FF9900', // Naranja
+                          '#CC0000', // Rojo
+                          '#9933CC', // Púrpura
+                          '#00CCCC', // Cian
+                          '#FF6699', // Rosa
+                          '#339999'  // Teal
+                      ];
+
+                      // Agrupar datos por f'c y Edad (días)
+                      const datosPorFc = {{}};
 
                       datosFiltrados.forEach(row => {{
-                          if (row['Toma'] && row['Resistencia (%)'] !== undefined && row['Resistencia (%)'] !== null) {{
-                              const fecha = new Date(row['Toma']);
-                              if (!isNaN(fecha.getTime())) {{
-                                  const mes = fecha.getMonth();
-                                  const año = fecha.getFullYear();
-                                  const mesAñoKey = año + '-' + String(mes + 1).padStart(2, '0');
+                          const fc = row['Resistencia nominal (MPa)'];
+                          const edad = row['Edad (días)'];
+                          const resultado = row['RESULTADO (MPA)'];
 
-                                  if (!datosAgrupados[mesAñoKey]) {{
-                                      datosAgrupados[mesAñoKey] = {{}};
-                                      datosAgrupados[mesAñoKey].valores = [];
-                                      datosAgrupados[mesAñoKey].nombre = mesesNombres[mes] + '/' + año;
-                                  }}
-                                  datosAgrupados[mesAñoKey].valores.push(parseFloat(row['Resistencia (%)']));
+                          if (fc !== undefined && fc !== null && edad !== undefined && edad !== null && resultado !== undefined && resultado !== null) {{
+                              if (!datosPorFc[fc]) {{
+                                  datosPorFc[fc] = {{}};
                               }}
+                              if (!datosPorFc[fc][edad]) {{
+                                  datosPorFc[fc][edad] = [];
+                              }}
+                              datosPorFc[fc][edad].push(parseFloat(resultado));
                           }}
                       }});
 
-                      // Ordenar por fecha y calcular promedios
-                      const mesesOrdenados = Object.keys(datosAgrupados).sort();
-                      const labels = [];
-                      const promedios = [];
+                      // Obtener todas las edades únicas y ordenarlas
+                      const edadesSet = new Set();
+                      Object.values(datosPorFc).forEach(fcData => {{
+                          Object.keys(fcData).forEach(edad => {{
+                              edadesSet.add(parseInt(edad));
+                          }});
+                      }});
+                      const edades = Array.from(edadesSet).sort((a, b) => a - b);
+
+                      // Crear datasets para cada f'c
+                      const datasets = [];
                       datosTablaGraficas = [];
 
-                      mesesOrdenados.forEach((mesAñoKey, index) => {{
-                          const datos = datosAgrupados[mesAñoKey];
-                          const promedio = datos.valores.reduce((a, b) => a + b, 0) / datos.valores.length;
-                          labels.push(datos.nombre);
-                          promedios.push(parseFloat(promedio.toFixed(2)));
+                      fcUnicos.forEach((fc, index) => {{
+                          const color = colorPaleta[index % colorPaleta.length];
+                          const data = [];
+                          const datosPorEdad = {{}};
+
+                          edades.forEach(edad => {{
+                              if (datosPorFc[fc] && datosPorFc[fc][edad]) {{
+                                  const valores = datosPorFc[fc][edad];
+                                  const promedio = valores.reduce((a, b) => a + b, 0) / valores.length;
+                                  data.push(parseFloat(promedio.toFixed(2)));
+                                  datosPorEdad[edad] = {{
+                                      promedio: parseFloat(promedio.toFixed(2)),
+                                      cantidad: valores.length
+                                  }};
+                              }} else {{
+                                  data.push(null);
+                              }}
+                          }});
+
+                          datasets.push({{
+                              label: `f'c = ${{fc}} MPa`,
+                              data: data,
+                              borderColor: color,
+                              backgroundColor: 'transparent',
+                              borderWidth: 2.5,
+                              tension: 0.4,
+                              pointRadius: 5,
+                              pointBackgroundColor: color,
+                              pointBorderColor: '#ffffff',
+                              pointBorderWidth: 2,
+                              fill: false,
+                              pointHoverRadius: 7,
+                              spanGaps: false
+                          }});
 
                           // Guardar datos para la tabla
-                          datosTablaGraficas.push({{
-                              mesIndex: index,
-                              mesAño: datos.nombre,
-                              promedio: parseFloat(promedio.toFixed(2)),
-                              cantidad: datos.valores.length
+                          Object.entries(datosPorEdad).forEach(([edad, datos]) => {{
+                              datosTablaGraficas.push({{
+                                  edad: parseInt(edad),
+                                  fc: fc,
+                                  promedio: datos.promedio,
+                                  cantidad: datos.cantidad
+                              }});
                           }});
                       }});
 
@@ -883,38 +938,17 @@ jobs:
                       }}
 
                       // Crear la gráfica
-                      if (labels.length > 0) {{
+                      if (edades.length > 0 && datasets.length > 0) {{
                           const ctx = canvasGraficas.getContext('2d');
                           chartInstance = new Chart(ctx, {{
                               type: 'line',
                               data: {{
-                                  labels: labels,
-                                  datasets: [{{
-                                      label: 'Promedio de Resultado (%)',
-                                      data: promedios,
-                                      borderColor: '#8DC63F',
-                                      backgroundColor: 'rgba(141, 198, 63, 0.1)',
-                                      borderWidth: 2.5,
-                                      tension: 0.4,
-                                      pointRadius: 5,
-                                      pointBackgroundColor: '#8DC63F',
-                                      pointBorderColor: '#ffffff',
-                                      pointBorderWidth: 2,
-                                      fill: true,
-                                      pointHoverRadius: 7
-                                  }}]
+                                  labels: edades.map(e => e + ' días'),
+                                  datasets: datasets
                               }},
                               options: {{
                                   responsive: true,
                                   maintainAspectRatio: true,
-                                  onHover: (event, activeElements) => {{
-                                      if (activeElements.length > 0) {{
-                                          const mesIndex = activeElements[0].index;
-                                          resaltarFilaTabla(mesIndex);
-                                      }} else {{
-                                          limpiarResalteTabla();
-                                      }}
-                                  }},
                                   plugins: {{
                                       legend: {{
                                           display: true,
@@ -948,7 +982,7 @@ jobs:
                                           displayColors: true,
                                           callbacks: {{
                                               label: function(context) {{
-                                                  return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                                                  return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' MPa';
                                               }}
                                           }}
                                       }}
@@ -957,13 +991,12 @@ jobs:
                                       y: {{
                                           beginAtZero: false,
                                           min: 0,
-                                          max: 150,
                                           ticks: {{
                                               font: {{
                                                   size: 10
                                               }},
                                               color: '#7CB342',
-                                              stepSize: 25
+                                              stepSize: 5
                                           }},
                                           grid: {{
                                               color: 'rgba(163, 198, 16, 0.1)',
@@ -971,7 +1004,7 @@ jobs:
                                           }},
                                           title: {{
                                               display: true,
-                                              text: 'Resultado (%)',
+                                              text: 'Resistencia Promedio (MPa)',
                                               font: {{
                                                   size: 11,
                                                   weight: '600'
@@ -991,7 +1024,7 @@ jobs:
                                           }},
                                           title: {{
                                               display: true,
-                                              text: 'Mes/Año',
+                                              text: 'Edad (días)',
                                               font: {{
                                                   size: 11,
                                                   weight: '600'
@@ -1007,31 +1040,94 @@ jobs:
                       actualizarTablaGraficas(datosTablaGraficas);
                   }}
 
-                  // Función para actualizar la tabla de gráficas
+                  // Función para actualizar la tabla de gráficas con columnas dinámicas por f'c
                   function actualizarTablaGraficas(datos) {{
                       const tbody = document.querySelector('#dataTableGraficas tbody');
+                      const thead = document.querySelector('#dataTableGraficas thead');
                       tbody.innerHTML = '';
+                      thead.innerHTML = '';
 
-                      datos.forEach((row, index) => {{
+                      if (datos.length === 0) {{
+                          return;
+                      }}
+
+                      // Agrupar datos por edad
+                      const datosPorEdad = {{}};
+                      datos.forEach(row => {{
+                          if (!datosPorEdad[row.edad]) {{
+                              datosPorEdad[row.edad] = [];
+                          }}
+                          datosPorEdad[row.edad].push(row);
+                      }});
+
+                      // Obtener f'c únicos para crear columnas dinámicas
+                      const fcUnicos = new Set();
+                      datos.forEach(row => {{
+                          fcUnicos.add(row.fc);
+                      }});
+                      const fcArray = Array.from(fcUnicos).sort((a, b) => a - b);
+
+                      // Crear headers de la tabla dinámicamente
+                      const headerRow = document.createElement('tr');
+
+                      const thEdad = document.createElement('th');
+                      thEdad.textContent = 'Edad (días)';
+                      thEdad.style.cssText = 'background-color: #4B4F1D; color: #ffffff; padding: 3px 2px; text-align: center; font-weight: 600; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10;';
+                      headerRow.appendChild(thEdad);
+
+                      fcArray.forEach(fc => {{
+                          const thFc = document.createElement('th');
+                          thFc.textContent = `f'c=${{fc}}`;
+                          thFc.style.cssText = 'background-color: #4B4F1D; color: #ffffff; padding: 3px 2px; text-align: center; font-weight: 600; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10;';
+                          headerRow.appendChild(thFc);
+                      }});
+
+                      const thCantidad = document.createElement('th');
+                      thCantidad.textContent = 'Cantidad de Registros';
+                      thCantidad.style.cssText = 'background-color: #4B4F1D; color: #ffffff; padding: 3px 2px; text-align: center; font-weight: 600; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10;';
+                      headerRow.appendChild(thCantidad);
+
+                      thead.appendChild(headerRow);
+
+                      // Crear filas para cada edad
+                      const edadesOrdenadas = Object.keys(datosPorEdad).map(Number).sort((a, b) => a - b);
+
+                      edadesOrdenadas.forEach(edad => {{
                           const tr = document.createElement('tr');
-                          tr.setAttribute('data-mes-index', row.mesIndex);
                           tr.style.cursor = 'pointer';
                           tr.style.transition = 'background-color 0.2s ease';
 
-                          tr.innerHTML = `
-                              <td style="padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;">${{row.mesAño}}</td>
-                              <td style="padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;">${{row.promedio}}%</td>
-                              <td style="padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;">${{row.cantidad}}</td>
-                          `;
+                          // Columna de edad
+                          const tdEdad = document.createElement('td');
+                          tdEdad.textContent = edad;
+                          tdEdad.style.cssText = 'padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;';
+                          tr.appendChild(tdEdad);
 
-                          // Evento hover para resaltar punto en la gráfica
-                          tr.addEventListener('mouseenter', () => {{
-                              resaltarFilaTabla(row.mesIndex);
+                          // Columnas de f'c
+                          const datosEdad = datosPorEdad[edad];
+                          const datosMap = {{}};
+                          datosEdad.forEach(row => {{
+                              datosMap[row.fc] = row;
                           }});
 
-                          tr.addEventListener('mouseleave', () => {{
-                              limpiarResalteTabla();
+                          let totalCantidad = 0;
+                          fcArray.forEach(fc => {{
+                              const tdFc = document.createElement('td');
+                              if (datosMap[fc]) {{
+                                  tdFc.textContent = datosMap[fc].promedio + ' MPa';
+                                  totalCantidad += datosMap[fc].cantidad;
+                              }} else {{
+                                  tdFc.textContent = '-';
+                              }}
+                              tdFc.style.cssText = 'padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;';
+                              tr.appendChild(tdFc);
                           }});
+
+                          // Columna de cantidad total
+                          const tdCantidad = document.createElement('td');
+                          tdCantidad.textContent = totalCantidad;
+                          tdCantidad.style.cssText = 'padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;';
+                          tr.appendChild(tdCantidad);
 
                           tbody.appendChild(tr);
                       }});
