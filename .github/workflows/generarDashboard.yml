@@ -1019,9 +1019,9 @@ jobs:
                           tr.style.transition = 'background-color 0.2s ease';
 
                           tr.innerHTML = `
-                              <td style="padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;">${row.mesAño}</td>
-                              <td style="padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;">${row.promedio}%</td>
-                              <td style="padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;">${row.cantidad}</td>
+                              <td style="padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;">${{row.mesAño}}</td>
+                              <td style="padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;">${{row.promedio}}%</td>
+                              <td style="padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;">${{row.cantidad}}</td>
                           `;
 
                           // Evento hover para resaltar punto en la gráfica
