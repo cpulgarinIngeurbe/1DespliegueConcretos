@@ -360,6 +360,19 @@ jobs:
                       <div style="padding: 16px 8px; background-color: #ffffff; border-radius: 3px; border: 1px solid #e5e2dd; margin-top: 16px;">
                           <canvas id="chartGraficas" style="max-height: 400px;"></canvas>
                       </div>
+                      <div style="padding: 16px 8px; background-color: #ffffff; border-radius: 3px; border: 1px solid #e5e2dd; margin-top: 16px;">
+                          <h3 style="margin: 0 0 12px 0; font-size: 11px; font-weight: 600; color: #4B4F1D; text-transform: uppercase; letter-spacing: 0.05em;">Detalle de Datos</h3>
+                          <table id="dataTableGraficas" style="border-collapse: collapse; width: 100%;">
+                              <thead>
+                                  <tr>
+                                      <th style="background-color: #4B4F1D; color: #ffffff; padding: 3px 2px; text-align: center; font-weight: 600; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10;">Mes/Año</th>
+                                      <th style="background-color: #4B4F1D; color: #ffffff; padding: 3px 2px; text-align: center; font-weight: 600; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10;">Promedio Resultado (%)</th>
+                                      <th style="background-color: #4B4F1D; color: #ffffff; padding: 3px 2px; text-align: center; font-weight: 600; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10;">Cantidad de Registros</th>
+                                  </tr>
+                              </thead>
+                              <tbody></tbody>
+                          </table>
+                      </div>
                   </div>
 
                   <div id="incumplimientos" class="tab-content active">
@@ -631,6 +644,8 @@ jobs:
                   let mesesSeleccionados = [];
                   // Variable global para almacenar f'c (MPA) seleccionados
                   let fcSeleccionados = [];
+                  // Variable global para almacenar datos de la tabla de gráficas
+                  let datosTablaGraficas = [];
 
                   // Variables de estado del ordenamiento por fecha
                   let ordenFechaConsolidado = 'descendente';
@@ -845,12 +860,21 @@ jobs:
                       const mesesOrdenados = Object.keys(datosAgrupados).sort();
                       const labels = [];
                       const promedios = [];
+                      datosTablaGraficas = [];
 
-                      mesesOrdenados.forEach(mesAñoKey => {{
+                      mesesOrdenados.forEach((mesAñoKey, index) => {{
                           const datos = datosAgrupados[mesAñoKey];
                           const promedio = datos.valores.reduce((a, b) => a + b, 0) / datos.valores.length;
                           labels.push(datos.nombre);
                           promedios.push(parseFloat(promedio.toFixed(2)));
+
+                          // Guardar datos para la tabla
+                          datosTablaGraficas.push({{
+                              mesIndex: index,
+                              mesAño: datos.nombre,
+                              promedio: parseFloat(promedio.toFixed(2)),
+                              cantidad: datos.valores.length
+                          }});
                       }});
 
                       // Destruir gráfica anterior si existe
@@ -883,6 +907,14 @@ jobs:
                               options: {{
                                   responsive: true,
                                   maintainAspectRatio: true,
+                                  onHover: (event, activeElements) => {{
+                                      if (activeElements.length > 0) {{
+                                          const mesIndex = activeElements[0].index;
+                                          resaltarFilaTabla(mesIndex);
+                                      }} else {{
+                                          limpiarResalteTabla();
+                                      }}
+                                  }},
                                   plugins: {{
                                       legend: {{
                                           display: true,
@@ -971,6 +1003,62 @@ jobs:
                               }}
                           }});
                       }}
+                      // Actualizar tabla con los datos
+                      actualizarTablaGraficas(datosTablaGraficas);
+                  }}
+
+                  // Función para actualizar la tabla de gráficas
+                  function actualizarTablaGraficas(datos) {{
+                      const tbody = document.querySelector('#dataTableGraficas tbody');
+                      tbody.innerHTML = '';
+
+                      datos.forEach((row, index) => {{
+                          const tr = document.createElement('tr');
+                          tr.setAttribute('data-mes-index', row.mesIndex);
+                          tr.style.cursor = 'pointer';
+                          tr.style.transition = 'background-color 0.2s ease';
+
+                          tr.innerHTML = `
+                              <td style="padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;">${row.mesAño}</td>
+                              <td style="padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;">${row.promedio}%</td>
+                              <td style="padding: 3px 2px; border-bottom: 0.5px solid #e5e2dd; font-size: 8px; text-align: center;">${row.cantidad}</td>
+                          `;
+
+                          // Evento hover para resaltar punto en la gráfica
+                          tr.addEventListener('mouseenter', () => {{
+                              resaltarFilaTabla(row.mesIndex);
+                          }});
+
+                          tr.addEventListener('mouseleave', () => {{
+                              limpiarResalteTabla();
+                          }});
+
+                          tbody.appendChild(tr);
+                      }});
+                  }}
+
+                  // Función para resaltar una fila en la tabla
+                  function resaltarFilaTabla(mesIndex) {{
+                      const tbody = document.querySelector('#dataTableGraficas tbody');
+                      const filas = tbody.querySelectorAll('tr');
+
+                      filas.forEach((fila, index) => {{
+                          if (index === mesIndex) {{
+                              fila.style.backgroundColor = '#fff3cd';
+                          }} else {{
+                              fila.style.backgroundColor = 'transparent';
+                          }}
+                      }});
+                  }}
+
+                  // Función para limpiar el resalte de la tabla
+                  function limpiarResalteTabla() {{
+                      const tbody = document.querySelector('#dataTableGraficas tbody');
+                      const filas = tbody.querySelectorAll('tr');
+
+                      filas.forEach(fila => {{
+                          fila.style.backgroundColor = 'transparent';
+                      }});
                   }}
 
                   // Función para actualizar solo tablas (puede ser lenta)
