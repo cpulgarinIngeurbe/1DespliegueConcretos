@@ -2633,6 +2633,7 @@ jobs:
 
           print(f'[+] ✅ HTML generado: {archivo_html}')
           PYTHON_SCRIPT
+        shell: python
 
       - name: 🔧 Configurar Git
         run: |
