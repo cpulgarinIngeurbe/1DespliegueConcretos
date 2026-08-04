@@ -906,7 +906,7 @@ jobs:
                           }});
 
                           datasets.push({{
-                              label: `f'c = \${fc} MPa`,
+                              label: `f'c = ${{fc}} MPa`,
                               data: data,
                               borderColor: color,
                               backgroundColor: 'transparent',
@@ -1077,7 +1077,7 @@ jobs:
 
                       fcArray.forEach(fc => {{
                           const thFc = document.createElement('th');
-                          thFc.textContent = `f'c=\${fc}`;
+                          thFc.textContent = `f'c=${{fc}}`;
                           thFc.style.cssText = 'background-color: #4B4F1D; color: #ffffff; padding: 3px 2px; text-align: center; font-weight: 600; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10;';
                           headerRow.appendChild(thFc);
                       }});
