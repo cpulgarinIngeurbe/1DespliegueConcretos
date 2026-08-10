@@ -2168,31 +2168,74 @@ jobs:
                       return filas;
                   }}
 
-                  // Función para descargar Excel
+                  // Función para validar si XLSX está disponible
+                  function verificarXLSXDisponible() {{
+                      if (typeof XLSX === 'undefined') {{
+                          throw new Error('La librería SheetJS (XLSX) no está cargada. Por favor, recarga la página.');
+                      }}
+                  }}
+
+                  // Función para descargar Excel (MEJORADA)
                   function descargarExcel() {{
                       try {{
+                          // Verificar que XLSX está disponible
+                          verificarXLSXDisponible();
+                          console.log('[*] Iniciando descarga de Excel...');
+
                           // Obtener datos de cada pestaña
                           const datosConsolidadoExcel = prepararDatosExcel('consolidado');
                           const datosAlertasExcel = prepararDatosExcel('alertas');
                           const datosIncumplimientosExcel = prepararDatosExcel('incumplimientos');
 
+                          console.log(`[*] Datos obtenidos - Consolidado: ${{datosConsolidadoExcel.length}} filas, Alertas: ${{datosAlertasExcel.length}} filas, Incumplimientos: ${{datosIncumplimientosExcel.length}} filas`);
+
+                          // Validar que hay al menos una tabla con datos
+                          const tieneDatos = datosConsolidadoExcel.length > 0 ||
+                                            datosAlertasExcel.length > 0 ||
+                                            datosIncumplimientosExcel.length > 0;
+
+                          if (!tieneDatos) {{
+                              console.warn('[!] No hay datos para descargar');
+                              alert('No hay datos para descargar. Por favor, asegúrate de que hay datos en al menos una pestaña.');
+                              return;
+                          }}
+
                           // Crear workbook
                           const wb = XLSX.utils.book_new();
+                          console.log('[*] Workbook creado');
 
                           // Agregar sheets
                           if (datosConsolidadoExcel.length > 0) {{
-                              const ws1 = XLSX.utils.aoa_to_sheet(datosConsolidadoExcel);
-                              XLSX.utils.book_append_sheet(wb, ws1, 'Consolidado');
+                              try {{
+                                  const ws1 = XLSX.utils.aoa_to_sheet(datosConsolidadoExcel);
+                                  XLSX.utils.book_append_sheet(wb, ws1, 'Consolidado');
+                                  console.log('[+] Hoja "Consolidado" agregada');
+                              }} catch (e) {{
+                                  console.error('[!] Error al agregar hoja Consolidado:', e);
+                                  throw new Error('Error al procesar datos de Consolidado: ' + e.message);
+                              }}
                           }}
 
                           if (datosAlertasExcel.length > 0) {{
-                              const ws2 = XLSX.utils.aoa_to_sheet(datosAlertasExcel);
-                              XLSX.utils.book_append_sheet(wb, ws2, 'Alertas');
+                              try {{
+                                  const ws2 = XLSX.utils.aoa_to_sheet(datosAlertasExcel);
+                                  XLSX.utils.book_append_sheet(wb, ws2, 'Alertas');
+                                  console.log('[+] Hoja "Alertas" agregada');
+                              }} catch (e) {{
+                                  console.error('[!] Error al agregar hoja Alertas:', e);
+                                  throw new Error('Error al procesar datos de Alertas: ' + e.message);
+                              }}
                           }}
 
                           if (datosIncumplimientosExcel.length > 0) {{
-                              const ws3 = XLSX.utils.aoa_to_sheet(datosIncumplimientosExcel);
-                              XLSX.utils.book_append_sheet(wb, ws3, 'Incumplimientos');
+                              try {{
+                                  const ws3 = XLSX.utils.aoa_to_sheet(datosIncumplimientosExcel);
+                                  XLSX.utils.book_append_sheet(wb, ws3, 'Incumplimientos');
+                                  console.log('[+] Hoja "Incumplimientos" agregada');
+                              }} catch (e) {{
+                                  console.error('[!] Error al agregar hoja Incumplimientos:', e);
+                                  throw new Error('Error al procesar datos de Incumplimientos: ' + e.message);
+                              }}
                           }}
 
                           // Generar nombre de archivo con fecha y hora
@@ -2206,12 +2249,28 @@ jobs:
                           const nombreArchivo = 'dashboard_' + fecha + '_' + hora + '.xlsx';
 
                           // Descargar archivo
+                          console.log('[*] Descargando archivo: ' + nombreArchivo);
                           XLSX.writeFile(wb, nombreArchivo);
 
-                          console.log('[+] ✅ Excel descargado: ' + nombreArchivo);
+                          console.log('[+] ✅ Excel descargado exitosamente: ' + nombreArchivo);
+                          alert('Excel descargado exitosamente: ' + nombreArchivo);
+
                       }} catch (error) {{
-                          console.error('[!] Error al descargar Excel:', error);
-                          alert('Error al descargar el Excel. Verifica la consola para más detalles.');
+                          console.error('[!] Error al descargar Excel:', error.message);
+                          console.error('[!] Detalles completos del error:', error);
+
+                          // Mensaje de error específico según el tipo
+                          let mensajeError = 'Error al descargar el Excel. ';
+
+                          if (error.message.includes('XLSX')) {{
+                              mensajeError += 'La librería XLSX no está disponible. Intenta recargar la página.';
+                          }} else if (error.message.includes('No hay datos')) {{
+                              mensajeError += 'No hay datos para descargar.';
+                          }} else {{
+                              mensajeError += 'Verifica la consola para más detalles.';
+                          }}
+
+                          alert(mensajeError);
                       }}
                   }}
 
