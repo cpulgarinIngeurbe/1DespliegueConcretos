@@ -313,11 +313,21 @@ jobs:
                   table tbody tr {{ cursor: pointer; transition: background-color 0.2s ease; }}
                   table tbody tr:hover:not(.row-expandida) {{ background-color: #fffacd !important; }}
                   .footer {{ margin-top: 20px; padding: 10px 0; border-top: 1px solid #A3C610; text-align: right; font-size: 8px; color: #7CB342; }}
+                  .btn-descargar-excel {{ padding: 6px 12px; background-color: #7CB342; color: #ffffff; border: 1px solid #5A8C3A; border-radius: 3px; font-size: 9px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(75, 79, 29, 0.15); }}
+                  .btn-descargar-excel:hover {{ background-color: #6b9835; border-color: #4B4F1D; box-shadow: 0 3px 6px rgba(75, 79, 29, 0.25); }}
+                  .btn-descargar-excel:active {{ transform: scale(0.98); }}
               </style>
           </head>
           <body>
               <img src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/inge.png" alt="Logo Ingeurbe" style="position: absolute; top: 30px; right: 10px; height: 50px; width: auto;">
               <div class="container">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                      <div></div>
+                      <button id="btnDescargarExcel" class="btn-descargar-excel" title="Descargar datos filtrados como archivo Excel">
+                          📥 Descargar Excel
+                      </button>
+                  </div>
+
                   <div class="tabs-container">
                       <button class="tab-button active" data-tab="incumplimientos">Alertas Incumplimientos</button>
                       <button class="tab-button" data-tab="alertas">Control 28 Días</button>
@@ -478,6 +488,8 @@ jobs:
                       Version {version}
                   </div>
               </div>
+
+              <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
 
               <script>
                   // Datos de las tres pestañas
@@ -2084,6 +2096,130 @@ jobs:
                           filterDropdownFcIncumplimientos.classList.remove('open');
                       }}
                   }});
+
+                  // Función para obtener datos filtrados de una tabla
+                  function obtenerDatosTabla(nombreTab) {{
+                      let datos = [];
+                      if (nombreTab === 'consolidado') {{
+                          datos = datosActualesConsolidado.length > 0 ? datosActualesConsolidado : datosConsolidado;
+                      }} else if (nombreTab === 'alertas') {{
+                          datos = datosActualesAlertas.length > 0 ? datosActualesAlertas : datosAlertas;
+                      }} else if (nombreTab === 'incumplimientos') {{
+                          datos = datosActualesIncumplimientos.length > 0 ? datosActualesIncumplimientos : datosIncumplimientos;
+                      }}
+                      return datos;
+                  }}
+
+                  // Función para obtener columnas visibles de cada tabla
+                  function obtenerColumnasVisibles(nombreTab) {{
+                      let columnasOcultas = [];
+                      if (nombreTab === 'consolidado') {{
+                          columnasOcultas = columnasOcultasConsolidado;
+                      }} else if (nombreTab === 'alertas') {{
+                          columnasOcultas = columnasOcultasAlertas;
+                      }} else if (nombreTab === 'incumplimientos') {{
+                          columnasOcultas = columnasOcultasIncumplimientos;
+                      }}
+
+                      const datos = obtenerDatosTabla(nombreTab);
+                      if (datos.length === 0) return [];
+
+                      const allHeaders = Object.keys(datos[0]);
+                      return allHeaders.filter(h => !columnasOcultas.includes(h));
+                  }}
+
+                  // Función para preparar datos para Excel
+                  function prepararDatosExcel(nombreTab) {{
+                      const datos = obtenerDatosTabla(nombreTab);
+                      const columnasVisibles = obtenerColumnasVisibles(nombreTab);
+
+                      if (datos.length === 0) return [];
+
+                      // Crear array con encabezados mapeados
+                      const headers = columnasVisibles.map(col => mapearNombreColumna(col));
+                      const filas = [headers];
+
+                      // Procesar cada fila de datos
+                      datos.forEach(row => {{
+                          const fila = [];
+                          columnasVisibles.forEach(col => {{
+                              let valor = row[col];
+
+                              // Formatear fechas
+                              if ((col === 'Rotura' || col === 'Toma' || col === 'Fecha Descarga') && valor !== null && valor !== undefined) {{
+                                  valor = formatearFecha(valor);
+                              }}
+
+                              // Redondear decimales
+                              const columnasDecimales = ['Resistencia nominal (MPa)', 'Resistencia (MPa)', 'Resistencia (%)', 'Resistencia nominal (MPa) llave', 'Resistencia Teórica (MPa)', 'Diferencia (MPa)', 'Resistencia Promedio (MPa)', 'Promedio Móvil (MPa)', 'Resistencia Mínima (MPa)'];
+                              if (columnasDecimales.includes(col) && valor !== null && valor !== undefined) {{
+                                  if (typeof valor === 'number') {{
+                                      valor = parseFloat(valor.toFixed(2));
+                                  }} else if (typeof valor === 'string' && !isNaN(parseFloat(valor))) {{
+                                      valor = parseFloat(parseFloat(valor).toFixed(2));
+                                  }}
+                              }}
+
+                              fila.push(valor !== null && valor !== undefined ? valor : '');
+                          }});
+                          filas.push(fila);
+                      }});
+
+                      return filas;
+                  }}
+
+                  // Función para descargar Excel
+                  function descargarExcel() {{
+                      try {{
+                          // Obtener datos de cada pestaña
+                          const datosConsolidadoExcel = prepararDatosExcel('consolidado');
+                          const datosAlertasExcel = prepararDatosExcel('alertas');
+                          const datosIncumplimientosExcel = prepararDatosExcel('incumplimientos');
+
+                          // Crear workbook
+                          const wb = XLSX.utils.book_new();
+
+                          // Agregar sheets
+                          if (datosConsolidadoExcel.length > 0) {{
+                              const ws1 = XLSX.utils.aoa_to_sheet(datosConsolidadoExcel);
+                              XLSX.utils.book_append_sheet(wb, ws1, 'Consolidado');
+                          }}
+
+                          if (datosAlertasExcel.length > 0) {{
+                              const ws2 = XLSX.utils.aoa_to_sheet(datosAlertasExcel);
+                              XLSX.utils.book_append_sheet(wb, ws2, 'Alertas');
+                          }}
+
+                          if (datosIncumplimientosExcel.length > 0) {{
+                              const ws3 = XLSX.utils.aoa_to_sheet(datosIncumplimientosExcel);
+                              XLSX.utils.book_append_sheet(wb, ws3, 'Incumplimientos');
+                          }}
+
+                          // Generar nombre de archivo con fecha y hora
+                          const ahora = new Date();
+                          const fecha = String(ahora.getDate()).padStart(2, '0') +
+                                       String(ahora.getMonth() + 1).padStart(2, '0') +
+                                       ahora.getFullYear();
+                          const hora = String(ahora.getHours()).padStart(2, '0') +
+                                      String(ahora.getMinutes()).padStart(2, '0') +
+                                      String(ahora.getSeconds()).padStart(2, '0');
+                          const nombreArchivo = 'dashboard_' + fecha + '_' + hora + '.xlsx';
+
+                          // Descargar archivo
+                          XLSX.writeFile(wb, nombreArchivo);
+
+                          console.log('[+] ✅ Excel descargado: ' + nombreArchivo);
+                      }} catch (error) {{
+                          console.error('[!] Error al descargar Excel:', error);
+                          alert('Error al descargar el Excel. Verifica la consola para más detalles.');
+                      }}
+                  }}
+
+                  // Event listener para botón de descarga
+                  const btnDescargarExcel = document.getElementById('btnDescargarExcel');
+                  if (btnDescargarExcel) {{
+                      btnDescargarExcel.addEventListener('click', descargarExcel);
+                  }}
 
                   // Inicializar al cargar
                   window.addEventListener('load', () => {{
