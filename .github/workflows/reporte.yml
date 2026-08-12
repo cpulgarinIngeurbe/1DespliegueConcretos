@@ -86,25 +86,39 @@ jobs:
           def generar_id_registro(row):
               cilindro = str(row.get('Cilindro N°', '')).strip()
               proyecto = str(row.get('Proyecto', '')).strip()
-              return f"{proyecto}_{cilindro}"
+              edad = str(row.get('Edad (días)', '')).strip()
+              rotura = str(row.get('Rotura', '')).strip()
+              return f"{proyecto}|{cilindro}|{edad}|{rotura}"
 
           def cargar_control_enviados():
-              archivo_control = '.github/data/enviados.json'
+              archivo_control = '.github/data/enviados.csv'
+              ids_enviados = set()
               if os.path.exists(archivo_control):
                   try:
                       with open(archivo_control, 'r') as f:
-                          return json.load(f)
-                  except:
-                      print(f'  [!] Error al leer archivo de control, iniciando nuevo')
-                      return {}
-              return {}
+                          for linea in f:
+                              linea = linea.strip()
+                              if linea:
+                                  ids_enviados.add(linea)
+                      print(f'  [+] Cargados {len(ids_enviados)} registros del historial')
+                  except Exception as e:
+                      print(f'  [!] Error al leer archivo de control: {e}')
+              else:
+                  print(f'  [*] Archivo de control no existe (primera ejecución)')
+              return ids_enviados
 
-          def guardar_control_enviados(control):
-              archivo_control = '.github/data/enviados.json'
-              os.makedirs(os.path.dirname(archivo_control), exist_ok=True)
-              with open(archivo_control, 'w') as f:
-                  json.dump(control, f, indent=2)
-              print(f'  [+] Archivo de control actualizado')
+          def guardar_control_enviados(ids_nuevos):
+              archivo_control = '.github/data/enviados.csv'
+              try:
+                  os.makedirs(os.path.dirname(archivo_control), exist_ok=True)
+                  ids_existentes = cargar_control_enviados()
+                  todos_los_ids = ids_existentes.union(ids_nuevos)
+                  with open(archivo_control, 'w') as f:
+                      for id_reg in sorted(todos_los_ids):
+                          f.write(id_reg + '\n')
+                  print(f'  [+] Control actualizado: {len(todos_los_ids)} registros guardados')
+              except Exception as e:
+                  print(f'  [!] Error al guardar control: {e}')
 
           logo_url = "https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/inge.png"
 
@@ -126,8 +140,7 @@ jobs:
           print(f'  [+] Correo remitente: {mail_from}')
 
           try:
-              control_enviados = cargar_control_enviados()
-              print(f'  [+] Control de registros enviados cargado')
+              ids_ya_enviados_global = cargar_control_enviados()
 
               print(f'\n[*] Obteniendo token de acceso...')
               token_url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
@@ -178,17 +191,15 @@ jobs:
                   registros_totales = len(df_proyecto)
                   print(f'  [+] Registros totales encontrados: {registros_totales}')
 
-                  if proyecto not in control_enviados:
-                      control_enviados[proyecto] = []
-
-                  ids_ya_enviados = set(control_enviados[proyecto])
-                  df_nuevos = df_proyecto[~df_proyecto['_ID_REGISTRO'].isin(ids_ya_enviados)].copy()
+                  df_nuevos = df_proyecto[~df_proyecto['_ID_REGISTRO'].isin(ids_ya_enviados_global)].copy()
                   registros_nuevos = len(df_nuevos)
-                  print(f'  [+] Registros nuevos: {registros_nuevos}')
+                  print(f'  [+] Registros nuevos (no enviados): {registros_nuevos}')
 
                   if registros_nuevos == 0:
                       print(f'  [*] No hay registros nuevos para {proyecto}, saltando envío')
                       continue
+
+                  ids_a_enviar = set(df_nuevos['_ID_REGISTRO'].tolist())
 
                   df_nuevos_sin_id = df_nuevos.drop(columns=['_ID_REGISTRO'])
 
@@ -314,19 +325,16 @@ jobs:
                   if send_response.status_code in [200, 202]:
                       print(f'  [+] Email enviado exitosamente')
                       print(f'  [+] Destinatario: {email_destino}')
-
-                      nuevos_ids = df_nuevos['_ID_REGISTRO'].tolist()
-                      control_enviados[proyecto].extend(nuevos_ids)
-                      print(f'  [+] {len(nuevos_ids)} registros marcados como enviados')
+                      print(f'  [+] {len(ids_a_enviar)} registros marcados como enviados')
+                      ids_ya_enviados_global.update(ids_a_enviar)
                   else:
                       print(f'  [!] Error al enviar email: {send_response.status_code}')
                       print(f'  [!] Respuesta: {send_response.text}')
 
                   os.unlink(tmp_path)
 
-              guardar_control_enviados(control_enviados)
+              guardar_control_enviados(ids_ya_enviados_global)
               print(f'\n[+] Todos los reportes han sido procesados correctamente')
-              print(f'\n[*] Guardando archivo de control en repositorio...')
 
           except Exception as e:
               print(f'  [!] Error: {str(e)}')
@@ -340,12 +348,17 @@ jobs:
         run: |
           git config --global user.email "sistema@ingeurbe.com.co"
           git config --global user.name "Sistema INGEURBE"
-          git add .github/data/enviados.json
-          if git diff --cached --quiet; then
-            echo "No hay cambios en el control de registros enviados"
+
+          if [ -f ".github/data/enviados.csv" ]; then
+            git add .github/data/enviados.csv
+            if ! git diff --cached --quiet; then
+              git commit -m "[AUTO] Actualizar control de registros enviados"
+              git push origin main
+              echo "[+] ✅ Control de registros guardado en repositorio"
+            else
+              echo "[*] Sin cambios en el control de registros"
+            fi
           else
-            git commit -m "[AUTO] Actualizar control de registros enviados - $(date '+%Y-%m-%d %H:%M:%S')"
-            git push origin main
-            echo "[+] Control de registros guardado exitosamente"
+            echo "[!] No se encontró archivo de control"
           fi
         continue-on-error: true
