@@ -326,6 +326,7 @@ jobs:
 
               guardar_control_enviados(control_enviados)
               print(f'\n[+] Todos los reportes han sido procesados correctamente')
+              print(f'\n[*] Guardando archivo de control en repositorio...')
 
           except Exception as e:
               print(f'  [!] Error: {str(e)}')
@@ -334,3 +335,17 @@ jobs:
               exit(1)
 
         shell: python
+
+      - name: Guardar control de enviados en repositorio
+        run: |
+          git config --global user.email "sistema@ingeurbe.com.co"
+          git config --global user.name "Sistema INGEURBE"
+          git add .github/data/enviados.json
+          if git diff --cached --quiet; then
+            echo "No hay cambios en el control de registros enviados"
+          else
+            git commit -m "[AUTO] Actualizar control de registros enviados - $(date '+%Y-%m-%d %H:%M:%S')"
+            git push origin main
+            echo "[+] Control de registros guardado exitosamente"
+          fi
+        continue-on-error: true
