@@ -1945,10 +1945,11 @@
             filterDropdownCumplimientoIncumplimientos.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                 checkbox.checked = cumplimientoSeleccionados.includes(checkbox.value);
             });
-            actualizarTags(filterTagsCumplimientoIncumplimientos, cumplimientoSeleccionados, removerCumplimiento);
+            // El tag de Cumplimiento se muestra cuando se selecciona un proyecto (vía actualizarUIInmediata),
+            // igual que el resto de filtros, para no mostrarlo "flotando" antes de elegir proyecto
         });
 
     </script>
 </body>
 </html>
-<!-- Generated: 2026-09-17T09:01:54.706694 -->
+<!-- Generated: 2026-09-17T09:57:06.120146 -->

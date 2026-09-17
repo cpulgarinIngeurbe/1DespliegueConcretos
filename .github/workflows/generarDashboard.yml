@@ -2176,7 +2176,8 @@ jobs:
                       filterDropdownCumplimientoIncumplimientos.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {{
                           checkbox.checked = cumplimientoSeleccionados.includes(checkbox.value);
                       }});
-                      actualizarTags(filterTagsCumplimientoIncumplimientos, cumplimientoSeleccionados, removerCumplimiento);
+                      // El tag de Cumplimiento se muestra cuando se selecciona un proyecto (vía actualizarUIInmediata),
+                      // igual que el resto de filtros, para no mostrarlo "flotando" antes de elegir proyecto
                   }});
 
               </script>
