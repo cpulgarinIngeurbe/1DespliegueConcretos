@@ -352,6 +352,10 @@ jobs:
                               <button class="filter-btn" id="filterBtnFcIncumplimientos" style="display: none;">Filtrar por f'c (MPA)</button>
                               <div class="filter-dropdown" id="filterDropdownFcIncumplimientos"></div>
                           </div>
+                          <div style="display: inline-block; position: relative;">
+                              <button class="filter-btn" id="filterBtnCumplimientoIncumplimientos">Cumplimiento Normativo</button>
+                              <div class="filter-dropdown" id="filterDropdownCumplimientoIncumplimientos"></div>
+                          </div>
                           <button class="filter-btn" id="sortBtnIncumplimientos" style="display: none; color: #5A8C3A; border: 0.5px solid rgba(122, 179, 66, 0.5);">Fecha más cercana ▼</button>
                           <button class="filter-btn reset-btn" id="resetBtnIncumplimientos" style="align-self: center; margin-right: auto; display: none;">Restablecer Filtros</button>
                           <div style="display: flex; gap: 6px; flex-wrap: wrap; width: 100%;">
@@ -360,6 +364,7 @@ jobs:
                               <div class="filter-tags" id="filterTagsMuestraIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsMesIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                               <div class="filter-tags" id="filterTagsFcIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                              <div class="filter-tags" id="filterTagsCumplimientoIncumplimientos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                           </div>
                       </div>
                       <div class="analytics-wrapper">
@@ -547,6 +552,9 @@ jobs:
                   const filterTagsFcConsolidado = document.getElementById('filterTagsFcConsolidado');
                   const filterTagsFcAlertas = document.getElementById('filterTagsFcAlertas');
                   const filterTagsFcIncumplimientos = document.getElementById('filterTagsFcIncumplimientos');
+                  const filterBtnCumplimientoIncumplimientos = document.getElementById('filterBtnCumplimientoIncumplimientos');
+                  const filterDropdownCumplimientoIncumplimientos = document.getElementById('filterDropdownCumplimientoIncumplimientos');
+                  const filterTagsCumplimientoIncumplimientos = document.getElementById('filterTagsCumplimientoIncumplimientos');
 
                   const sortBtnConsolidado = document.getElementById('sortBtnConsolidado');
                   const sortBtnAlertas = document.getElementById('sortBtnAlertas');
@@ -580,6 +588,9 @@ jobs:
                   let mesesSeleccionados = [];
                   // Variable global para almacenar f'c (MPA) seleccionados
                   let fcSeleccionados = [];
+                  // Variable global para almacenar Cumplimiento Normativo seleccionados (solo pestaña Incumplimientos)
+                  // Por defecto solo se muestran los registros "Rechazado"
+                  let cumplimientoSeleccionados = ['Rechazado'];
 
                   // Variables de estado del ordenamiento por fecha
                   let ordenFechaConsolidado = 'descendente';
@@ -736,6 +747,12 @@ jobs:
                       return datos.filter(row => fcSeleccionados.includes(row['Resistencia nominal (MPa)']));
                   }}
 
+                  // Función para filtrar datos por Cumplimiento Normativo (solo pestaña Incumplimientos)
+                  function filtrarPorCumplimiento(datos, cumplimientoSeleccionados) {{
+                      if (cumplimientoSeleccionados.length === 0) return datos;
+                      return datos.filter(row => cumplimientoSeleccionados.includes(row['Cumplimiento normativo']));
+                  }}
+
                   // Función para ordenar datos por fecha (columna "Toma")
                   function ordenarPorFecha(datos, direccion = 'descendente') {{
                       const datosOrdenados = [...datos];
@@ -776,6 +793,7 @@ jobs:
                       renderizarTablaAlertas();
 
                       datosActualesIncumplimientos = filtrarPorProyectosUnidadesYMuestras(datosIncumplimientos, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas);
+                      datosActualesIncumplimientos = filtrarPorCumplimiento(datosActualesIncumplimientos, cumplimientoSeleccionados);
                       datosActualesIncumplimientos = ordenarPorFecha(datosActualesIncumplimientos, ordenFechaIncumplimientos);
                       paginaIncumplimientos = 1;
                       renderizarTablaIncumplimientos();
@@ -932,6 +950,13 @@ jobs:
                       actualizarTags(filterTagsFcConsolidado, fcSeleccionadosFormato, removerFcPorFormato);
                       actualizarTags(filterTagsFcAlertas, fcSeleccionadosFormato, removerFcPorFormato);
                       actualizarTags(filterTagsFcIncumplimientos, fcSeleccionadosFormato, removerFcPorFormato);
+
+                      // Actualizar checkboxes y tags de Cumplimiento Normativo (solo Incumplimientos)
+                      const checkboxesCumplimiento = filterDropdownCumplimientoIncumplimientos.querySelectorAll('input[type="checkbox"]');
+                      checkboxesCumplimiento.forEach(checkbox => {{
+                          checkbox.checked = cumplimientoSeleccionados.includes(checkbox.value);
+                      }});
+                      actualizarTags(filterTagsCumplimientoIncumplimientos, cumplimientoSeleccionados, removerCumplimiento);
                   }}
 
                   // Función para actualizar opciones de Unidad Estructural (después de cambiar proyectos o muestras)
@@ -1148,6 +1173,13 @@ jobs:
                   function removerFcPorFormato(fcFormato) {{
                       const fcNumero = parseFloat(fcFormato.replace(' MPa', ''));
                       removerFc(fcNumero);
+                  }}
+
+                  // Función para remover un valor de Cumplimiento Normativo seleccionado
+                  function removerCumplimiento(valor) {{
+                      cumplimientoSeleccionados = cumplimientoSeleccionados.filter(c => c !== valor);
+                      actualizarUIInmediata();
+                      requestAnimationFrame(actualizarTablas);
                   }}
 
                   // Función para llenar dropdown con checkboxes de f'c (MPA)
@@ -2048,6 +2080,7 @@ jobs:
                       muestrasSeleccionadas = [];
                       mesesSeleccionados = [];
                       fcSeleccionados = [];
+                      cumplimientoSeleccionados = ['Rechazado'];
                       paginaConsolidado = 1;
                       paginaAlertas = 1;
                       paginaIncumplimientos = 1;
@@ -2088,7 +2121,27 @@ jobs:
                           filterDropdownFcConsolidado.classList.remove('open');
                           filterDropdownFcAlertas.classList.remove('open');
                           filterDropdownFcIncumplimientos.classList.remove('open');
+                          filterDropdownCumplimientoIncumplimientos.classList.remove('open');
                       }}
+                  }});
+
+                  filterBtnCumplimientoIncumplimientos.addEventListener('click', () => {{
+                      filterDropdownCumplimientoIncumplimientos.classList.toggle('open');
+                      filterDropdownFcConsolidado.classList.remove('open');
+                      filterDropdownFcAlertas.classList.remove('open');
+                      filterDropdownFcIncumplimientos.classList.remove('open');
+                      filterDropdownConsolidado.classList.remove('open');
+                      filterDropdownAlertas.classList.remove('open');
+                      filterDropdownIncumplimientos.classList.remove('open');
+                      filterDropdownUnidadConsolidado.classList.remove('open');
+                      filterDropdownUnidadAlertas.classList.remove('open');
+                      filterDropdownUnidadIncumplimientos.classList.remove('open');
+                      filterDropdownMuestraConsolidado.classList.remove('open');
+                      filterDropdownMuestraAlertas.classList.remove('open');
+                      filterDropdownMuestraIncumplimientos.classList.remove('open');
+                      filterDropdownMesConsolidado.classList.remove('open');
+                      filterDropdownMesAlertas.classList.remove('open');
+                      filterDropdownMesIncumplimientos.classList.remove('open');
                   }});
 
                   // Inicializar al cargar
@@ -2113,6 +2166,17 @@ jobs:
                           proyectosSeleccionados = Array.from(document.querySelectorAll('.filter-dropdown input[type="checkbox"]:checked')).map(cb => cb.value);
                           actualizarTodosFiltros();
                       }});
+
+                      // Llenar dropdown de Cumplimiento Normativo (solo Incumplimientos), "Rechazado" activo por defecto
+                      llenarDropdown(filterDropdownCumplimientoIncumplimientos, ['Rechazado', 'Aprobado'], () => {{
+                          cumplimientoSeleccionados = Array.from(filterDropdownCumplimientoIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                          actualizarUIInmediata();
+                          requestAnimationFrame(actualizarTablas);
+                      }});
+                      filterDropdownCumplimientoIncumplimientos.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {{
+                          checkbox.checked = cumplimientoSeleccionados.includes(checkbox.value);
+                      }});
+                      actualizarTags(filterTagsCumplimientoIncumplimientos, cumplimientoSeleccionados, removerCumplimiento);
                   }});
 
               </script>
