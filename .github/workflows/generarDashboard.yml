@@ -29,6 +29,9 @@ jobs:
           import re
           from datetime import datetime
 
+          # ID único de esta generación (para que el navegador detecte versiones nuevas)
+          build_id = datetime.now().strftime('%Y%m%d%H%M%S')
+
           # Leer versión actual
           version = '1.0'
           if os.path.exists('version.txt'):
@@ -234,6 +237,35 @@ jobs:
           <head>
               <meta charset="utf-8">
               <meta content="width=device-width, initial-scale=1.0" name="viewport">
+              <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+              <meta http-equiv="Pragma" content="no-cache">
+              <meta http-equiv="Expires" content="0">
+              <script>
+                  // Anti-cache: en cada carga limpia caches/service workers y verifica que esta sea la ULTIMA version publicada.
+                  (function () {{
+                      var BUILD_ID = "{build_id}";
+                      try {{
+                          if ('serviceWorker' in navigator) {{
+                              navigator.serviceWorker.getRegistrations().then(function (rs) {{ rs.forEach(function (r) {{ r.unregister(); }}); }});
+                          }}
+                          if (window.caches) {{
+                              caches.keys().then(function (ks) {{ ks.forEach(function (k) {{ caches.delete(k); }}); }});
+                          }}
+                      }} catch (e) {{}}
+                      fetch('build_id.txt?t=' + Date.now(), {{ cache: 'no-store' }})
+                          .then(function (r) {{ return r.ok ? r.text() : ''; }})
+                          .then(function (remoto) {{
+                              remoto = (remoto || '').trim();
+                              if (!remoto || remoto === BUILD_ID) return;
+                              var intentado = null;
+                              try {{ intentado = sessionStorage.getItem('build_reload_intentado'); }} catch (e) {{}}
+                              if (intentado === remoto) return; // evita bucles si el despliegue aun no termina
+                              try {{ sessionStorage.setItem('build_reload_intentado', remoto); }} catch (e) {{}}
+                              location.replace(location.pathname + '?v=' + remoto);
+                          }})
+                          .catch(function () {{}});
+                  }})();
+              </script>
               <title>Informe de Resistencia de Concretos</title>
               <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
               <style>
@@ -2188,6 +2220,9 @@ jobs:
               f.write(html)
               f.write(f'\n<!-- Generated: {datetime.now().isoformat()} -->')
 
+          with open('build_id.txt', 'w', encoding='utf-8') as f:
+              f.write(build_id)
+
           print(f'[+] ✅ HTML generado: {archivo_html}')
           PYTHON_SCRIPT
 
@@ -2200,7 +2235,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          git add index.html
+          git add index.html build_id.txt
 
           if git diff --quiet --cached; then
             echo "[*] Sin cambios nuevos"
