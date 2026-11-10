@@ -1,163 +1,182 @@
-// ===== Pestaña "Seguimiento": tableros gráficos (f'c × edad → promedio RESULTADO %) =====
+// ===== Pestaña "Seguimiento": un solo gráfico (f'c × edad → promedio RESULTADO %), una curva por proyecto =====
 (function () {
     'use strict';
     var EDADES = [7, 14, 28, 56];
-    var TOLERANCIA = 5; // puntos porcentuales bajo lo esperado que se consideran "cerca"
-    var COLORES = { ok: 'var(--sg-ok)', warn: 'var(--sg-warn)', bad: 'var(--sg-bad)', neutral: 'var(--sg-neutral)' };
+    var PALETA = ['#4B7C2D', '#C2410C', '#1D6FA5', '#B8860B', '#7B3FA0', '#0E8F8F', '#B4433A', '#5B6770', '#8A9A1B', '#A0527C'];
+    var COLOR_CONSOLIDADO = '#4B4F1D';
 
     var root = document.getElementById('seguimiento');
-    var boardsEl = document.getElementById('sgBoards');
-    var selectEl = document.getElementById('sgProyecto');
-    var legendEl = document.getElementById('sgLegend');
-    if (!root || !boardsEl || typeof datosConsolidado === 'undefined') return;
-
-    var referencia = 'teorico';
+    var chartEl = document.getElementById('sgChart');
+    if (!root || !chartEl || typeof datosConsolidado === 'undefined') return;
+    var btn = document.getElementById('sgBtnProyectos');
+    var dd = document.getElementById('sgDropdown');
+    var tagsEl = document.getElementById('sgTags');
+    var resumenEl = document.getElementById('sgResumen');
+    var btnCons = document.getElementById('sgBtnConsolidar');
+    var btnReset = document.getElementById('sgBtnReset');
 
     function esc(s) {
-        return String(s).replace(/[&<>"']/g, function (c) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-        });
+        return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
     }
-    function num(v) {
-        var n = typeof v === 'number' ? v : parseFloat(v);
-        return isFinite(n) ? n : null;
-    }
+    function num(v) { var n = typeof v === 'number' ? v : parseFloat(v); return isFinite(n) ? n : null; }
+    function norm(s) { return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
 
-    // Agrega filas -> { lanes:[llave asc], cells:{llave:{edad:{n,sum,sumTeo,nTeo}}}, total }
+    // ---- datos: filas por proyecto, color fijo por proyecto ----
+    var porProyecto = {};
+    datosConsolidado.forEach(function (r) {
+        var p = r['Proyecto']; if (!p) return;
+        (porProyecto[p] = porProyecto[p] || []).push(r);
+    });
+    var proyectos = Object.keys(porProyecto).sort();
+    var color = {};
+    proyectos.forEach(function (p, i) { color[p] = PALETA[i % PALETA.length]; });
+    var seleccion = {};          // por defecto, todos los proyectos activos
+    proyectos.forEach(function (p) { seleccion[p] = true; });
+    var consolidar = false;
+
+    function activos() { return proyectos.filter(function (p) { return seleccion[p]; }); }
+
+    // Agrega filas -> { lanes:[f'c asc], cells:{f'c:{edad:{n,sum}}}, total }
     function agregar(filas) {
         var cells = {}, total = 0;
         filas.forEach(function (r) {
-            var edad = num(r['Edad (días)']);
-            var llave = num(r['Resistencia nominal (MPa) llave']);
-            var pct = num(r['Resistencia (%)']);
+            var edad = num(r['Edad (días)']), llave = num(r['Resistencia nominal (MPa) llave']), pct = num(r['Resistencia (%)']);
             if (EDADES.indexOf(edad) < 0 || llave === null || pct === null) return;
-            var nom = num(r['Resistencia nominal (MPa)']);
-            var teo = num(r['Resistencia Teórica (MPa)']);
             cells[llave] = cells[llave] || {};
-            var c = cells[llave][edad] = cells[llave][edad] || { n: 0, sum: 0, sumTeo: 0, nTeo: 0 };
+            var c = cells[llave][edad] = cells[llave][edad] || { n: 0, sum: 0 };
             c.n++; c.sum += pct; total++;
-            if (teo !== null && nom !== null && nom > 0) { c.sumTeo += (teo / nom) * 100; c.nTeo++; }
         });
-        var lanes = Object.keys(cells).map(Number).sort(function (a, b) { return a - b; });
-        return { lanes: lanes, cells: cells, total: total };
+        return { cells: cells, total: total };
     }
 
-    function estado(c) {
-        var prom = c.sum / c.n;
-        var esperado = referencia === 'cien' ? 100 : (c.nTeo > 0 ? c.sumTeo / c.nTeo : null);
-        if (esperado === null) return { k: 'neutral', prom: prom, esperado: null };
-        var d = prom - esperado;
-        return { k: d >= 0 ? 'ok' : (d >= -TOLERANCIA ? 'warn' : 'bad'), prom: prom, esperado: esperado };
+    function series() {
+        var act = activos();
+        if (!act.length) return [];
+        if (consolidar) {
+            var filas = [];
+            act.forEach(function (p) { filas = filas.concat(porProyecto[p]); });
+            var a = agregar(filas);
+            return [{ nombre: act.length === proyectos.length ? 'Todos los proyectos' : 'Consolidado (' + act.length + ' proy.)', color: COLOR_CONSOLIDADO, agg: a }];
+        }
+        return act.map(function (p) { return { nombre: p, color: color[p], agg: agregar(porProyecto[p]) }; });
     }
 
-    function svgTablero(agg) {
-        var L = agg.lanes.length;
-        var W = 640, left = 82, right = 26, top = 30, laneH = 58, bottom = 46;
+    // ---- gráfico ----
+    function dibujar() {
+        var ss = series();
+        var tot = ss.reduce(function (s, x) { return s + x.agg.total; }, 0);
+        resumenEl.textContent = ss.length ? (ss.length + (ss.length === 1 ? ' curva · ' : ' curvas · ') + tot.toLocaleString('es-CO') + ' muestras') : '';
+        var lanesSet = {};
+        ss.forEach(function (s) { Object.keys(s.agg.cells).forEach(function (k) { lanesSet[k] = true; }); });
+        var lanes = Object.keys(lanesSet).map(Number).sort(function (a, b) { return a - b; });
+        if (!ss.length || !lanes.length) {
+            chartEl.innerHTML = '<div class="sg-empty">' + (ss.length ? 'Sin muestras de 7, 14, 28 o 56 días.' : 'Selecciona al menos un proyecto.') + '</div>';
+            return;
+        }
+        var L = lanes.length, n = ss.length;
+        var W = 1000, left = 64, right = 24, top = 30, laneH = 78, bottom = 46;
         var H = top + L * laneH + bottom;
         var step = (W - left - right) / EDADES.length;
         var xs = EDADES.map(function (e, i) { return left + step * (i + 0.5); });
-        var yLane = function (i) { return top + (L - 1 - i) * laneH + laneH / 2; };
-        var out = [];
-        out.push('<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Promedio de resultado porcentual por f&#39;c y edad">');
-        out.push('<defs><linearGradient id="sgFade" x1="0" x2="1"><stop offset="0" stop-color="var(--gw-accent)" stop-opacity=".25"/><stop offset="1" stop-color="var(--gw-accent)" stop-opacity=".6"/></linearGradient></defs>');
-        // cuadrícula: líneas de carril y de edad (punteadas, como en el componente original)
+        var yBase = function (i) { return top + (L - 1 - i) * laneH + laneH / 2; };
+        var gap = Math.min(15, (laneH - 16) / Math.max(n, 1));
+        var mostrarEtq = gap >= 12;
+        var o = [];
+        o.push('<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Seguimiento de resistencia por f\'c y edad">');
         for (var i = 0; i < L; i++) {
-            out.push('<path d="M' + left + ' ' + yLane(i) + ' H' + (W - right) + '" stroke="currentColor" opacity=".13" stroke-dasharray="3 5"/>');
+            if (i % 2 === 0) o.push('<rect x="' + left + '" y="' + (top + (L - 1 - i) * laneH) + '" width="' + (W - left - right) + '" height="' + laneH + '" fill="#f6f8ee" opacity=".7"/>');
+            o.push('<path d="M' + left + ' ' + yBase(i) + ' H' + (W - right) + '" stroke="#A3C610" stroke-opacity=".35" stroke-dasharray="3 5"/>');
         }
-        xs.forEach(function (x) {
-            out.push('<path d="M' + x + ' ' + top + ' V' + (top + L * laneH) + '" stroke="currentColor" opacity=".09" stroke-dasharray="3 5"/>');
-        });
-        // ejes
-        out.push('<path d="M' + left + ' ' + top + ' V' + (top + L * laneH) + ' H' + (W - right) + '" stroke="currentColor" opacity=".35" fill="none" stroke-linecap="round"/>');
-        out.push('<text x="' + left + '" y="' + (top - 12) + '" font-size="10" font-weight="700" fill="currentColor" opacity=".7">f&#39;c (MPa)</text>');
-        agg.lanes.forEach(function (llave, i) {
-            out.push('<text x="' + (left - 12) + '" y="' + (yLane(i) + 4) + '" text-anchor="end" font-size="13" font-weight="800" fill="currentColor">' + esc(llave) + '</text>');
-        });
-        EDADES.forEach(function (e, i) {
-            out.push('<text x="' + xs[i] + '" y="' + (top + L * laneH + 20) + '" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">' + e + '</text>');
-        });
-        out.push('<text x="' + (left + (W - left - right) / 2) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor" opacity=".7">Edad (días)</text>');
+        xs.forEach(function (x) { o.push('<path d="M' + x + ' ' + top + ' V' + (top + L * laneH) + '" stroke="#A3C610" stroke-opacity=".25" stroke-dasharray="3 5"/>'); });
+        o.push('<path d="M' + left + ' ' + top + ' V' + (top + L * laneH) + ' H' + (W - right) + '" stroke="#4B4F1D" stroke-opacity=".5" fill="none" stroke-linecap="round"/>');
+        o.push('<text x="' + left + '" y="' + (top - 12) + '" font-size="10" font-weight="700" fill="#4B4F1D">f\'c (MPa)</text>');
+        lanes.forEach(function (ll, i) { o.push('<text x="' + (left - 10) + '" y="' + (yBase(i) + 4) + '" text-anchor="end" font-size="12" font-weight="700" fill="#4B4F1D">' + ll + '</text>'); });
+        EDADES.forEach(function (e, j) { o.push('<text x="' + xs[j] + '" y="' + (top + L * laneH + 20) + '" text-anchor="middle" font-size="12" font-weight="700" fill="#4B4F1D">' + e + '</text>'); });
+        o.push('<text x="' + (left + (W - left - right) / 2) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#4B4F1D" opacity=".8">Edad (días)</text>');
 
-        // series por carril: línea + puntos con su porcentaje
-        var orden = 0;
-        agg.lanes.forEach(function (llave, i) {
-            var y = yLane(i), pts = [];
-            EDADES.forEach(function (e, j) { if (agg.cells[llave][e]) pts.push(xs[j]); });
-            if (pts.length > 1) {
-                out.push('<polyline points="' + pts.map(function (x) { return x + ',' + y; }).join(' ') + '" fill="none" stroke="url(#sgFade)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>');
-            }
-            EDADES.forEach(function (e, j) {
-                var c = agg.cells[llave][e];
-                if (!c) { out.push('<circle cx="' + xs[j] + '" cy="' + y + '" r="3" fill="currentColor" opacity=".18"/>'); return; }
-                var st = estado(c), col = COLORES[st.k];
-                var txt = st.prom.toFixed(1) + '%';
-                var detalle = "f'c " + llave + ' MPa · ' + e + ' días\nPromedio: ' + txt + '\nMuestras: ' + c.n +
-                    (st.esperado !== null ? '\nEsperado: ' + st.esperado.toFixed(1) + '%' : '\nSin referencia teórica');
-                out.push('<g class="sg-pt sg-reveal" style="--i:' + (orden++ % 14) + '"><title>' + esc(detalle) + '</title>' +
-                    '<circle cx="' + xs[j] + '" cy="' + y + '" r="5.5" fill="' + col + '" stroke="#fff" stroke-width="1.5"/>' +
-                    '<rect x="' + (xs[j] - 29) + '" y="' + (y - 30) + '" width="58" height="19" rx="9.5" fill="#ffffffc8" stroke="' + col + '" stroke-opacity=".55"/>' +
-                    '<text x="' + xs[j] + '" y="' + (y - 17) + '" text-anchor="middle" font-size="11" font-weight="800" fill="' + col + '">' + txt + '</text></g>');
+        ss.forEach(function (s, k) {
+            var dy = (k - (n - 1) / 2) * gap;
+            var g = ['<g class="sg-serie" data-k="' + k + '">'];
+            lanes.forEach(function (ll, i) {
+                var y = yBase(i) + dy, pts = [];
+                EDADES.forEach(function (e, j) { if (s.agg.cells[ll] && s.agg.cells[ll][e]) pts.push([xs[j], e]); });
+                if (pts.length > 1) g.push('<polyline points="' + pts.map(function (p) { return p[0] + ',' + y; }).join(' ') + '" fill="none" stroke="' + s.color + '" stroke-opacity=".55" stroke-width="2" stroke-linecap="round"/>');
+                pts.forEach(function (p) {
+                    var c = s.agg.cells[ll][p[1]], prom = c.sum / c.n, txt = prom.toFixed(1) + '%';
+                    g.push('<g><title>' + esc(s.nombre + "\nf'c " + ll + ' MPa · ' + p[1] + ' días\nPromedio: ' + txt + '\nMuestras: ' + c.n) + '</title>' +
+                        '<circle cx="' + p[0] + '" cy="' + y + '" r="4.5" fill="' + s.color + '" stroke="#fff" stroke-width="1.5"/>' +
+                        '<g class="sg-lbl"><rect x="' + (p[0] + 8) + '" y="' + (y - 6.5) + '" width="42" height="13" rx="3" fill="#fff" fill-opacity=".92" stroke="' + s.color + '" stroke-opacity=".6" stroke-width=".8"/>' +
+                        '<text x="' + (p[0] + 29) + '" y="' + (y + 3.4) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="' + s.color + '">' + txt + '</text></g></g>');
+                });
+            });
+            g.push('</g>');
+            o.push(g.join(''));
+        });
+        o.push('</svg>');
+        chartEl.innerHTML = o.join('');
+        chartEl.classList.toggle('sg-hide-lbl', !mostrarEtq);
+        // resaltar una curva al pasar el cursor
+        chartEl.querySelectorAll('.sg-serie').forEach(function (g) {
+            g.addEventListener('mouseenter', function () { chartEl.classList.add('sg-chart-focus'); g.classList.add('sg-on'); });
+            g.addEventListener('mouseleave', function () { chartEl.classList.remove('sg-chart-focus'); g.classList.remove('sg-on'); });
+        });
+    }
+
+    // ---- controles ----
+    function tags() {
+        var act = activos();
+        tagsEl.innerHTML = consolidar && act.length
+            ? '<span class="sg-tag" style="cursor:default"><i class="sg-sw" style="background:' + COLOR_CONSOLIDADO + '"></i>Curva consolidada de ' + act.length + ' proyecto(s)</span>'
+            : act.map(function (p) {
+                return '<span class="sg-tag" data-p="' + esc(p) + '"><i class="sg-sw" style="background:' + color[p] + '"></i>' + esc(p) + ' <b>&times;</b></span>';
+            }).join('');
+        tagsEl.querySelectorAll('.sg-tag[data-p]').forEach(function (t) {
+            t.addEventListener('click', function () { seleccion[t.getAttribute('data-p')] = false; refrescar(); });
+        });
+    }
+    function sincronizarChecks() {
+        dd.querySelectorAll('input[data-p]').forEach(function (i) { i.checked = !!seleccion[i.getAttribute('data-p')]; });
+        var todos = dd.querySelector('input[data-all]');
+        if (todos) todos.checked = activos().length === proyectos.length;
+    }
+    function refrescar() { tags(); sincronizarChecks(); btnCons.classList.toggle('active', consolidar); dibujar(); }
+
+    function construirDropdown() {
+        var h = '<div class="sg-search"><input type="text" placeholder="Escribir para filtrar..." autocomplete="off"></div>';
+        h += '<div class="sg-opt sg-all"><input type="checkbox" id="sgChkAll" data-all="1"><label for="sgChkAll">Seleccionar todos</label></div>';
+        proyectos.forEach(function (p, i) {
+            h += '<div class="sg-opt" data-name="' + esc(p) + '"><input type="checkbox" id="sgChk' + i + '" data-p="' + esc(p) + '" checked>' +
+                '<label for="sgChk' + i + '"><i class="sg-sw" style="background:' + color[p] + '"></i>' + esc(p) + '</label></div>';
+        });
+        dd.innerHTML = h;
+        dd.querySelector('input[data-all]').addEventListener('change', function (e) {
+            proyectos.forEach(function (p) { seleccion[p] = e.target.checked; });
+            refrescar();
+        });
+        dd.querySelectorAll('input[data-p]').forEach(function (i) {
+            i.addEventListener('change', function () { seleccion[i.getAttribute('data-p')] = i.checked; refrescar(); });
+        });
+        var inp = dd.querySelector('.sg-search input');
+        inp.addEventListener('input', function () {
+            var q = norm(inp.value.trim());
+            dd.querySelectorAll('.sg-opt[data-name]').forEach(function (o) {
+                o.style.display = !q || norm(o.getAttribute('data-name')).indexOf(q) >= 0 ? '' : 'none';
             });
         });
-        out.push('</svg>');
-        return out.join('');
     }
 
-    function tablero(titulo, agg, ancho, idx) {
-        var cuerpo = agg.lanes.length
-            ? svgTablero(agg)
-            : '<div class="sg-empty">Sin muestras de 7, 14, 28 o 56 días para este proyecto.</div>';
-        return '<section class="sg-board sg-glass sg-reveal' + (ancho ? ' sg-wide' : '') + '" style="--i:' + idx + '">' +
-            '<div class="sg-board-head"><h3>' + esc(titulo) + '</h3><span class="sg-chip">' + agg.total + ' muestras</span></div>' + cuerpo + '</section>';
-    }
-
-    function leyenda() {
-        var ref = referencia === 'cien' ? "100 % de f'c" : 'la curva teórica de cada edad';
-        legendEl.innerHTML =
-            '<span><i style="background:' + COLORES.ok + '"></i>Alcanza o supera ' + ref + '</span>' +
-            '<span><i style="background:' + COLORES.warn + '"></i>Hasta ' + TOLERANCIA + ' pts por debajo</span>' +
-            '<span><i style="background:' + COLORES.bad + '"></i>Más de ' + TOLERANCIA + ' pts por debajo</span>' +
-            (referencia === 'teorico' ? '<span><i style="background:' + COLORES.neutral + '"></i>Sin referencia teórica</span>' : '');
-    }
-
-    function poblarProyectos() {
-        var vistos = {};
-        datosConsolidado.forEach(function (r) { if (r['Proyecto']) vistos[r['Proyecto']] = true; });
-        var nombres = Object.keys(vistos).sort();
-        selectEl.innerHTML = '<option value="__todos__">Todos los proyectos</option>' +
-            nombres.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('');
-    }
-
-    function render() {
-        leyenda();
-        var sel = selectEl.value || '__todos__';
-        var html = '';
-        if (sel === '__todos__') {
-            html += tablero('Todos los proyectos', agregar(datosConsolidado), true, 1);
-            var porProyecto = {};
-            datosConsolidado.forEach(function (r) {
-                var p = r['Proyecto']; if (!p) return;
-                (porProyecto[p] = porProyecto[p] || []).push(r);
-            });
-            Object.keys(porProyecto).sort().forEach(function (p, i) {
-                html += tablero(p, agregar(porProyecto[p]), false, i + 2);
-            });
-        } else {
-            html += tablero(sel, agregar(datosConsolidado.filter(function (r) { return r['Proyecto'] === sel; })), true, 1);
-        }
-        boardsEl.innerHTML = html;
-    }
-
-    selectEl.addEventListener('change', render);
-    root.querySelectorAll('.sg-seg button').forEach(function (b) {
-        b.addEventListener('click', function () {
-            root.querySelectorAll('.sg-seg button').forEach(function (x) { x.classList.remove('active'); });
-            b.classList.add('active');
-            referencia = b.getAttribute('data-ref');
-            render();
-        });
+    btn.addEventListener('click', function () {
+        dd.classList.toggle('open');
+        if (dd.classList.contains('open')) { var i = dd.querySelector('.sg-search input'); if (i) { i.value = ''; i.dispatchEvent(new Event('input')); setTimeout(function () { i.focus(); }, 30); } }
     });
-    var boton = document.querySelector('[data-tab="seguimiento"]');
-    if (boton) boton.addEventListener('click', render);
-    poblarProyectos();
+    document.addEventListener('click', function (e) { if (!e.target.closest('#seguimiento .sg-bar')) dd.classList.remove('open'); });
+    btnCons.addEventListener('click', function () { consolidar = !consolidar; refrescar(); });
+    btnReset.addEventListener('click', function () {
+        proyectos.forEach(function (p) { seleccion[p] = true; }); consolidar = false; refrescar();
+    });
+    var tabBtn = document.querySelector('[data-tab="seguimiento"]');
+    if (tabBtn) tabBtn.addEventListener('click', dibujar);
+
+    construirDropdown();
+    refrescar();
 })();
