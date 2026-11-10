@@ -1,0 +1,25 @@
+<div id="seguimiento" class="tab-content">
+    <div class="sg-stage">
+        <div class="sg-toolbar sg-glass sg-reveal">
+            <div class="sg-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21v-6"/><path d="M12 21V9"/><path d="M19 21V3"/></svg>
+                <div>
+                    <h2>Seguimiento</h2>
+                    <p>Promedio de RESULTADO (%) por resistencia f'c y edad (7, 14, 28 y 56 días)</p>
+                </div>
+            </div>
+            <div class="sg-controls">
+                <label class="sg-field"><span>Proyecto</span><select id="sgProyecto"></select></label>
+                <div class="sg-field"><span>Comparar contra</span>
+                    <div class="sg-seg" role="group" aria-label="Referencia de comparación">
+                        <button type="button" data-ref="teorico" class="active">Curva teórica</button>
+                        <button type="button" data-ref="cien">100 % de f'c</button>
+                    </div>
+                </div>
+            </div>
+            <div class="sg-legend" id="sgLegend"></div>
+        </div>
+        <div id="sgBoards" class="sg-grid"></div>
+        <p class="sg-note">Cada punto es el promedio de RESULTADO (%) de las muestras con ese f'c (agrupado en 21, 28, 34, 41 y 48 MPa) y esa edad. Pasa el cursor sobre un punto para ver el detalle.</p>
+    </div>
+</div>

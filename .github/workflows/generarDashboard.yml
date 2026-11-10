@@ -232,6 +232,15 @@ jobs:
           for proyecto in proyectos_consolidado:
               opciones_html += f'<option value="{proyecto}"></option>'
 
+          # Plantillas de la pestaña Seguimiento (archivos propios para no escapar llaves en el f-string)
+          def leer_plantilla(nombre):
+              with open(os.path.join('plantillas', nombre), 'r', encoding='utf-8') as f:
+                  return f.read()
+
+          seguimiento_css = leer_plantilla('seguimiento.css')
+          seguimiento_panel = leer_plantilla('seguimiento.html')
+          seguimiento_js = leer_plantilla('seguimiento.js')
+
           html = f"""<!DOCTYPE html>
           <html class="light" lang="es">
           <head>
@@ -246,10 +255,10 @@ jobs:
                       var BUILD_ID = "{build_id}";
                       try {{
                           if ('serviceWorker' in navigator) {{
-                              navigator.serviceWorker.getRegistrations().then(function (rs) {{ rs.forEach(function (r) {{ r.unregister(); }}); }});
+                              navigator.serviceWorker.getRegistrations().then(function (rs) {{ rs.forEach(function (r) {{ r.unregister(); }}); }}).catch(function () {{}});
                           }}
                           if (window.caches) {{
-                              caches.keys().then(function (ks) {{ ks.forEach(function (k) {{ caches.delete(k); }}); }});
+                              caches.keys().then(function (ks) {{ ks.forEach(function (k) {{ caches.delete(k); }}); }}).catch(function () {{}});
                           }}
                       }} catch (e) {{}}
                       fetch('build_id.txt?t=' + Date.now(), {{ cache: 'no-store' }})
@@ -280,6 +289,7 @@ jobs:
                   .tab-button.active {{ color: #A3C610; border-bottom-color: #A3C610; }}
                   .tab-content {{ display: none; }}
                   .tab-content.active {{ display: block; }}
+                  {seguimiento_css}
                   .selector-section {{ margin-bottom: 8px; }}
                   .selector-label {{ font-size: 7px; color: #4B4F1D; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 2px; display: block; }}
                   .selector-dropdown {{ width: 100%; padding: 4px 5px; border: 1px solid #A3C610; background-color: #ffffff; color: #141311; border-radius: 3px; font-size: 8px; cursor: pointer; font-family: 'Inter', sans-serif; }}
@@ -360,6 +370,7 @@ jobs:
                       <button class="tab-button active" data-tab="incumplimientos">Alertas Incumplimientos</button>
                       <button class="tab-button" data-tab="alertas">Control 28 Días</button>
                       <button class="tab-button" data-tab="consolidado">Consolidado</button>
+                      <button class="tab-button" data-tab="seguimiento">Seguimiento</button>
                   </div>
 
                   <div id="incumplimientos" class="tab-content active">
@@ -517,6 +528,7 @@ jobs:
                           <div class="pagination" id="paginationConsolidado"></div>
                       </div>
                   </div>
+                  {seguimiento_panel}
                   <div class="footer">
                       Version {version}
                   </div>
@@ -730,8 +742,8 @@ jobs:
                           if (row['Toma'] !== undefined && row['Toma'] !== null) {{
                               const fecha = new Date(row['Toma']);
                               if (!isNaN(fecha.getTime())) {{
-                                  const mes = fecha.getMonth();
-                                  const año = fecha.getFullYear();
+                                  const mes = fecha.getUTCMonth();
+                                  const año = fecha.getUTCFullYear();
                                   const mesAñoKey = año + '-' + String(mes + 1).padStart(2, '0');
                                   meses.add(mesAñoKey);
                               }}
@@ -757,8 +769,8 @@ jobs:
                           if (row['Toma'] === undefined || row['Toma'] === null) return false;
                           const fecha = new Date(row['Toma']);
                           if (isNaN(fecha.getTime())) return false;
-                          const mes = fecha.getMonth();
-                          const año = fecha.getFullYear();
+                          const mes = fecha.getUTCMonth();
+                          const año = fecha.getUTCFullYear();
                           const mesAñoKey = año + '-' + String(mes + 1).padStart(2, '0');
                           return mesesSeleccionados.includes(mesAñoKey);
                       }});
@@ -1344,9 +1356,9 @@ jobs:
                               timestamp = Math.floor(timestamp / 1000000);
                           }}
                           const fecha = new Date(timestamp);
-                          const d = String(fecha.getDate()).padStart(2, '0');
-                          const m = String(fecha.getMonth() + 1).padStart(2, '0');
-                          const y = fecha.getFullYear();
+                          const d = String(fecha.getUTCDate()).padStart(2, '0');
+                          const m = String(fecha.getUTCMonth() + 1).padStart(2, '0');
+                          const y = fecha.getUTCFullYear();
                           return d + '-' + m + '-' + y;
                       }}
 
@@ -1355,9 +1367,9 @@ jobs:
                           try {{
                               const fecha = new Date(valor);
                               if (!isNaN(fecha.getTime())) {{
-                                  const d = String(fecha.getDate()).padStart(2, '0');
-                                  const m = String(fecha.getMonth() + 1).padStart(2, '0');
-                                  const y = fecha.getFullYear();
+                                  const d = String(fecha.getUTCDate()).padStart(2, '0');
+                                  const m = String(fecha.getUTCMonth() + 1).padStart(2, '0');
+                                  const y = fecha.getUTCFullYear();
                                   return d + '-' + m + '-' + y;
                               }}
                           }} catch (e) {{
@@ -2212,6 +2224,9 @@ jobs:
                       // igual que el resto de filtros, para no mostrarlo "flotando" antes de elegir proyecto
                   }});
 
+              </script>
+              <script>
+          {seguimiento_js}
               </script>
           </body>
           </html>"""
