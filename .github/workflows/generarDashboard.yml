@@ -3,6 +3,11 @@ name: 📊 Generar Dashboard (Sin Filtros)
 on:
   workflow_dispatch:
 
+# Una sola generacion a la vez (evita choques de index.html al hacer push)
+concurrency:
+  group: generar-dashboard
+  cancel-in-progress: false
+
 jobs:
   generar-dashboard:
     runs-on: ubuntu-latest
@@ -2262,7 +2267,7 @@ jobs:
             echo "[*] Sin cambios nuevos"
           else
             git commit -m "[AUTO] Generar Dashboard - $(date '+%Y-%m-%d %H:%M:%S')"
-            git pull --rebase origin main
+            git pull --rebase -X theirs origin main
             git push origin main
             echo "[+] ✓ Push completado"
           fi
