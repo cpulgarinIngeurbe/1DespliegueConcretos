@@ -2,7 +2,9 @@
 (function () {
     'use strict';
     var EDADES = [7, 14, 28, 56];
-    var PALETA = ['#4B7C2D', '#C2410C', '#1D6FA5', '#B8860B', '#7B3FA0', '#0E8F8F', '#B4433A', '#5B6770', '#8A9A1B', '#A0527C'];
+    // Escala corporativa (verdes/olivas/lima del dashboard); se distinguen además por forma de punto y trazo
+    var PALETA = ['#2d5a3d', '#A3C610', '#4B4F1D', '#7CB342', '#1F3D2B', '#C5DB5A', '#5c9966', '#8A9A1B', '#3D4800', '#5A8C3A'];
+    var TRAZOS = ['', '7 4', '', '7 4', '', '7 4', '', '7 4', '', '7 4'];
     var COLOR_CONSOLIDADO = '#4B4F1D';
 
     var root = document.getElementById('seguimiento');
@@ -56,9 +58,19 @@
             var filas = [];
             act.forEach(function (p) { filas = filas.concat(porProyecto[p]); });
             var a = agregar(filas);
-            return [{ nombre: act.length === proyectos.length ? 'Todos los proyectos' : 'Consolidado (' + act.length + ' proy.)', color: COLOR_CONSOLIDADO, agg: a }];
+            return [{ nombre: act.length === proyectos.length ? 'Todos los proyectos' : 'Consolidado (' + act.length + ' proy.)', color: COLOR_CONSOLIDADO, idx: 0, agg: a }];
         }
-        return act.map(function (p) { return { nombre: p, color: color[p], agg: agregar(porProyecto[p]) }; });
+        return act.map(function (p) { return { nombre: p, color: color[p], idx: proyectos.indexOf(p), agg: agregar(porProyecto[p]) }; });
+    }
+
+    function marcador(x, y, idx, col) {
+        var f = ' fill="' + col + '" stroke="#fff" stroke-width="1.5"';
+        switch (idx % 4) {
+            case 1: return '<rect x="' + (x - 4.2) + '" y="' + (y - 4.2) + '" width="8.4" height="8.4"' + f + '/>';
+            case 2: return '<path d="M' + x + ' ' + (y - 5.6) + ' L' + (x + 5.6) + ' ' + y + ' L' + x + ' ' + (y + 5.6) + ' L' + (x - 5.6) + ' ' + y + ' Z"' + f + '/>';
+            case 3: return '<path d="M' + x + ' ' + (y - 5.4) + ' L' + (x + 5.2) + ' ' + (y + 4) + ' L' + (x - 5.2) + ' ' + (y + 4) + ' Z"' + f + '/>';
+            default: return '<circle cx="' + x + '" cy="' + y + '" r="4.5"' + f + '/>';
+        }
     }
 
     // ---- gráfico ----
@@ -100,13 +112,13 @@
             lanes.forEach(function (ll, i) {
                 var y = yBase(i) + dy, pts = [];
                 EDADES.forEach(function (e, j) { if (s.agg.cells[ll] && s.agg.cells[ll][e]) pts.push([xs[j], e]); });
-                if (pts.length > 1) g.push('<polyline points="' + pts.map(function (p) { return p[0] + ',' + y; }).join(' ') + '" fill="none" stroke="' + s.color + '" stroke-opacity=".55" stroke-width="2" stroke-linecap="round"/>');
+                if (pts.length > 1) g.push('<polyline points="' + pts.map(function (p) { return p[0] + ',' + y; }).join(' ') + '" fill="none" stroke="' + s.color + '" stroke-opacity=".8" stroke-width="2" stroke-linecap="round"' + (TRAZOS[s.idx % 10] ? ' stroke-dasharray="' + TRAZOS[s.idx % 10] + '"' : '') + '/>');
                 pts.forEach(function (p) {
                     var c = s.agg.cells[ll][p[1]], prom = c.sum / c.n, txt = prom.toFixed(1) + '%';
                     g.push('<g><title>' + esc(s.nombre + "\nf'c " + ll + ' MPa · ' + p[1] + ' días\nPromedio: ' + txt + '\nMuestras: ' + c.n) + '</title>' +
-                        '<circle cx="' + p[0] + '" cy="' + y + '" r="4.5" fill="' + s.color + '" stroke="#fff" stroke-width="1.5"/>' +
-                        '<g class="sg-lbl"><rect x="' + (p[0] + 8) + '" y="' + (y - 6.5) + '" width="42" height="13" rx="3" fill="#fff" fill-opacity=".92" stroke="' + s.color + '" stroke-opacity=".6" stroke-width=".8"/>' +
-                        '<text x="' + (p[0] + 29) + '" y="' + (y + 3.4) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="' + s.color + '">' + txt + '</text></g></g>');
+                        marcador(p[0], y, s.idx, s.color) +
+                        '<g class="sg-lbl"><rect x="' + (p[0] + 8) + '" y="' + (y - 6.5) + '" width="42" height="13" rx="3" fill="#fff" fill-opacity=".92" stroke="' + s.color + '" stroke-opacity=".9" stroke-width="1"/>' +
+                        '<text x="' + (p[0] + 29) + '" y="' + (y + 3.4) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="#2f3215">' + txt + '</text></g></g>');
                 });
             });
             g.push('</g>');
