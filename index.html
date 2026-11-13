@@ -9,7 +9,7 @@
     <script>
         // Anti-cache: en cada carga limpia caches/service workers y verifica que esta sea la ULTIMA version publicada.
         (function () {
-            var BUILD_ID = "20261113192116";
+            var BUILD_ID = "20261113210723";
             try {
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
@@ -2328,4 +2328,4 @@
     </script>
 </body>
 </html>
-<!-- Generated: 2026-11-13T19:21:18.206903 -->
+<!-- Generated: 2026-11-13T21:07:26.602840 -->
