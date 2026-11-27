@@ -6,6 +6,18 @@
     function normalizar(s) {
         return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
     }
+    function casillas(dd) {
+        return Array.from(dd.querySelectorAll('.filter-option input[type="checkbox"]'));
+    }
+    // selección vigente según el desplegable
+    function seleccionActual(dd) {
+        if (/Unidad/.test(dd.id)) return unidadesEstructuralesSeleccionadas;
+        if (/Muestra/.test(dd.id)) return muestrasSeleccionadas;
+        if (/Mes/.test(dd.id)) return mesesSeleccionados;
+        if (/Fc/.test(dd.id)) return fcSeleccionados;
+        if (/Cumplimiento/.test(dd.id)) return cumplimientoSeleccionados;
+        return proyectosSeleccionados;
+    }
     function agregarBuscador(dd) {
         if (dd.querySelector(':scope > .filter-search')) return;
         if (!dd.querySelector('.filter-option')) return;
@@ -22,6 +34,17 @@
             });
         });
         inp.addEventListener('click', function (e) { e.stopPropagation(); });
+        // Enter: suma las coincidencias a lo que ya está seleccionado
+        inp.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            var todas = casillas(dd);
+            var vis = todas.filter(function (x) { return x.parentNode.style.display !== 'none'; });
+            if (!vis.length) return;
+            var previas = seleccionActual(dd).map(String);
+            todas.forEach(function (x) { x.checked = vis.indexOf(x) >= 0 || previas.indexOf(x.value) >= 0; });
+            vis[0].dispatchEvent(new Event('change'));
+        });
         box.appendChild(inp);
         dd.insertBefore(box, dd.firstChild);
     }

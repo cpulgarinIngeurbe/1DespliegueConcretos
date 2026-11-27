@@ -247,6 +247,9 @@ jobs:
           seguimiento_js = leer_plantilla('seguimiento.js')
           filtros_css = leer_plantilla('filtros_extra.css')
           filtros_js = leer_plantilla('filtros_extra.js')
+          tema_css = leer_plantilla('tema.css')
+          tema_js = leer_plantilla('tema.js')
+          barras_js = leer_plantilla('barras.js')
 
           html = f"""<!DOCTYPE html>
           <html class="light" lang="es">
@@ -366,11 +369,12 @@ jobs:
                   table tbody tr {{ cursor: pointer; transition: background-color 0.2s ease; }}
                   table tbody tr:hover:not(.row-expandida) {{ background-color: #fffacd !important; }}
                   .footer {{ margin-top: 20px; padding: 10px 0; border-top: 1px solid #A3C610; text-align: right; font-size: 8px; color: #7CB342; }}
+                  {tema_css}
               </style>
           </head>
           <body>
               <header class="app-header">
-                  <img src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/inge.png" alt="Logo Ingeurbe" class="app-header-logo">
+                  <img src="Visuales/inge.png" alt="Logo Ingeurbe" class="app-header-logo">
                   <h1 class="app-header-title">Informe de Resistencia de Concretos</h1>
               </header>
               <div class="container">
@@ -423,8 +427,8 @@ jobs:
                               <div id="analyticsCardIncumplimientos" class="analytics-card" style="display: none;">
                                   <div class="analytics-card-content">
                                       <div class="analytics-icon" id="analyticsIconIncumplimientos" style="display: none;">
-                                          <img id="analyticsIconIncumplimientosPositivo" src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/ArrowRise.png" alt="Tendencia positiva" style="width: 100%; height: 100%; display: none;">
-                                          <img id="analyticsIconIncumplimientosNulo" src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/ArrowRiseNulo.png" alt="Sin tendencia" style="width: 100%; height: 100%; display: none;">
+                                          <img id="analyticsIconIncumplimientosPositivo" src="Visuales/ArrowRise.png" alt="Tendencia positiva" style="width: 100%; height: 100%; display: none;">
+                                          <img id="analyticsIconIncumplimientosNulo" src="Visuales/ArrowRiseNulo.png" alt="Sin tendencia" style="width: 100%; height: 100%; display: none;">
                                       </div>
                                       <div class="analytics-info">
                                           <div class="analytics-label">Consolidado de muestras con baja resistencia</div>
@@ -435,8 +439,8 @@ jobs:
                               <div id="analyticsCardIncumplimientosUltimoMes" class="analytics-card" style="display: none;">
                                   <div class="analytics-card-content">
                                       <div class="analytics-icon" id="analyticsIconUltimoMes" style="display: none;">
-                                          <img id="analyticsIconUltimoMesPositivo" src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/ArrowRise.png" alt="Tendencia positiva" style="width: 100%; height: 100%; display: none;">
-                                          <img id="analyticsIconUltimoMesNulo" src="https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/ArrowRiseNulo.png" alt="Sin tendencia" style="width: 100%; height: 100%; display: none;">
+                                          <img id="analyticsIconUltimoMesPositivo" src="Visuales/ArrowRise.png" alt="Tendencia positiva" style="width: 100%; height: 100%; display: none;">
+                                          <img id="analyticsIconUltimoMesNulo" src="Visuales/ArrowRiseNulo.png" alt="Sin tendencia" style="width: 100%; height: 100%; display: none;">
                                       </div>
                                       <div class="analytics-info">
                                           <div class="analytics-label">Muestras con baja resistencia del último mes</div>
@@ -1744,7 +1748,7 @@ jobs:
                               }}
                           }} else if (typeof fechaToma === 'number') {{
                               // Número de Excel (días desde 1900)
-                              fecha = new Date((fechaToma - 25569) * 86400 * 1000);
+                              fecha = new Date(fechaToma > 1e11 ? fechaToma : (fechaToma - 25569) * 86400 * 1000);
                           }}
 
                           return fecha && fecha >= haceMes && fecha <= ahora;
@@ -2205,17 +2209,17 @@ jobs:
 
                       // Llenar dropdowns con proyectos y conectar al sistema global
                       llenarDropdown(filterDropdownConsolidado, obtenerProyectosUnicos(datosConsolidado), () => {{
-                          proyectosSeleccionados = Array.from(document.querySelectorAll('.filter-dropdown input[type="checkbox"]:checked')).map(cb => cb.value);
+                          proyectosSeleccionados = Array.from(filterDropdownConsolidado.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                           actualizarTodosFiltros();
                       }});
 
                       llenarDropdown(filterDropdownAlertas, obtenerProyectosUnicos(datosAlertas), () => {{
-                          proyectosSeleccionados = Array.from(document.querySelectorAll('.filter-dropdown input[type="checkbox"]:checked')).map(cb => cb.value);
+                          proyectosSeleccionados = Array.from(filterDropdownAlertas.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                           actualizarTodosFiltros();
                       }});
 
                       llenarDropdown(filterDropdownIncumplimientos, obtenerProyectosUnicos(datosIncumplimientos), () => {{
-                          proyectosSeleccionados = Array.from(document.querySelectorAll('.filter-dropdown input[type="checkbox"]:checked')).map(cb => cb.value);
+                          proyectosSeleccionados = Array.from(filterDropdownIncumplimientos.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
                           actualizarTodosFiltros();
                       }});
 
@@ -2238,6 +2242,12 @@ jobs:
               </script>
               <script>
           {filtros_js}
+              </script>
+              <script>
+          {tema_js}
+              </script>
+              <script>
+          {barras_js}
               </script>
           </body>
           </html>"""

@@ -10,7 +10,6 @@
 #seguimiento .sg-opt label { flex: 1; font-size: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
 #seguimiento .sg-sw { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
 #seguimiento .sg-all { background: #f6f8ee; font-weight: 700; }
-#seguimiento #sgBtnConsolidar.active { background: #5A8C3A; border-color: #5A8C3A; color: #fff; }
 #seguimiento .sg-tags { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
 #seguimiento .sg-tag { background-color: #f0f5a0; border: 1px solid #A3C610; color: #3D4800; padding: 3px 8px; border-radius: 3px; font-size: 8px; display: flex; align-items: center; gap: 5px; cursor: pointer; transition: all .15s; }
 #seguimiento .sg-tag:hover { background-color: #e8ecaa; border-color: #7CB342; }
@@ -20,10 +19,10 @@
 #seguimiento .sg-card-title { font-size: 8px; font-weight: 700; color: #4B4F1D; text-transform: uppercase; letter-spacing: .05em; }
 #seguimiento .sg-chip { font-size: 8px; color: #5A8C3A; border: 0.5px solid rgba(122,179,66,.5); border-radius: 3px; padding: 2px 7px; }
 #seguimiento #sgChart svg { display: block; width: 100%; height: auto; max-height: 640px; color: #4B4F1D; font-family: 'Inter', sans-serif; }
-#seguimiento .sg-serie { transition: opacity .15s; }
-#seguimiento .sg-chart-focus .sg-serie:not(.sg-on) { opacity: .12; }
-#seguimiento .sg-serie .sg-lbl { transition: opacity .15s; }
-#seguimiento .sg-hide-lbl .sg-serie .sg-lbl { opacity: 0; }
-#seguimiento .sg-hide-lbl .sg-serie.sg-on .sg-lbl { opacity: 1; }
 #seguimiento .sg-note { font-size: 8px; color: #7a7d57; margin: 6px 0 0; }
 #seguimiento .sg-empty { padding: 40px; text-align: center; font-size: 9px; color: #7a7d57; }
+#seguimiento #sgChart svg { max-height: none; }
+#seguimiento .sg-pt { cursor: default; }
+#seguimiento .sg-pt:hover circle { stroke: #3f3f3a; }
+#seguimiento .sg-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
+#seguimiento .sg-bar-k { display: inline-block; width: 18px; height: 5px; border-radius: 3px; background: #a9cf7a; margin-right: 4px; vertical-align: 1px; }

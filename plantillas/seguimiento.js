@@ -2,11 +2,6 @@
 (function () {
     'use strict';
     var EDADES = [7, 14, 28, 56];
-    // Escala corporativa (verdes/olivas/lima del dashboard); se distinguen además por forma de punto y trazo
-    var PALETA = ['#2d5a3d', '#A3C610', '#4B4F1D', '#7CB342', '#1F3D2B', '#C5DB5A', '#5c9966', '#8A9A1B', '#3D4800', '#5A8C3A'];
-    var TRAZOS = ['', '7 4', '', '7 4', '', '7 4', '', '7 4', '', '7 4'];
-    var COLOR_CONSOLIDADO = '#4B4F1D';
-
     var root = document.getElementById('seguimiento');
     var chartEl = document.getElementById('sgChart');
     if (!root || !chartEl || typeof datosConsolidado === 'undefined') return;
@@ -14,7 +9,7 @@
     var dd = document.getElementById('sgDropdown');
     var tagsEl = document.getElementById('sgTags');
     var resumenEl = document.getElementById('sgResumen');
-    var btnCons = document.getElementById('sgBtnConsolidar');
+    var btnFilas = document.getElementById('sgBtnFilas');
     var btnReset = document.getElementById('sgBtnReset');
 
     function esc(s) {
@@ -30,164 +25,202 @@
         (porProyecto[p] = porProyecto[p] || []).push(r);
     });
     var proyectos = Object.keys(porProyecto).sort();
-    var color = {};
-    proyectos.forEach(function (p, i) { color[p] = PALETA[i % PALETA.length]; });
-    var seleccion = {};          // por defecto, todos los proyectos activos
-    proyectos.forEach(function (p) { seleccion[p] = true; });
-    var consolidar = false;
+    var porFilas = 'fc';         // filas del gráfico: f'c o proyecto
 
-    function activos() { return proyectos.filter(function (p) { return seleccion[p]; }); }
+    function activos() { return proyectos.filter(function (p) { return proyectosSeleccionados.indexOf(p) >= 0; }); }
 
-    // Agrega filas -> { lanes:[f'c asc], cells:{f'c:{edad:{n,sum}}}, total }
-    function agregar(filas) {
-        var cells = {}, total = 0;
+    // ---- estadística ----
+    var VERDE = '#a9cf7a', VERDE_OSC = '#5c8a2e', AMBAR = '#d98e00';
+
+    function percentil(v, q) {
+        var i = (v.length - 1) * q, a = Math.floor(i), b = Math.ceil(i);
+        return v[a] + (v[b] - v[a]) * (i - a);
+    }
+    function resumir(filas) {
+        var v = [], teo = 0, nt = 0, suma = 0;
         filas.forEach(function (r) {
-            var edad = num(r['Edad (días)']), llave = num(r['Resistencia nominal (MPa) llave']), pct = num(r['Resistencia (%)']);
-            if (EDADES.indexOf(edad) < 0 || llave === null || pct === null) return;
-            cells[llave] = cells[llave] || {};
-            var c = cells[llave][edad] = cells[llave][edad] || { n: 0, sum: 0 };
-            c.n++; c.sum += pct; total++;
+            var pct = num(r['Resistencia (%)']);
+            if (pct === null) return;
+            v.push(pct); suma += pct;
+            var t = num(r['Resistencia Teórica (MPa)']), nom = num(r['Resistencia nominal (MPa)']);
+            if (t !== null && nom) { teo += t / nom * 100; nt++; }
         });
-        return { cells: cells, total: total };
+        if (!v.length) return null;
+        v.sort(function (a, b) { return a - b; });
+        return { n: v.length, prom: suma / v.length, p10: percentil(v, 0.1), p25: percentil(v, 0.25), p75: percentil(v, 0.75), p90: percentil(v, 0.9), esperado: nt ? teo / nt : null };
     }
 
-    function series() {
-        var act = activos();
-        if (!act.length) return [];
-        if (consolidar) {
-            var filas = [];
-            act.forEach(function (p) { filas = filas.concat(porProyecto[p]); });
-            var a = agregar(filas);
-            return [{ nombre: act.length === proyectos.length ? 'Todos los proyectos' : 'Consolidado (' + act.length + ' proy.)', color: COLOR_CONSOLIDADO, idx: 0, agg: a }];
-        }
-        return act.map(function (p) { return { nombre: p, color: color[p], idx: proyectos.indexOf(p), agg: agregar(porProyecto[p]) }; });
-    }
-
-    function marcador(x, y, idx, col) {
-        var f = ' fill="' + col + '" stroke="#fff" stroke-width="1.5"';
-        switch (idx % 4) {
-            case 1: return '<rect x="' + (x - 4.2) + '" y="' + (y - 4.2) + '" width="8.4" height="8.4"' + f + '/>';
-            case 2: return '<path d="M' + x + ' ' + (y - 5.6) + ' L' + (x + 5.6) + ' ' + y + ' L' + x + ' ' + (y + 5.6) + ' L' + (x - 5.6) + ' ' + y + ' Z"' + f + '/>';
-            case 3: return '<path d="M' + x + ' ' + (y - 5.4) + ' L' + (x + 5.2) + ' ' + (y + 4) + ' L' + (x - 5.2) + ' ' + (y + 4) + ' Z"' + f + '/>';
-            default: return '<circle cx="' + x + '" cy="' + y + '" r="4.5"' + f + '/>';
-        }
-    }
-
-    // ---- gráfico ----
+    // ---- gráfico: un panel por edad; filas = f'c o proyecto ----
     function dibujar() {
-        var ss = series();
-        var tot = ss.reduce(function (s, x) { return s + x.agg.total; }, 0);
-        resumenEl.textContent = ss.length ? (ss.length + (ss.length === 1 ? ' curva · ' : ' curvas · ') + tot.toLocaleString('es-CO') + ' muestras') : '';
-        var lanesSet = {};
-        ss.forEach(function (s) { Object.keys(s.agg.cells).forEach(function (k) { lanesSet[k] = true; }); });
-        var lanes = Object.keys(lanesSet).map(Number).sort(function (a, b) { return a - b; });
-        if (!ss.length || !lanes.length) {
-            chartEl.innerHTML = '<div class="sg-empty">' + (ss.length ? 'Sin muestras de 7, 14, 28 o 56 días.' : 'Selecciona al menos un proyecto.') + '</div>';
+        var filas = filtrarPorProyectosUnidadesYMuestras(datosConsolidado, proyectosSeleccionados, unidadesEstructuralesSeleccionadas, muestrasSeleccionadas)
+            .filter(function (r) { return EDADES.indexOf(num(r['Edad (días)'])) >= 0 && num(r['Resistencia (%)']) !== null; });
+        var nProy = new Set(filas.map(function (r) { return r['Proyecto']; })).size;
+        resumenEl.textContent = filas.length ? nProy + ' proyecto(s) · ' + filas.length.toLocaleString('es-CO') + ' muestras' : '';
+        if (!filas.length) {
+            chartEl.innerHTML = '<div class="sg-empty">' + (activos().length ? 'Sin muestras de 7, 14, 28 o 56 días con los filtros actuales.' : 'Selecciona al menos un proyecto.') + '</div>';
             return;
         }
-        var L = lanes.length, n = ss.length;
-        var W = 1000, left = 64, right = 24, top = 30, laneH = 78, bottom = 46;
-        var H = top + L * laneH + bottom;
-        var step = (W - left - right) / EDADES.length;
-        var xs = EDADES.map(function (e, i) { return left + step * (i + 0.5); });
-        var yBase = function (i) { return top + (L - 1 - i) * laneH + laneH / 2; };
-        var gap = Math.min(15, (laneH - 16) / Math.max(n, 1));
-        var mostrarEtq = gap >= 12;
-        var o = [];
-        o.push('<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Seguimiento de resistencia por f\'c y edad">');
-        for (var i = 0; i < L; i++) {
-            if (i % 2 === 0) o.push('<rect x="' + left + '" y="' + (top + (L - 1 - i) * laneH) + '" width="' + (W - left - right) + '" height="' + laneH + '" fill="#f6f8ee" opacity=".7"/>');
-            o.push('<path d="M' + left + ' ' + yBase(i) + ' H' + (W - right) + '" stroke="#A3C610" stroke-opacity=".35" stroke-dasharray="3 5"/>');
-        }
-        xs.forEach(function (x) { o.push('<path d="M' + x + ' ' + top + ' V' + (top + L * laneH) + '" stroke="#A3C610" stroke-opacity=".25" stroke-dasharray="3 5"/>'); });
-        o.push('<path d="M' + left + ' ' + top + ' V' + (top + L * laneH) + ' H' + (W - right) + '" stroke="#4B4F1D" stroke-opacity=".5" fill="none" stroke-linecap="round"/>');
-        o.push('<text x="' + left + '" y="' + (top - 12) + '" font-size="10" font-weight="700" fill="#4B4F1D">f\'c (MPa)</text>');
-        lanes.forEach(function (ll, i) { o.push('<text x="' + (left - 10) + '" y="' + (yBase(i) + 4) + '" text-anchor="end" font-size="12" font-weight="700" fill="#4B4F1D">' + ll + '</text>'); });
-        EDADES.forEach(function (e, j) { o.push('<text x="' + xs[j] + '" y="' + (top + L * laneH + 20) + '" text-anchor="middle" font-size="12" font-weight="700" fill="#4B4F1D">' + e + '</text>'); });
-        o.push('<text x="' + (left + (W - left - right) / 2) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#4B4F1D" opacity=".8">Edad (días)</text>');
+        var clave = porFilas === 'fc'
+            ? function (r) { return num(r['Resistencia nominal (MPa) llave']); }
+            : function (r) { return r['Proyecto']; };
+        var grupos = {};
+        filas.forEach(function (r) {
+            var k = clave(r);
+            if (k === null) return;
+            (grupos[k] = grupos[k] || []).push(r);
+        });
+        var claves = Object.keys(grupos).sort(porFilas === 'fc'
+            ? function (a, b) { return b - a; }
+            : function (a, b) { return resumir(grupos[b]).prom - resumir(grupos[a]).prom; });
 
-        ss.forEach(function (s, k) {
-            var dy = (k - (n - 1) / 2) * gap;
-            var g = ['<g class="sg-serie" data-k="' + k + '">'];
-            lanes.forEach(function (ll, i) {
-                var y = yBase(i) + dy, pts = [];
-                EDADES.forEach(function (e, j) { if (s.agg.cells[ll] && s.agg.cells[ll][e]) pts.push([xs[j], e]); });
-                if (pts.length > 1) g.push('<polyline points="' + pts.map(function (p) { return p[0] + ',' + y; }).join(' ') + '" fill="none" stroke="' + s.color + '" stroke-opacity=".8" stroke-width="2" stroke-linecap="round"' + (TRAZOS[s.idx % 10] ? ' stroke-dasharray="' + TRAZOS[s.idx % 10] + '"' : '') + '/>');
-                pts.forEach(function (p) {
-                    var c = s.agg.cells[ll][p[1]], prom = c.sum / c.n, txt = prom.toFixed(1) + '%';
-                    g.push('<g><title>' + esc(s.nombre + "\nf'c " + ll + ' MPa · ' + p[1] + ' días\nPromedio: ' + txt + '\nMuestras: ' + c.n) + '</title>' +
-                        marcador(p[0], y, s.idx, s.color) +
-                        '<g class="sg-lbl"><rect x="' + (p[0] + 8) + '" y="' + (y - 6.5) + '" width="42" height="13" rx="3" fill="#fff" fill-opacity=".92" stroke="' + s.color + '" stroke-opacity=".9" stroke-width="1"/>' +
-                        '<text x="' + (p[0] + 29) + '" y="' + (y + 3.4) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="#2f3215">' + txt + '</text></g></g>');
-                });
+        var celdas = EDADES.map(function (e) {
+            return claves.map(function (k) { return resumir(grupos[k].filter(function (r) { return num(r['Edad (días)']) === e; })); });
+        });
+        var generales = EDADES.map(function (e) { return resumir(filas.filter(function (r) { return num(r['Edad (días)']) === e; })); });
+        var min = Infinity, max = -Infinity;
+        celdas.forEach(function (col) {
+            col.forEach(function (c) { if (c) { min = Math.min(min, c.p10, c.prom); max = Math.max(max, c.p90, c.prom); } });
+        });
+        min = Math.floor(min / 20) * 20;
+        max = Math.max(min + 40, Math.ceil(max / 20) * 20);
+        var paso = max - min > 120 ? 40 : 20;
+
+        var W = 1200, izq = porFilas === 'fc' ? 150 : 230, der = 18, sep = 44, top = 58, alto = 44, abajo = 34;
+        var H = top + claves.length * alto + abajo;
+        var ancho = (W - izq - der - sep * 3) / 4;
+        var o = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Distribución del resultado porcentual por edad">'];
+        claves.forEach(function (k, i) {
+            var y = top + i * alto + alto / 2;
+            var nombre = porFilas === 'fc' ? "f'c " + k + ' MPa' : k;
+            o.push('<text x="' + (izq - 14) + '" y="' + y + '" text-anchor="end" font-size="12" fill="#3f3f3a">' + esc(nombre) + '</text>');
+            o.push('<text x="' + (izq - 14) + '" y="' + (y + 13) + '" text-anchor="end" font-size="9.5" fill="#9a9a90">n=' + grupos[k].length.toLocaleString('es-CO') + '</text>');
+        });
+        EDADES.forEach(function (e, j) {
+            var x0 = izq + j * (ancho + sep);
+            var X = function (v) { return x0 + (v - min) / (max - min) * ancho; };
+            var g = generales[j];
+            o.push('<text x="' + x0 + '" y="18" font-size="13" font-weight="700" fill="#2d5a3d">' + e + ' días</text>');
+            for (var t = min; t <= max; t += paso) {
+                o.push('<path d="M' + X(t) + ' ' + top + ' V' + (H - abajo) + '" stroke="#e8e8e2"/>');
+                o.push('<text x="' + X(t) + '" y="' + (H - abajo + 18) + '" text-anchor="middle" font-size="10" fill="#8a8a80">' + t + '%</text>');
+            }
+            if (!g) {
+                o.push('<text x="' + (x0 + ancho / 2) + '" y="' + (top + 24) + '" text-anchor="middle" font-size="11" fill="#9a9a90">sin muestras</text>');
+                return;
+            }
+            o.push('<path d="M' + X(g.prom) + ' ' + (top - 12) + ' V' + (H - abajo) + '" stroke="#8f8f86" stroke-dasharray="4 4"/>');
+            o.push('<text x="' + X(g.prom) + '" y="' + (top - 18) + '" text-anchor="middle" font-size="10" font-style="italic" fill="#77776e">promedio ' + g.prom.toFixed(1) + '%</text>');
+            claves.forEach(function (k, i) {
+                var c = celdas[j][i];
+                if (!c) return;
+                var y = top + i * alto + alto / 2 + 4;
+                var bajo = c.esperado !== null && c.prom < c.esperado;
+                var col = bajo ? AMBAR : VERDE;
+                var tip = (porFilas === 'fc' ? "f'c " + k + ' MPa' : k) + ' · ' + e + ' días\nPromedio: ' + c.prom.toFixed(1) + '%\nP25–P75: ' + c.p25.toFixed(1) + '% – ' + c.p75.toFixed(1) +
+                    '%\nP10–P90: ' + c.p10.toFixed(1) + '% – ' + c.p90.toFixed(1) + '%\nMuestras: ' + c.n + (c.esperado !== null ? '\nEsperado: ' + c.esperado.toFixed(1) + '%' : '');
+                o.push('<g class="sg-pt"><title>' + esc(tip) + '</title>' +
+                    '<path d="M' + X(c.p10) + ' ' + y + ' H' + X(c.p90) + '" stroke="' + col + '" stroke-opacity=".45" stroke-width="1.5"/>' +
+                    '<path d="M' + X(c.p25) + ' ' + y + ' H' + X(c.p75) + '" stroke="' + col + '" stroke-width="5" stroke-linecap="round"/>' +
+                    '<circle cx="' + X(c.prom) + '" cy="' + y + '" r="5.5" fill="' + (bajo ? AMBAR : VERDE_OSC) + '" stroke="#fff" stroke-width="1.8"/>' +
+                    '<text x="' + X(c.prom) + '" y="' + (y - 11) + '" text-anchor="middle" font-size="11" font-weight="' + (bajo ? 700 : 600) + '" fill="' + (bajo ? AMBAR : '#3f3f3a') +
+                    '" stroke="#fff" stroke-width="3" paint-order="stroke">' + c.prom.toFixed(1) + '%</text></g>');
             });
-            g.push('</g>');
-            o.push(g.join(''));
         });
         o.push('</svg>');
         chartEl.innerHTML = o.join('');
-        chartEl.classList.toggle('sg-hide-lbl', !mostrarEtq);
-        // resaltar una curva al pasar el cursor
-        chartEl.querySelectorAll('.sg-serie').forEach(function (g) {
-            g.addEventListener('mouseenter', function () { chartEl.classList.add('sg-chart-focus'); g.classList.add('sg-on'); });
-            g.addEventListener('mouseleave', function () { chartEl.classList.remove('sg-chart-focus'); g.classList.remove('sg-on'); });
-        });
     }
 
     // ---- controles ----
     function tags() {
-        var act = activos();
-        tagsEl.innerHTML = consolidar && act.length
-            ? '<span class="sg-tag" style="cursor:default"><i class="sg-sw" style="background:' + COLOR_CONSOLIDADO + '"></i>Curva consolidada de ' + act.length + ' proyecto(s)</span>'
-            : act.map(function (p) {
-                return '<span class="sg-tag" data-p="' + esc(p) + '"><i class="sg-sw" style="background:' + color[p] + '"></i>' + esc(p) + ' <b>&times;</b></span>';
-            }).join('');
-        tagsEl.querySelectorAll('.sg-tag[data-p]').forEach(function (t) {
-            t.addEventListener('click', function () { seleccion[t.getAttribute('data-p')] = false; refrescar(); });
+        var MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        var lista = [];
+        var agregar = function (valores, quitar, texto) {
+            valores.forEach(function (v) { var t = texto ? texto(v) : v; lista.push({ texto: t, quitar: function () { quitar(v, t); } }); });
+        };
+        agregar(proyectosSeleccionados, function (v) { removerProyecto(v); });
+        agregar(unidadesEstructuralesSeleccionadas, function (v) { removerUnidadEstructural(v); });
+        agregar(muestrasSeleccionadas, function (v) { removerMuestra(v); });
+        agregar(mesesSeleccionados, function (v) { removerMes(v); }, function (m) { var x = m.split('-'); return MESES[parseInt(x[1], 10) - 1] + '-' + x[0]; });
+        agregar(fcSeleccionados, function (v, t) { removerFcPorFormato(t); }, function (f) { return f + ' MPa'; });
+        tagsEl.innerHTML = lista.map(function (x, i) {
+            return '<span class="sg-tag" data-i="' + i + '">' + esc(x.texto) + ' <b>&times;</b></span>';
+        }).join('');
+        tagsEl.querySelectorAll('.sg-tag').forEach(function (t) {
+            t.addEventListener('click', function () { lista[+t.getAttribute('data-i')].quitar(); });
         });
     }
     function sincronizarChecks() {
-        dd.querySelectorAll('input[data-p]').forEach(function (i) { i.checked = !!seleccion[i.getAttribute('data-p')]; });
+        dd.querySelectorAll('input[data-p]').forEach(function (i) { i.checked = proyectosSeleccionados.indexOf(i.getAttribute('data-p')) >= 0; });
         var todos = dd.querySelector('input[data-all]');
         if (todos) todos.checked = activos().length === proyectos.length;
     }
-    function refrescar() { tags(); sincronizarChecks(); btnCons.classList.toggle('active', consolidar); dibujar(); }
+    function refrescar() {
+        tags();
+        sincronizarChecks();
+        btnFilas.textContent = porFilas === 'fc' ? 'Ver por proyecto' : "Ver por f'c";
+        dibujar();
+    }
+
+    function aplicarProyectos(lista) {
+        proyectosSeleccionados = lista;
+        actualizarTodosFiltros();
+    }
 
     function construirDropdown() {
-        var h = '<div class="sg-search"><input type="text" placeholder="Escribir para filtrar..." autocomplete="off"></div>';
+        var h = '<div class="sg-search"><input type="text" placeholder="Escribir y pulsar Enter..." autocomplete="off"></div>';
         h += '<div class="sg-opt sg-all"><input type="checkbox" id="sgChkAll" data-all="1"><label for="sgChkAll">Seleccionar todos</label></div>';
         proyectos.forEach(function (p, i) {
-            h += '<div class="sg-opt" data-name="' + esc(p) + '"><input type="checkbox" id="sgChk' + i + '" data-p="' + esc(p) + '" checked>' +
-                '<label for="sgChk' + i + '"><i class="sg-sw" style="background:' + color[p] + '"></i>' + esc(p) + '</label></div>';
+            h += '<div class="sg-opt" data-name="' + esc(p) + '"><input type="checkbox" id="sgChk' + i + '" data-p="' + esc(p) + '">' +
+                '<label for="sgChk' + i + '">' + esc(p) + '</label></div>';
         });
         dd.innerHTML = h;
         dd.querySelector('input[data-all]').addEventListener('change', function (e) {
-            proyectos.forEach(function (p) { seleccion[p] = e.target.checked; });
-            refrescar();
+            aplicarProyectos(e.target.checked ? proyectos.slice() : []);
         });
         dd.querySelectorAll('input[data-p]').forEach(function (i) {
-            i.addEventListener('change', function () { seleccion[i.getAttribute('data-p')] = i.checked; refrescar(); });
+            i.addEventListener('change', function () {
+                var p = i.getAttribute('data-p');
+                aplicarProyectos(proyectosSeleccionados.filter(function (q) { return q !== p; }).concat(i.checked ? [p] : []));
+            });
         });
         var inp = dd.querySelector('.sg-search input');
+        var visibles = function () {
+            return Array.from(dd.querySelectorAll('.sg-opt[data-name]')).filter(function (o) { return o.style.display !== 'none'; });
+        };
         inp.addEventListener('input', function () {
             var q = norm(inp.value.trim());
             dd.querySelectorAll('.sg-opt[data-name]').forEach(function (o) {
                 o.style.display = !q || norm(o.getAttribute('data-name')).indexOf(q) >= 0 ? '' : 'none';
             });
         });
+        inp.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            var nombres = visibles().map(function (o) { return o.getAttribute('data-name'); });
+            if (!nombres.length) return;
+            dd.classList.remove('open');
+            aplicarProyectos(Array.from(new Set(proyectosSeleccionados.concat(nombres))));
+        });
     }
 
     btn.addEventListener('click', function () {
         dd.classList.toggle('open');
+        sincronizarChecks();
         if (dd.classList.contains('open')) { var i = dd.querySelector('.sg-search input'); if (i) { i.value = ''; i.dispatchEvent(new Event('input')); setTimeout(function () { i.focus(); }, 30); } }
     });
-    document.addEventListener('click', function (e) { if (!e.target.closest('#seguimiento .sg-bar')) dd.classList.remove('open'); });
-    btnCons.addEventListener('click', function () { consolidar = !consolidar; refrescar(); });
+    document.addEventListener('click', function (e) { if (!e.target.closest('#seguimiento .sg-bar')) { dd.classList.remove('open'); sincronizarChecks(); } });
+    btnFilas.addEventListener('click', function () { porFilas = porFilas === 'fc' ? 'proyecto' : 'fc'; refrescar(); });
     btnReset.addEventListener('click', function () {
-        proyectos.forEach(function (p) { seleccion[p] = true; }); consolidar = false; refrescar();
+        porFilas = 'fc'; restablecerFiltros();
     });
     var tabBtn = document.querySelector('[data-tab="seguimiento"]');
-    if (tabBtn) tabBtn.addEventListener('click', dibujar);
+    if (tabBtn) tabBtn.addEventListener('click', refrescar);
+
+    var uiOriginal = window.actualizarUIInmediata;
+    window.actualizarUIInmediata = function () {
+        uiOriginal.apply(this, arguments);
+        refrescar();
+    };
 
     construirDropdown();
     refrescar();
