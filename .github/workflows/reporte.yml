@@ -3,12 +3,23 @@ name: Enviar Reporte
 on:
   workflow_dispatch:
 
+# Un solo envío a la vez, para no duplicar correos
+concurrency:
+  group: enviar-reporte
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
 jobs:
   enviar-reportes-por-proyecto:
     runs-on: ubuntu-latest
     steps:
       - name: Descargar código
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Configurar Python
         uses: actions/setup-python@v4
@@ -32,6 +43,7 @@ jobs:
           EMAIL_ALBURA: ${{ secrets.EMAIL_ALBURA }}
           EMAIL_VENTO: ${{ secrets.EMAIL_VENTO }}
           EMAIL_ALCAZAR: ${{ secrets.EMAIL_ALCAZAR }}
+          EMAIL_PIAZZA: ${{ secrets.EMAIL_PIAZZA }}
         run: |
           import requests
           import base64
@@ -85,42 +97,42 @@ jobs:
               except:
                   return ''
 
+          PROYECTOS = ['FLORA', 'TERRA', 'NATIVA', 'VIALE', 'ALBURA', 'VENTO', 'ALCAZAR', 'PIAZZA']
+          ARCHIVO_CONTROL = '.github/data/enviados.csv'
+
+          def clave_proyecto(nombre):
+              # '24603 - FLORA PPTO C' -> 'FLORA' ; 'VIALE 26' -> 'VIALE'
+              texto = str(nombre).upper()
+              for clave in PROYECTOS:
+                  if re.search(r'\b' + clave + r'\b', texto):
+                      return clave
+              return texto.strip()
+
+          def texto_entero(valor):
+              try:
+                  return str(int(float(valor)))
+              except (ValueError, TypeError):
+                  return str(valor).strip()
+
           def generar_id_registro(row):
-              cilindro = str(row.get('Cilindro N°', '')).strip()
-              proyecto = str(row.get('Proyecto', '')).strip()
-              edad = str(row.get('Edad (días)', '')).strip()
-              rotura = str(row.get('Rotura', '')).strip()
-              return f"{proyecto}|{cilindro}|{edad}|{rotura}"
+              rotura = pd.to_datetime(row.get('Rotura'), errors='coerce')
+              rotura = '' if pd.isna(rotura) else rotura.strftime('%Y-%m-%d')
+              return '|'.join([clave_proyecto(row.get('Proyecto')), texto_entero(row.get('Cilindro N°')),
+                               texto_entero(row.get('Edad (días)')), rotura])
 
           def cargar_control_enviados():
-              archivo_control = '.github/data/enviados.csv'
-              ids_enviados = set()
-              if os.path.exists(archivo_control):
-                  try:
-                      with open(archivo_control, 'r') as f:
-                          for linea in f:
-                              linea = linea.strip()
-                              if linea:
-                                  ids_enviados.add(linea)
-                      print(f'  [+] Cargados {len(ids_enviados)} registros del historial')
-                  except Exception as e:
-                      print(f'  [!] Error al leer archivo de control: {e}')
-              else:
-                  print(f'  [*] Archivo de control no existe (primera ejecución)')
-              return ids_enviados
+              # Sin historial no se envía: evita un correo masivo con todo lo antiguo
+              if not os.path.exists(ARCHIVO_CONTROL):
+                  raise RuntimeError(f'No existe {ARCHIVO_CONTROL}')
+              with open(ARCHIVO_CONTROL, 'r', encoding='utf-8') as f:
+                  ids = {linea.strip() for linea in f if linea.strip()}
+              print(f'  [+] Cargados {len(ids)} registros del historial')
+              return ids
 
-          def guardar_control_enviados(ids_nuevos):
-              archivo_control = '.github/data/enviados.csv'
-              try:
-                  os.makedirs(os.path.dirname(archivo_control), exist_ok=True)
-                  ids_existentes = cargar_control_enviados()
-                  todos_los_ids = ids_existentes.union(ids_nuevos)
-                  with open(archivo_control, 'w') as f:
-                      for id_reg in sorted(todos_los_ids):
-                          f.write(id_reg + '\n')
-                  print(f'  [+] Control actualizado: {len(todos_los_ids)} registros guardados')
-              except Exception as e:
-                  print(f'  [!] Error al guardar control: {e}')
+          def guardar_control_enviados(ids):
+              with open(ARCHIVO_CONTROL, 'w', encoding='utf-8', newline='\n') as f:
+                  f.write(''.join(i + '\n' for i in sorted(ids)))
+              print(f'  [+] Control actualizado: {len(ids)} registros')
 
           logo_url = "https://raw.githubusercontent.com/cpulgarinIngeurbe/1DespliegueConcretos/main/Visuales/inge.png"
 
@@ -130,21 +142,14 @@ jobs:
           mail_from = os.getenv('MAIL_FROM')
           archivo_incumplimientos = "desplegable/Incumplimientos.xlsx"
 
-          proyectos_correos = {
-              'FLORA': os.getenv('EMAIL_FLORA'),
-              'TERRA': os.getenv('EMAIL_TERRA'),
-              'NATIVA': os.getenv('EMAIL_NATIVA'),
-              'VIALE': os.getenv('EMAIL_VIALE'),
-              'ALBURA': os.getenv('EMAIL_ALBURA'),
-              'VENTO': os.getenv('EMAIL_VENTO'),
-              'ALCAZAR': os.getenv('EMAIL_ALCAZAR')
-          }
+          proyectos_correos = {clave: os.getenv('EMAIL_' + clave) for clave in PROYECTOS}
 
           print(f'\n[*] Iniciando envio de reportes por proyecto...')
           print(f'  [+] Correo remitente: {mail_from}')
 
           try:
               ids_ya_enviados_global = cargar_control_enviados()
+              errores_envio = 0
 
               print(f'\n[*] Obteniendo token de acceso...')
               token_url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
@@ -175,7 +180,8 @@ jobs:
               df['Cumplimiento normativo'] = df.apply(evaluar_cumplimiento, axis=1)
               df['_ID_REGISTRO'] = df.apply(generar_id_registro, axis=1)
 
-              proyectos_unicos = df['Proyecto'].unique()
+              df['_CLAVE'] = df['Proyecto'].apply(clave_proyecto)
+              proyectos_unicos = df['_CLAVE'].unique()
               print(f'  [+] Proyectos encontrados: {list(proyectos_unicos)}')
 
               fecha_actual = (datetime.now() - timedelta(hours=5)).strftime('%d-%m-%Y %H:%M:%S')
@@ -191,7 +197,7 @@ jobs:
 
                   print(f'\n[*] Procesando proyecto: {proyecto}')
 
-                  df_proyecto = df[df['Proyecto'] == proyecto].copy()
+                  df_proyecto = df[df['_CLAVE'] == proyecto].copy()
                   registros_totales = len(df_proyecto)
                   print(f'  [+] Registros totales encontrados: {registros_totales}')
 
@@ -205,11 +211,13 @@ jobs:
 
                   ids_a_enviar = set(df_nuevos['_ID_REGISTRO'].tolist())
 
-                  df_nuevos_sin_id = df_nuevos.drop(columns=['_ID_REGISTRO'])
+                  # Adjunto: histórico completo del proyecto, marcando cuáles son nuevos
+                  df_adjunto = df_proyecto.drop(columns=['_ID_REGISTRO', '_CLAVE'])
+                  df_adjunto.insert(0, 'Notificación', df_proyecto['_ID_REGISTRO'].isin(ids_a_enviar).map({True: 'NUEVO', False: 'Anterior'}))
 
                   with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
                       tmp_path = tmp.name
-                      df_nuevos_sin_id.to_excel(tmp_path, index=False)
+                      df_adjunto.to_excel(tmp_path, index=False)
 
                   with open(tmp_path, 'rb') as f:
                       archivo_contenido = base64.b64encode(f.read()).decode()
@@ -282,7 +290,7 @@ jobs:
                       '</table></div>',
                       '<p style="margin:6px 0 0;font-size:9px;color:#9ca3af;">',
                       '<span style="display:inline-block;width:8px;height:8px;background:#c0392b;border-radius:1px;margin-right:3px;"></span>',
-                      'El archivo Excel completo (solo nuevos registros) se adjunta.</p>',
+                      'Solo se muestran los incumplimientos nuevos. El Excel adjunto contiene el histórico completo del proyecto.</p>',
                       '</td></tr>',
                       '<tr><td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:12px 24px;">',
                       '<table width="100%" cellpadding="0" cellspacing="0"><tr>',
@@ -310,7 +318,7 @@ jobs:
                           'attachments': [
                               {
                                   '@odata.type': '#microsoft.graph.fileAttachment',
-                                  'name': f'Incumplimientos_Nuevos_{proyecto}.xlsx',
+                                  'name': f'Incumplimientos_Historico_{proyecto}.xlsx',
                                   'contentBytes': archivo_contenido
                               }
                           ]
@@ -331,13 +339,17 @@ jobs:
                       print(f'  [+] Destinatario: {email_destino}')
                       print(f'  [+] {len(ids_a_enviar)} registros marcados como enviados')
                       ids_ya_enviados_global.update(ids_a_enviar)
+                      guardar_control_enviados(ids_ya_enviados_global)
                   else:
                       print(f'  [!] Error al enviar email: {send_response.status_code}')
                       print(f'  [!] Respuesta: {send_response.text}')
+                      errores_envio += 1
 
                   os.unlink(tmp_path)
 
-              guardar_control_enviados(ids_ya_enviados_global)
+              if errores_envio:
+                  print(f'\n[!] {errores_envio} correo(s) no se enviaron; se reintentan en la próxima corrida')
+                  exit(1)
               print(f'\n[+] Todos los reportes han sido procesados correctamente')
 
           except Exception as e:
@@ -349,20 +361,15 @@ jobs:
         shell: python
 
       - name: Guardar control de enviados en repositorio
+        if: always()
         run: |
-          git config --global user.email "sistema@ingeurbe.com.co"
-          git config --global user.name "Sistema INGEURBE"
-
-          if [ -f ".github/data/enviados.csv" ]; then
-            git add .github/data/enviados.csv
-            if ! git diff --cached --quiet; then
-              git commit -m "[AUTO] Actualizar control de registros enviados"
-              git push origin main
-              echo "[+] ✅ Control de registros guardado en repositorio"
-            else
-              echo "[*] Sin cambios en el control de registros"
-            fi
+          git config user.email "sistema@ingeurbe.com.co"
+          git config user.name "Sistema INGEURBE"
+          git add .github/data/enviados.csv
+          if git diff --cached --quiet; then
+            echo "[*] Sin cambios en el control de registros"
           else
-            echo "[!] No se encontró archivo de control"
+            git commit -m "[AUTO] Actualizar control de registros enviados"
+            git pull --rebase origin main
+            git push origin main
           fi
-        continue-on-error: true
